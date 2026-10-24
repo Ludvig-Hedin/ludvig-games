@@ -10,5 +10,8 @@ contextBridge.exposeInMainWorld("app", {
   join: (id) => ipcRenderer.send("join", id),
   leave: () => ipcRenderer.send("leave"),
   update: () => ipcRenderer.send("update"),
+  settings: (which) => ipcRenderer.send("settings", which),
+  dismissTip: () => ipcRenderer.send("dismiss-tip"),
+  tipSize: (height) => ipcRenderer.send("tip-size", height),
   copy: (text) => ipcRenderer.send("copy", text),
 });

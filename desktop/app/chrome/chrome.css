@@ -80,3 +80,11 @@ h2 { margin: 0 0 4px; font-size: 13px; font-weight: 500; }
 .code { font-variant-numeric: tabular-nums; letter-spacing: .08em; font-weight: 600; }
 .badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #5bd38a; color: #08130c; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
 .steps.single { list-style: none; padding-left: 0; color: var(--muted); }
+
+.status { display: flex; gap: 10px; align-items: flex-start; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.status .dot { width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; background: #5bd38a; flex: none; }
+.status.off .dot { background: #e0a040; }
+.status strong { display: block; font-weight: 600; }
+.status p { margin: 2px 0 0; }
+.fixes { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 12px; }
+.fixes li { display: grid; gap: 8px; justify-items: start; }

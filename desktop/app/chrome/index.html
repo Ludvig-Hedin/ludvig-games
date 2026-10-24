@@ -27,6 +27,13 @@
 
   <div class="backdrop" id="backdrop" hidden></div>
   <section class="panel" id="panel" role="dialog" aria-label="Play together" hidden>
+    <div class="status" id="status">
+      <i class="dot" id="status-dot"></i>
+      <div>
+        <strong id="status-title"></strong>
+        <p class="muted" id="status-sub"></p>
+      </div>
+    </div>
     <div class="joined" id="joined" hidden>
       <p id="joined-text"></p>
       <button class="secondary" id="leave">Back to my games</button>
@@ -43,17 +50,23 @@
       <ol class="steps" id="steps"></ol>
     </div>
     <div id="offline" hidden>
-      <h2>Not on a network</h2>
-      <p class="muted">Connect to Wi‑Fi to play with people nearby. Every game still works offline on this Mac.</p>
+      <p class="muted">Every device has to be on the same Wi‑Fi. It does not need internet.</p>
+      <ul class="fixes">
+        <li><span>Join a Wi‑Fi network on this Mac and on the other devices.</span><button class="secondary" id="wifi">Wi‑Fi settings</button></li>
+        <li><span>No Wi‑Fi nearby? Turn on Personal Hotspot on a phone and join it from every device, including this Mac.</span></li>
+      </ul>
+      <p class="muted">Playing alone works without any network.</p>
     </div>
 
     <h2 class="section-title" id="devices-title">Connected</h2>
     <ul class="list" id="devices"></ul>
     <p class="muted" id="devices-empty">No one has joined yet. When a friend opens the code, they show up here.</p>
 
-    <h2 class="section-title">Macs nearby</h2>
-    <ul class="list" id="nearby"></ul>
-    <p class="muted" id="nearby-empty">No one else on this network has Ludvig Games open.</p>
+    <div id="nearby-block">
+      <h2 class="section-title">Macs nearby</h2>
+      <ul class="list" id="nearby"></ul>
+      <p class="muted" id="nearby-empty">No other Mac on this Wi‑Fi has Ludvig Games open.</p>
+    </div>
   </section>
 
   <script src="chrome.js"></script>

@@ -21,11 +21,23 @@ function render(s) {
   if (!s.panel) return;
 
   $("joined").hidden = !s.joined;
-  if (s.joined) $("joined-text").textContent = `You're playing on ${s.joined.name}. Scores and rooms are on that Mac.`;
+  $("joined-text").hidden = true;
 
-  const canShare = Boolean(s.shareUrl);
+  // One clear answer first: can others join right now?
+  const online = Boolean(s.lan) || Boolean(s.joined);
+  $("status").classList.toggle("off", !online);
+  $("status-title").textContent = s.joined
+    ? `Playing on ${s.joined.name}`
+    : online ? "Ready to play together" : "Not on Wi‑Fi, others can't join yet";
+  $("status-sub").textContent = s.joined
+    ? "Scores and rooms are on that Mac."
+    : online ? "Phones and computers on this Wi‑Fi can join. No internet needed." : "";
+  $("status-sub").hidden = !$("status-sub").textContent;
+
+  const canShare = Boolean(s.shareUrl) && online;
   $("invite").hidden = !canShare;
-  $("offline").hidden = canShare;
+  $("offline").hidden = online;
+  $("nearby-block").hidden = !online;
   if (canShare) {
     const copy = shareCopy(s);
     $("share-title").textContent = copy.title;
@@ -42,8 +54,8 @@ function render(s) {
     $("url").title = s.shareUrl;
   }
 
-  $("devices-title").hidden = Boolean(s.joined);
-  $("devices").hidden = Boolean(s.joined);
+  $("devices-title").hidden = Boolean(s.joined) || !online;
+  $("devices").hidden = Boolean(s.joined) || !online;
   $("devices").replaceChildren(...s.devices.map((d) => {
     const li = document.createElement("li");
     const who = document.createElement("span");
@@ -58,7 +70,7 @@ function render(s) {
     li.append(who, where);
     return li;
   }));
-  $("devices-empty").hidden = Boolean(s.joined) || s.devices.length > 0;
+  $("devices-empty").hidden = Boolean(s.joined) || !online || s.devices.length > 0;
 
   const others = s.nearby.filter((p) => !s.joined || p.address !== s.joined.address);
   const list = $("nearby");
@@ -119,7 +131,11 @@ function shareCopy(s) {
     steps.push(t.hint || `Tap ${quote(online.steps)}.`);
     if (online.inviteParam) steps.push("When you open a room, this code changes to join it directly.");
   }
-  if (t.local) steps.push(`Or on this Mac: tap ${quote(t.local.steps || [])}${t.local.how ? ` (${t.local.how})` : ""}.`);
+  if (t.local) {
+    const tap = quote(t.local.steps || []);
+    const how = t.local.how && !tap.toLowerCase().includes(t.local.how.toLowerCase()) ? ` (${t.local.how})` : "";
+    steps.push(`Or on this Mac: tap ${tap}${how}.`);
+  }
   return { title: `Play ${name} together`, sub: online ? "" : "This game is played on one device.", steps };
 }
 
@@ -139,6 +155,7 @@ function renderUpdate(u) {
   button.classList.toggle("is-ready", u.status === "ready");
 }
 
+$("wifi").addEventListener("click", () => window.app.settings("wifi"));
 $("update").addEventListener("click", () => window.app.update());
 $("records").addEventListener("click", () => window.app.records());
 $("home").addEventListener("click", () => window.app.home());

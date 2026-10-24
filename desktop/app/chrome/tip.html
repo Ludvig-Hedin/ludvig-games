@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'">
+  <link rel="stylesheet" href="chrome.css">
+  <link rel="stylesheet" href="tip.css">
+</head>
+<body class="tip-body">
+  <!-- Shown over a game for 2+ players when it opens: how to play it with someone, right away. -->
+  <section class="tip" id="tip" aria-live="polite">
+    <button class="tip-close" id="close" aria-label="Close">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l8 8M10 2 2 10"/></svg>
+    </button>
+    <div class="tip-row">
+      <div class="tip-qr" id="qr"></div>
+      <div class="tip-text">
+        <strong id="title"></strong>
+        <p id="hint"></p>
+        <p class="muted" id="local"></p>
+        <p class="muted" id="foot"></p>
+      </div>
+    </div>
+  </section>
+  <script src="tip.js"></script>
+</body>
+</html>

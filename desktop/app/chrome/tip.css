@@ -1,0 +1,16 @@
+html, body.tip-body { background: transparent; overflow: hidden; }
+.tip {
+  position: relative; margin: 0; padding: 14px 32px 14px 14px; border-radius: 12px;
+  background: rgba(18, 18, 18, .94); color: var(--text); border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .45); user-select: text;
+}
+.tip-row { display: flex; gap: 12px; align-items: flex-start; }
+.tip-qr { width: 84px; height: 84px; flex: none; }
+.tip-qr:empty { display: none; }
+.tip-qr svg { width: 100%; height: 100%; display: block; border-radius: 6px; }
+.tip-text { min-width: 0; }
+.tip-text strong { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip-text p { margin: 0 0 4px; }
+.tip-text p:empty { display: none; }
+.tip-close { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); }
+.tip-close:hover { color: var(--text); background: rgba(255, 255, 255, .08); }

@@ -17,6 +17,8 @@ import fs from "node:fs";
 let TOGETHER = {};
 try {
   TOGETHER = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "runtime", "together.json"), "utf8"));
+  // Same quote marks everywhere: "Play online" becomes “Play online”.
+  for (const t of Object.values(TOGETHER)) if (t.hint) t.hint = t.hint.replace(/"([^"]+)"/g, "“$1”");
 } catch {}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +45,9 @@ if (SELFTEST) {
 let win = null;
 let chrome = null;
 let content = null;
+let tipView = null; // the "play with friends" card over a game (chrome/tip.html)
+let tipHeight = 120;
+const tipsShown = new Set(); // games whose card was already shown or closed this session
 let runtime = null;
 let bonjour = null;
 let browser = null;
@@ -63,6 +68,7 @@ const state = {
   context: null, // the game on screen: { id, name, players, together }
   room: null, // the online room the host is in: { game, code, kind: invite | mp, url }
   devices: [], // other devices that opened a game on this Mac in the last two minutes
+  tip: null, // { name, hint, local, qr } while the in-game card is shown
 };
 
 function computerName() {
@@ -185,6 +191,7 @@ async function pollDevices() {
 setInterval(pollDevices, 3000);
 
 function lanAddress() {
+  if (SELFTEST && process.env.LUDVIG_SELFTEST_OFFLINE) return null; // check the "not on Wi-Fi" panel
   const candidates = [];
   for (const [name, list] of Object.entries(os.networkInterfaces())) {
     for (const a of list || []) {
@@ -198,7 +205,9 @@ function lanAddress() {
 }
 
 function sendState() {
+  state.lan = lanAddress();
   if (chrome && !chrome.webContents.isDestroyed()) chrome.webContents.send("state", state);
+  if (tipView && !tipView.webContents.isDestroyed()) tipView.webContents.send("state", state);
 }
 
 function layout() {
@@ -208,10 +217,46 @@ function layout() {
   chrome.setVisible(!state.fullscreen);
   chrome.setBounds({ x: 0, y: 0, width, height: state.panel ? height : bar });
   content.setBounds({ x: 0, y: bar, width, height: Math.max(0, height - bar) });
+  if (tipView) {
+    const show = Boolean(state.tip) && !state.panel && !state.fullscreen;
+    tipView.setVisible(show);
+    if (show) tipView.setBounds({ x: Math.max(8, width - 330), y: bar + 8, width: 320, height: tipHeight });
+  }
+}
+
+const quoteSteps = (steps) => (steps || []).map((x) => `“${x}”`).join(", then ");
+
+/** Shows the in-game card once per game and session, for games people can play together. */
+async function showTip(ctx) {
+  if (!ctx || ctx.id === "hub" || !ctx.together || state.joined) {
+    hideTip();
+    return;
+  }
+  if (tipsShown.has(ctx.id)) return; // already shown (or closed) for this game; leave it as it is
+  tipsShown.add(ctx.id);
+  await refreshShare();
+  const t = ctx.together;
+  state.tip = {
+    name: ctx.name || "this game",
+    hint: t.online ? t.hint || `Tap ${quoteSteps(t.online.steps)}.` : null,
+    local: t.local ? `tap ${quoteSteps(t.local.steps)}${t.local.how && !quoteSteps(t.local.steps).toLowerCase().includes(t.local.how.toLowerCase()) ? ` (${t.local.how})` : ""}.` : null,
+    qr: state.lan && t.online ? state.qr : null,
+  };
+  if (!t.online && t.local) state.tip.hint = null;
+  layout();
+  sendState();
+}
+
+function hideTip() {
+  if (!state.tip) return;
+  state.tip = null;
+  layout();
+  sendState();
 }
 
 async function setPanel(open) {
   state.panel = open;
+  if (open) state.tip = null;
   if (open) await refreshShare();
   // The chrome view grows over the games while the panel is open, so it can draw the panel and a backdrop.
   if (open) win.contentView.addChildView(chrome);
@@ -326,6 +371,7 @@ async function selftest() {
     const page = await content.webContents.capturePage();
     fs.writeFileSync(path.join(SELFTEST, `${name}-bar.png`), bar.toPNG());
     fs.writeFileSync(path.join(SELFTEST, `${name}-content.png`), page.toPNG());
+    if (state.tip) fs.writeFileSync(path.join(SELFTEST, `${name}-tip.png`), (await tipView.webContents.capturePage()).toPNG());
   };
   const report = { steps: [] };
   try {
@@ -337,7 +383,7 @@ async function selftest() {
       navigate(target);
       await wait(5000);
       const desktopScript = await content.webContents.executeJavaScript("Boolean(window.__ludvigDesktop)");
-      report.steps.push({ step: "game", url: content.webContents.getURL(), title: content.webContents.getTitle(), desktopScript });
+      report.steps.push({ step: "game", url: content.webContents.getURL(), title: content.webContents.getTitle(), desktopScript, tip: state.tip && { ...state.tip, qr: Boolean(state.tip.qr) }, context: state.context && state.context.id, together: Object.keys(TOGETHER).length });
       await shot("game");
     }
     if (process.env.LUDVIG_SELFTEST_ROOM) {
@@ -429,25 +475,45 @@ function publish() {
     bonjour.publish({ name: `${computerName()} (${instanceId.slice(0, 4)})`, type: SERVICE, port: HUB.port, txt: { id: instanceId, name: computerName() } });
     if (browser) browser.stop();
     browser = bonjour.find({ type: SERVICE });
-    const update = () => {
-      const seen = new Map();
-      for (const s of browser.services) {
-        const id = s.txt && s.txt.id;
-        if (!id || id === instanceId) continue;
-        const address = (s.addresses || []).find((a) => /^\d+\.\d+\.\d+\.\d+$/.test(a)) || (s.referer && s.referer.address);
-        if (!address) continue;
-        seen.set(id, { id, name: (s.txt && s.txt.name) || s.name, address });
-      }
-      state.nearby = [...seen.values()].sort((a, b) => a.name.localeCompare(b.name));
-      if (state.joined && !state.nearby.some((p) => p.address === state.joined.address)) {
-        // Keep playing; the host may only have lost its Bonjour announcement.
-      }
-      sendState();
-    };
+    const update = () => refreshNearby();
     browser.on("up", update);
     browser.on("down", update);
   } catch (err) {
     console.error("[app] nearby discovery unavailable:", err.message);
+  }
+}
+
+// Macs that announce the app and actually answer on their address. Bonjour can keep an old announcement after a
+// Mac left the network (or list this Mac itself), so each one is tried before it is shown.
+async function reachable(address) {
+  try {
+    const res = await fetch(`http://${address}:${HUB.port}/__ludvig-desktop.js`, { signal: AbortSignal.timeout(1500) });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+let nearbyRun = 0;
+async function refreshNearby() {
+  const run = ++nearbyRun;
+  const own = lanAddress();
+  const seen = new Map();
+  if (own && browser) {
+    for (const s of browser.services) {
+      const id = s.txt && s.txt.id;
+      if (!id || id === instanceId) continue;
+      const address = (s.addresses || []).find((a) => /^\d+\.\d+\.\d+\.\d+$/.test(a)) || (s.referer && s.referer.address);
+      if (!address || address === own || !/^\d+\.\d+\.\d+\.\d+$/.test(address)) continue;
+      seen.set(id, { id, name: (s.txt && s.txt.name) || s.name, address });
+    }
+  }
+  const checked = await Promise.all([...seen.values()].map(async (p) => ((await reachable(p.address)) ? p : null)));
+  if (run !== nearbyRun) return;
+  const nearby = checked.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  if (JSON.stringify(nearby) !== JSON.stringify(state.nearby)) {
+    state.nearby = nearby;
+    sendState();
   }
 }
 
@@ -457,9 +523,11 @@ setInterval(() => {
   if (state.status === "ready" && now !== lanAtPublish) {
     publish();
     state.lan = now;
+    if (state.panel) refreshShare().then(sendState);
     sendState();
   }
   if (browser) browser.update();
+  refreshNearby();
 }, 15000);
 
 // ---------- window ----------
@@ -544,7 +612,14 @@ function createWindow() {
     webPreferences: { preload: path.join(here, "preload-chrome.cjs"), sandbox: true, contextIsolation: true, offscreen: Boolean(SELFTEST) },
   });
   chrome.setBackgroundColor("#00000000");
+  tipView = new WebContentsView({
+    webPreferences: { preload: path.join(here, "preload-chrome.cjs"), sandbox: true, contextIsolation: true, offscreen: Boolean(SELFTEST) },
+  });
+  tipView.setBackgroundColor("#00000000");
+  tipView.setVisible(false);
+  tipView.webContents.loadFile(path.join(here, "chrome", "tip.html"));
   win.contentView.addChildView(content);
+  win.contentView.addChildView(tipView);
   win.contentView.addChildView(chrome);
   chrome.webContents.loadFile(path.join(here, "chrome", "index.html"));
   content.webContents.loadFile(path.join(here, "pages", "starting.html"));
@@ -562,6 +637,7 @@ function createWindow() {
     if (!ctx || !state.context || ctx.id !== state.context.id) state.room = null;
     state.context = ctx;
     if (state.panel) refreshShare().then(sendState);
+    else showTip(ctx);
     sendState();
     sampleTint();
   };
@@ -585,6 +661,10 @@ function createWindow() {
     const local = localFor(url);
     if (local) navigate(local);
     else if (/^https?:/.test(url)) shell.openExternal(url);
+  });
+  // The card steps aside as soon as the player starts using the game.
+  wc.on("input-event", (_event, input) => {
+    if (state.tip && ["mouseDown", "keyDown", "rawKeyDown", "touchStart", "gestureTap"].includes(input.type)) hideTip();
   });
   wc.on("before-input-event", (event, input) => {
     if (input.type === "keyDown" && input.key === "Escape" && state.panel) {
@@ -621,6 +701,16 @@ ipcMain.on("join", (_e, id) => {
   if (peer) join(peer);
 });
 ipcMain.on("leave", () => leave());
+ipcMain.on("dismiss-tip", () => hideTip());
+ipcMain.on("tip-size", (_e, height) => {
+  const h = Math.max(60, Math.min(400, Number(height) || 120));
+  if (h !== tipHeight) { tipHeight = h; layout(); }
+});
+// Plain-language fixes for "not on Wi-Fi": open the Wi-Fi or Sharing settings.
+ipcMain.on("settings", (_e, which) => {
+  const pane = which === "sharing" ? "com.apple.Sharing-Settings.extension" : "com.apple.wifi-settings-extension";
+  shell.openExternal(`x-apple.systempreferences:${pane}`);
+});
 ipcMain.on("update", () => runUpdate());
 // A game opened or left an online room (runtime/inject.js via app/preload-content.cjs).
 let announced = null;

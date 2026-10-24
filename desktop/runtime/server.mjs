@@ -158,7 +158,7 @@ function loadTogether() {
   }
 }
 const TOGETHER = loadTogether();
-const HINTS = Object.fromEntries(Object.entries(TOGETHER).map(([id, t]) => [id, t.hint]).filter(([, h]) => h));
+const HINTS = Object.fromEntries(Object.entries(TOGETHER).map(([id, t]) => [id, t.hint && t.hint.replace(/"([^"]+)"/g, "“$1”")]).filter(([, h]) => h));
 const INVITES = Object.fromEntries(Object.entries(TOGETHER).map(([id, t]) => [id, t.online && t.online.inviteParam]).filter(([, p]) => p));
 
 function desktopScript(entries, entry) {

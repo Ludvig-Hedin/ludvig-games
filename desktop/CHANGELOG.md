@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 24 October 2026
+
+- Play together starts with one clear answer: "Ready to play together" (green) or "Not on Wi‑Fi, others can't join yet" (amber), with what to do: join a Wi‑Fi, or use a phone's Personal Hotspot. The network does not need internet.
+- Macs nearby only lists Macs that answer on their address, never this Mac itself or one that has left the network.
+- Opening a game for 2+ players shows a small card in the game: how to play it with friends, a QR code for them, and how to play two on this Mac. It steps aside as soon as you start playing.
+
 ## 0.3.0 — 24 October 2026
 
 - Update inside the app: when a new version is out, an "Update to x.y" button appears next to My records. It downloads the new version, then "Restart to update" swaps it in. Saved games and scores stay. Also under Ludvig Games → Check for Updates….
