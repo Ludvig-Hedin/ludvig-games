@@ -1,0 +1,129 @@
+/* Hub pages (catalog, My records, 404). Dark, calm, matching www.ludvighedin.com. Games run full screen and
+   never load this file. */
+:root {
+  color-scheme: dark;
+  --canvas: #080808;
+  --text: #f2f2f2;
+  --muted: #8e8d8d;
+  --line: rgba(255, 255, 255, .08);
+  --surface: #121212;
+  --radius: 10px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; }
+html { background: var(--canvas); -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; min-height: 100dvh; color: var(--text); background: var(--canvas); overflow-x: hidden; }
+img { max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 1px solid var(--text); outline-offset: 4px; border-radius: 4px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.skip { position: fixed; top: 8px; left: 8px; z-index: 20; padding: 10px 12px; border-radius: 8px; background: var(--text); color: var(--canvas); transform: translateY(-160%); }
+.skip:focus { transform: none; }
+
+.shell { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: max(24px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-right)); }
+.masthead { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; padding-block: 24px 64px; }
+.wordmark { font-size: 15px; font-weight: 500; letter-spacing: -.01em; color: var(--text); transition: color 160ms ease; }
+.masthead-nav { display: flex; align-items: center; gap: 8px; }
+.nav-button { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 999px; color: var(--text); font-size: 13px; font-weight: 500; white-space: nowrap; transition: background-color 160ms ease, border-color 160ms ease; }
+.nav-button-primary { border-color: var(--text); background: var(--text); color: var(--canvas); }
+.intro { margin: 0 0 28px; font-size: 22px; font-weight: 500; line-height: 1.3; letter-spacing: -.015em; color: var(--text); max-width: 22ch; }
+
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px 32px; }
+.card { min-width: 0; }
+.card-link { display: block; border-radius: var(--radius); }
+.card-image { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--surface); outline: 1px solid var(--line); outline-offset: -1px; }
+.card-name { margin: 14px 0 2px; font-size: 14px; font-weight: 500; line-height: 1.4; transition: color 160ms ease; }
+.card-external { color: var(--muted); font-weight: 400; }
+.card-line { margin: 0; color: var(--muted); }
+.card-meta { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+
+/* Filter bar (hub.js): a round search field and four dropdowns in one row. Hidden without JavaScript, so every
+   game is listed. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 48px; min-width: 0; }
+.filters[hidden] { display: none; }
+.filter-search-wrap { flex: 0 1 300px; min-width: 200px; }
+.filter-search { width: 100%; height: 40px; padding: 0 16px 0 40px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238e8d8d' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E") no-repeat 16px center; color: var(--text); font: inherit; font-size: 14px; -webkit-appearance: none; appearance: none; }
+.filter-search::placeholder { color: var(--muted); }
+.filter-search::-webkit-search-cancel-button { -webkit-appearance: none; }
+.filter-search:focus { outline: none; border-color: rgba(255, 255, 255, .24); }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.filter-select select { height: 40px; padding: 0 34px 0 16px; border: 1px solid var(--line); border-radius: 999px; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238e8d8d' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--muted); font: inherit; font-size: 13px; -webkit-appearance: none; appearance: none; cursor: pointer; transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease; }
+.filter-select select.is-set { color: var(--text); border-color: rgba(255, 255, 255, .2); background-color: rgba(255, 255, 255, .06); }
+.filter-select select:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
+.filter-select option { background: var(--surface); color: var(--text); }
+.filter-empty { padding: 24px 0; color: var(--muted); }
+.filter-empty[hidden], .cards[hidden], .card[hidden] { display: none; }
+.filter-empty p { margin: 0 0 8px; }
+.group + .group { margin-top: 64px; }
+.group-title { margin: 0 0 20px; font-size: 14px; font-weight: 500; }
+.group-count { color: var(--muted); font-weight: 400; }
+
+.footer { margin-top: 96px; padding-block: 24px max(32px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+
+.page-title { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -.01em; }
+.empty { padding-bottom: 48px; }
+.empty p { margin: 8px 0 24px; color: var(--muted); }
+.empty a { color: var(--text); }
+
+/* My records */
+.records-name { margin-top: 12px; color: var(--muted); max-width: 360px; }
+.records-name strong { color: var(--text); font-weight: 500; }
+.records-status { margin: 32px 0 0; color: var(--muted); }
+.records-status[hidden] { display: none; }
+.records-list { margin: 32px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.records-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.records-game { display: grid; gap: 2px; min-width: 0; }
+.records-game-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 160ms ease; }
+.records-mode, .records-rank { color: var(--muted); font-size: 12px; }
+.records-best { display: grid; gap: 2px; text-align: right; white-space: nowrap; }
+.records-score { font-weight: 500; }
+
+/* Rename */
+.link-button { display: inline-flex; align-items: center; min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--text); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.button { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font-weight: 500; }
+.name-form { display: grid; gap: 8px; margin-top: 4px; }
+.name-form[hidden], .name-show[hidden] { display: none; }
+.name-form label { font-size: 12px; }
+.name-form input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: 16px; }
+.name-actions { display: flex; align-items: center; gap: 16px; }
+.name-error { margin: 0; color: #ff8a80; font-size: 12px; }
+.name-error:empty { display: none; }
+
+@media (hover: hover) {
+  .empty a:hover, .filter-select select:hover { color: var(--text); }
+  .wordmark:hover { color: var(--muted); }
+  .nav-button:hover { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .24); }
+  .nav-button-primary:hover { background: #d9d9d9; border-color: #d9d9d9; }
+  .card-link:hover .card-image { opacity: .88; }
+  .records-game:hover .records-game-name { color: var(--muted); }
+  .link-button:hover { text-decoration-color: currentColor; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card-image { transition: opacity 200ms ease; }
+  .card-link:active .card-image { opacity: .85; }
+}
+@media (max-width: 900px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+}
+@media (max-width: 520px) {
+  .shell { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+  .filter-search-wrap { flex: 1 1 100%; }
+  /* One horizontal scroll row of dropdowns on phones. */
+  .filter-row { flex-wrap: nowrap; margin-inline: -16px; padding: 2px 16px 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-select { flex: none; }
+  .nav-button { height: 34px; padding: 0 12px; }
+  /* The Mac app is no use on a phone. */
+  .nav-button-primary { display: none; }
+  .intro { font-size: 19px; }
+  .masthead { padding-block: 16px 40px; }
+  .cards { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .footer { margin-top: 64px; }
+}

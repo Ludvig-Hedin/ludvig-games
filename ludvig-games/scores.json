@@ -1,0 +1,1026 @@
+{
+  "flappy-first-person:classic": {
+    "label": "Pipes",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "flappy-fp-v1-best-classic",
+    "match": "exact",
+    "mode": "Classic"
+  },
+  "flappy-first-person:chill": {
+    "label": "Pipes",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "flappy-fp-v1-best-chill",
+    "match": "exact",
+    "mode": "Chill"
+  },
+  "pigeon": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "pigeon-best",
+    "match": "exact"
+  },
+  "one-small-fake": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "osf-best",
+    "match": "exact"
+  },
+  "skyline": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "skyline-best-v3",
+    "match": "exact"
+  },
+  "jailbreak": {
+    "label": "Escape time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "jailbreak.best.v1",
+    "match": "exact"
+  },
+  "under-sail": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "tack.best.v1",
+    "match": "exact"
+  },
+  "afterglow": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "afterglow-best-v1",
+    "match": "exact",
+    "mode": "Arcade"
+  },
+  "cage": {
+    "label": "Wins",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "cage.record",
+    "match": "exact",
+    "path": "wins"
+  },
+  "paper-after-hours:classic": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best.classic",
+    "match": "exact",
+    "mode": "Classic"
+  },
+  "paper-after-hours:easy": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best",
+    "match": "exact",
+    "mode": "Easy"
+  },
+  "human-probably:normal": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "human-probably-v2-best",
+    "match": "exact",
+    "path": "normal",
+    "mode": "Normal"
+  },
+  "human-probably:turbo": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "human-probably-v2-best",
+    "match": "exact",
+    "path": "turbo",
+    "mode": "Overtime"
+  },
+  "kiln:hard": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "kiln-best-v12-3",
+    "match": "exact",
+    "mode": "Hard"
+  },
+  "kiln:normal": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "kiln-best-v12-2",
+    "match": "exact",
+    "mode": "Normal"
+  },
+  "kiln:nightmare": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "kiln-best-v12-5",
+    "match": "exact",
+    "mode": "Nightmare"
+  },
+  "higher-or-lower:searches": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.searches",
+    "mode": "Searches"
+  },
+  "higher-or-lower:followers": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.followers",
+    "mode": "Followers"
+  },
+  "higher-or-lower:salaries": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.salaries",
+    "mode": "Salaries"
+  },
+  "user-hostile": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "user-hostile-best-v2-timed",
+    "match": "exact",
+    "path": "seconds"
+  },
+  "powder": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "powder.best.v1",
+    "match": "exact"
+  },
+  "slither-afterglow": {
+    "label": "Mass",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "slither-afterglow.best",
+    "match": "exact"
+  },
+  "deadblock": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "deadblock-best",
+    "match": "exact"
+  },
+  "lastlight": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "lastlight.best",
+    "match": "exact"
+  },
+  "block-hop": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "blockhop.best.v1",
+    "match": "exact"
+  },
+  "heatwave": {
+    "label": "Cash",
+    "order": "desc",
+    "format": "money",
+    "min": 0,
+    "max": 10000000,
+    "key": "heatwave.best",
+    "match": "exact"
+  },
+  "sunbound": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "sunbound.best.v1",
+    "match": "exact"
+  },
+  "stacklight": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "afterglow.best",
+    "match": "exact"
+  },
+  "mosslight": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "mosslight.best.v1",
+    "match": "exact"
+  },
+  "sunset-dash": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "sunset-dash-v1",
+    "match": "exact",
+    "path": "best"
+  },
+  "cage-v1": {
+    "label": "Wins",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "cage.record",
+    "match": "exact",
+    "path": "wins"
+  },
+  "fresh-tracks": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "fresh-tracks.v1",
+    "match": "exact",
+    "path": "best"
+  },
+  "glantan-v2": {
+    "label": "Points",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "glantan-best-v1",
+    "match": "exact"
+  },
+  "glantan": {
+    "label": "Points",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "glantan-best-v1",
+    "match": "exact"
+  },
+  "goldwake-v2": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "goldwake.best",
+    "match": "exact"
+  },
+  "goldwake-gunnery": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "goldwake.best",
+    "match": "exact"
+  },
+  "goldwake-v1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "goldwake.best",
+    "match": "exact"
+  },
+  "human-probably-v1": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-ms",
+    "min": 1000,
+    "max": 86400000,
+    "key": "human-probably-best",
+    "match": "exact",
+    "path": "time"
+  },
+  "higher-or-lower-v2:searches": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.searches",
+    "mode": "Searches"
+  },
+  "higher-or-lower-v2:followers": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.followers",
+    "mode": "Followers"
+  },
+  "higher-or-lower-v2:salaries": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.salaries",
+    "mode": "Salaries"
+  },
+  "higher-or-lower-v1:searches": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.searches",
+    "mode": "Searches"
+  },
+  "higher-or-lower-v1:followers": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.followers",
+    "mode": "Followers"
+  },
+  "higher-or-lower-v1:salaries": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000,
+    "key": "higher-or-lower.v1",
+    "match": "exact",
+    "path": "bests.salaries",
+    "mode": "Salaries"
+  },
+  "kiln-v1-1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "kiln-best",
+    "match": "exact"
+  },
+  "kiln-v1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "kiln-best",
+    "match": "exact"
+  },
+  "pigeon-fixed": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "pigeon-v3-best",
+    "match": "exact"
+  },
+  "pigeon-v1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "pigeon-best",
+    "match": "exact"
+  },
+  "bloop": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "bloop-quest-best-v1",
+    "match": "exact",
+    "mode": "Quest"
+  },
+  "frontier-blood-and-dust": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "frontier-blood-dust-v1-best",
+    "match": "exact"
+  },
+  "heatwave-san-sol-remastered": {
+    "label": "Cash",
+    "order": "desc",
+    "format": "money",
+    "min": 0,
+    "max": 10000000,
+    "key": "heatwave.sansol.v2",
+    "match": "exact",
+    "path": "best"
+  },
+  "cubeville:obby": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "block-worlds-v1",
+    "match": "exact",
+    "path": "best.obby",
+    "mode": "Obby Rush"
+  },
+  "cubeville:tower": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "block-worlds-v1",
+    "match": "exact",
+    "path": "best.tower",
+    "mode": "Tower Climb"
+  },
+  "cubeville:lava": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "block-worlds-v1",
+    "match": "exact",
+    "path": "best.lava",
+    "mode": "Lava Parkour"
+  },
+  "citrus-circuit-3d-tangerine-bay:race": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-3d-v2",
+    "match": "exact",
+    "path": "bests.race",
+    "mode": "Race"
+  },
+  "citrus-circuit-3d-tangerine-bay:cruise": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-3d-v2",
+    "match": "exact",
+    "path": "bests.cruise",
+    "mode": "Cruise"
+  },
+  "citrus-circuit-3d-tangerine-bay:expert": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-3d-v2",
+    "match": "exact",
+    "path": "bests.expert",
+    "mode": "Expert"
+  },
+  "citrus-circuit-tangerine-island-gp:race": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-island-v3",
+    "match": "exact",
+    "path": "bests.race",
+    "mode": "Race"
+  },
+  "citrus-circuit-tangerine-island-gp:cruise": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-island-v3",
+    "match": "exact",
+    "path": "bests.cruise",
+    "mode": "Cruise"
+  },
+  "citrus-circuit-tangerine-island-gp:expert": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-island-v3",
+    "match": "exact",
+    "path": "bests.expert",
+    "mode": "Expert"
+  },
+  "citrus-circuit-tangerine-bay": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "citrus-circuit-v1",
+    "match": "exact",
+    "path": "best"
+  },
+  "jailbreak-v1": {
+    "label": "Escape time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "jailbreak.best.v1",
+    "match": "exact"
+  },
+  "last-drop": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "lastdrop.best.v1",
+    "match": "exact"
+  },
+  "no-brakes": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "nobrakes-v1",
+    "match": "exact",
+    "path": "scores.0-0",
+    "mode": "Level 1"
+  },
+  "paper-after-hours-v1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best",
+    "match": "exact"
+  },
+  "paper-after-hours-v2:classic": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best.classic",
+    "match": "exact",
+    "mode": "Classic"
+  },
+  "paper-after-hours-v2:easy": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best",
+    "match": "exact",
+    "mode": "Easy"
+  },
+  "paper-after-hours-v3:classic": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best.classic",
+    "match": "exact",
+    "mode": "Classic"
+  },
+  "paper-after-hours-v3:easy": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "paper.afterhours.best",
+    "match": "exact",
+    "mode": "Easy"
+  },
+  "pop-island": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "popisland-best-v1",
+    "match": "exact",
+    "path": "0:normal.score",
+    "mode": "Palm Bay · Standard"
+  },
+  "powder-v1": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "powder.best.v1",
+    "match": "exact"
+  },
+  "pulse-shift:first-light": {
+    "label": "Progress",
+    "order": "desc",
+    "format": "float1",
+    "min": 0,
+    "max": 100,
+    "key": "pulse-shift.v1",
+    "match": "exact",
+    "path": "best.first-light",
+    "mode": "First Light"
+  },
+  "pulse-shift:afterburn": {
+    "label": "Progress",
+    "order": "desc",
+    "format": "float1",
+    "min": 0,
+    "max": 100,
+    "key": "pulse-shift.v1",
+    "match": "exact",
+    "path": "best.afterburn",
+    "mode": "Afterburn"
+  },
+  "pulse-shift:blackout": {
+    "label": "Progress",
+    "order": "desc",
+    "format": "float1",
+    "min": 0,
+    "max": 100,
+    "key": "pulse-shift.v1",
+    "match": "exact",
+    "path": "best.blackout",
+    "mode": "Blackout"
+  },
+  "slope-overdrive": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "slope-overdrive-v1",
+    "match": "exact",
+    "path": "best"
+  },
+  "still-house": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "still-house.best",
+    "match": "exact"
+  },
+  "vice-run": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "vice-run-best",
+    "match": "exact"
+  },
+  "the-eighth-signal": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "eighth-signal-v1",
+    "match": "exact",
+    "path": "best.score"
+  },
+  "skyline-prototype": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "skyline-best",
+    "match": "exact"
+  },
+  "skyline-prototype-v2": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "skyline-best",
+    "match": "exact"
+  },
+  "user-hostile-v1": {
+    "label": "Best time",
+    "order": "asc",
+    "format": "time-s",
+    "min": 1,
+    "max": 86400,
+    "key": "user-hostile-best-v1",
+    "match": "exact",
+    "path": "seconds"
+  },
+  "vice-run-coastal-getaway": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "vice-run-best",
+    "match": "exact"
+  },
+  "vice-run-after-hours": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "vice-run-best",
+    "match": "exact"
+  },
+  "strandad-antarktis:adventure": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "strandad-records-v2",
+    "match": "exact",
+    "path": "adventure.score",
+    "mode": "Adventure"
+  },
+  "strandad-antarktis:race": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "strandad-records-v2",
+    "match": "exact",
+    "path": "race.score",
+    "mode": "Race"
+  },
+  "ashfall-84-wasteland": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "ashfall-best",
+    "match": "exact"
+  },
+  "cold-delivery-rush": {
+    "label": "Cash",
+    "order": "desc",
+    "format": "money",
+    "min": 0,
+    "max": 10000000,
+    "key": "cold-highscore-v1",
+    "match": "exact"
+  },
+  "just-one-more-prompt": {
+    "label": "Score",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000000,
+    "key": "one-more-prompt-best",
+    "match": "exact"
+  },
+  "pigeon:online": {
+    "label": "Round chaos",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "citrus-circuit-coastline": {
+    "label": "Best race",
+    "order": "asc",
+    "format": "time-ms",
+    "min": 1000,
+    "max": 86400000
+  },
+  "vibe-coder-tycoon": {
+    "label": "Valuation",
+    "order": "desc",
+    "format": "money",
+    "min": 1,
+    "max": 1000000000000000.0
+  },
+  "six-clues": {
+    "label": "Clues used",
+    "order": "asc",
+    "format": "int",
+    "min": 1,
+    "max": 6
+  },
+  "six-clues:streak": {
+    "label": "Streak",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000,
+    "mode": "Streak"
+  },
+  "anything-arena:wins": {
+    "label": "Online wins",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 1000000,
+    "mode": "Wins"
+  },
+  "flappy-first-person:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "paper-after-hours:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "sunset-dash:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "slope-overdrive:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "one-small-fake:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "no-brakes:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "powder:daily": {
+    "label": "Daily best",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Daily"
+  },
+  "one-small-fake:reshoot": {
+    "label": "Reshoot",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000000,
+    "mode": "Reshoot"
+  },
+  "cubeville:race-wins": {
+    "label": "Race wins",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000,
+    "mode": "Online wins"
+  },
+  "higher-or-lower:duel": {
+    "label": "Duel wins",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000,
+    "mode": "Duel wins"
+  },
+  "six-clues:race": {
+    "label": "Race wins",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000,
+    "mode": "Race wins"
+  },
+  "stacklight:versus": {
+    "label": "Versus wins",
+    "order": "desc",
+    "format": "int",
+    "min": 1,
+    "max": 100000,
+    "mode": "Versus wins"
+  },
+  "overtime": {
+    "label": "Wins",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 100000
+  },
+  "overrun": {
+    "label": "Kills",
+    "order": "desc",
+    "format": "int",
+    "min": 0,
+    "max": 10000
+  }
+}

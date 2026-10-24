@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Ritkaos on the games' Workers Free account (24 Oct 2026). On Workers Free,
+  // going over a daily limit makes requests fail until 00:00 UTC; it never
+  // bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // The client in public/ is static assets, and unknown paths get the static
+  // 404.html, so neither runs the Worker. The Worker runs only for the
+  // patterns in run_worker_first. /api/connection is a static file.
+  // Rooms live in one Lobby Durable Object that hibernates (see worker/index.mjs).
+  "name": "ritkaos",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/ws", "/api/rooms", "/api/store", "/health"]
+  },
+  "durable_objects": { "bindings": [{ "name": "LOBBY", "class_name": "Lobby" }] },
+  // Fresh account: one migration with the SQLite-backed class.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Lobby"] }],
+  // Per-IP limits. CONNECT_LIMIT runs in the Worker before the Lobby wakes
+  // (sockets and room lists); ROOM_LIMIT covers create, join and quick match.
+  // Namespace ids are account-wide, so each game has its own range (ritkaos: 21xx).
+  "ratelimits": [
+    { "name": "CONNECT_LIMIT", "namespace_id": "2101", "simple": { "limit": 30, "period": 60 } },
+    { "name": "ROOM_LIMIT", "namespace_id": "2102", "simple": { "limit": 10, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

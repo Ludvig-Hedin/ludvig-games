@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f8f5ed">
+<title>Draw Your Horse</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#f8f5ed;color:#252720;font-family:Arial,sans-serif}body{overscroll-behavior:none;overflow-x:hidden}canvas{display:block;touch-action:none;outline:none}#name,#code{position:fixed;left:16px;top:16px;width:1px;height:1px;opacity:0;pointer-events:none;font-size:16px}.sr{position:fixed;left:0;top:0;margin:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}noscript{display:block;padding:30px}
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0" aria-label="Draw Your Horse. Rita på duken med mus eller finger. Tab väljer knappar. Mellanslag peppar under loppet."></canvas>
+<input id="name" maxlength="26" aria-label="Hästens namn" autocomplete="off" enterkeyhint="done">
+<input id="code" maxlength="4" aria-label="Rumskod" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+<div id="controls" class="sr"></div><p id="live" class="sr" aria-live="polite"></p>
+<noscript>Aktivera JavaScript för att rita en mycket tveksam häst.</noscript>
+<script>
+'use strict';
+// All visible graphics and controls are Canvas. Native invisible controls provide
+// text entry, mobile keyboards and keyboard/screen-reader access. Network is used only for
+// optional online rooms through Ludvig.mp (docs/platform-api.md); single-player stays offline.
+// The drawing is the horse: no tracing, smoothing, invented limbs, or external assets.
+const DW=720,DH=420;
+const spriteCache=new WeakMap();
+const HORSE_EPITHETS=['Har aldrig läst reglerna.','Ritad med självförtroende.','Mamma säger att det är en häst.','Vann på teknikalitet.','Anatomiskt diskussionsunderlag.','Inte byggd för kurvor.','Veterinären har frågor.','Född att förvirra.'];
+function modelClamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function modelRng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t^=t+Math.imul(t^(t>>>7),61|t);return((t^(t>>>14))>>>0)/4294967296;};}
+function randomHorseName(){const a=['Sir','Professor','Kapten','Lilla','Doktor','Lord','Turbo','Absolut'];const b=['Spagetti','Knäproblem','Grus','Macka','Hovlös','Ångest','Lasagne','Banan'];return a[Math.random()*a.length|0]+' '+b[Math.random()*b.length|0];}
+function paintStrokes(ctx,strokes){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(const s of strokes){
+    if(!s.points.length)continue;
+    ctx.strokeStyle=ctx.fillStyle=s.color;ctx.lineWidth=s.size;
+    if(s.points.length===1){ctx.beginPath();ctx.arc(s.points[0].x,s.points[0].y,s.size/2,0,Math.PI*2);ctx.fill();continue;}
+    ctx.beginPath();ctx.moveTo(s.points[0].x,s.points[0].y);
+    for(let i=1;i<s.points.length;i++)ctx.lineTo(s.points[i].x,s.points[i].y);
+    ctx.stroke();
+  }ctx.restore();
+}
+function modelRaster(strokes){const c=document.createElement('canvas');c.width=DW;c.height=DH;paintStrokes(c.getContext('2d'),strokes);return c;}
+function analyzeHorse(strokes){
+  const c=modelRaster(strokes),data=c.getContext('2d').getImageData(0,0,DW,DH).data;
+  let x0=DW,y0=DH,x1=-1,y1=-1,ink=0;
+  for(let y=0;y<DH;y++)for(let x=0;x<DW;x++)if(data[(y*DW+x)*4+3]>0){ink++;x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+  if(!ink)return null;
+  const bounds={x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};
+  let lower=0;const bottom=Math.floor(y0+bounds.h*.7);
+  for(let y=bottom;y<=y1;y++)for(let x=x0;x<=x1;x++)if(data[(y*DW+x)*4+3]>0)lower++;
+  const aspect=bounds.w/bounds.h,density=ink/(bounds.w*bounds.h),stat=v=>Math.round(modelClamp(v,8,98));
+  const stats={speed:stat(60+20*Math.log2(aspect)),stamina:stat(37+Math.min(38,Math.sqrt(ink/7000)*20)+density*16),legs:stat(25+lower/ink*135+Math.min(10,bounds.h/35)),chaos:stat(18+Math.sqrt(strokes.length)*13),weight:stat(12+Math.min(70,ink/180)+density*12)};
+  const tier=aspect>2.4?'S-tier noodle':stats.weight>73?'Absolute unit':strokes.length===1?'One-line wonder':stats.legs>77?'Too many knees':'Legally a horse';
+  const epithet=HORSE_EPITHETS[(ink+strokes.length*17+bounds.w)%HORSE_EPITHETS.length];
+  return{stats,bounds,ink,tier,epithet};
+}
+function buildHorse(strokes,name,id,seed){
+  const copy=strokes.map(s=>({color:s.color,size:s.size,points:s.points.map(p=>({x:p.x,y:p.y}))}));
+  const info=analyzeHorse(copy);if(!info)return null;
+  const actualSeed=seed===undefined?(Math.random()*4294967296)>>>0:seed>>>0;
+  return{id:id||'h-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),name:String(name||'').trim().slice(0,28)||randomHorseName(),strokes:copy,...info,epithet:HORSE_EPITHETS[modelRng(actualSeed)()*HORSE_EPITHETS.length|0],seed:actualSeed,wins:0,races:0};
+}
+function prepareSprite(horse){
+  if(spriteCache.has(horse))return spriteCache.get(horse);
+  const full=modelRaster(horse.strokes),b=horse.bounds,pad=5,c=document.createElement('canvas');
+  c.width=b.w+pad*2;c.height=b.h+pad*2;c.getContext('2d').drawImage(full,b.x,b.y,b.w,b.h,pad,pad,b.w,b.h);spriteCache.set(horse,c);return c;
+}
+function horseSprite(ctx,horse,x,groundY,maxW,maxH,time=0,motion=0,event=null){
+  const c=prepareSprite(horse),scale=Math.min(maxW/c.width,maxH/c.height),w=c.width*scale,h=c.height*scale;
+  const moving=modelClamp(motion,0,1),phase=time*(12+horse.stats.legs*.05)+(horse.seed%997),beat=Math.sin(phase),bounce=Math.abs(beat)*Math.min(9,h*.1)*moving;
+  const stumble=event==='stumble',backwards=event==='backwards';
+  ctx.save();ctx.translate(x,groundY-bounce);ctx.rotate((Math.sin(phase*.5)*.055+beat*.024)*moving+(stumble?.18:0));
+  ctx.scale((backwards?-1:1)*(1+beat*.055*moving),1-beat*.065*moving);ctx.drawImage(c,-w/2,-h,w,h);ctx.restore();
+}
+function makeBots(){
+  const specs=[
+    ['Sir Spagetti','#30302b',0],['Hovlös & rädd','#e56a46',1],['Långhalsen','#426c87',2],['Kartong-Kent','#4d6857',3],
+    ['Pinne McPinne','#7b596e',4],['Potatis Deluxe','#a77634',5],['Flerben AB','#40403b',6],['Lilla katastrofen','#526979',7]
+  ];
+  return specs.map(([name,color,kind],index)=>{
+    const rng=modelRng(9201+index*193),strokes=[];
+    function path(points,size=7,jitter=1.7){const ps=[];for(let i=0;i<points.length;i++){const p=points[i];if(i){const a=points[i-1],n=Math.max(1,Math.ceil(Math.hypot(p[0]-a[0],p[1]-a[1])/15));for(let k=1;k<n;k++)ps.push({x:a[0]+(p[0]-a[0])*k/n+(rng()-.5)*jitter,y:a[1]+(p[1]-a[1])*k/n+(rng()-.5)*jitter});}ps.push({x:p[0]+(rng()-.5)*jitter,y:p[1]+(rng()-.5)*jitter});}strokes.push({color,size,points:ps});}
+    function oval(cx,cy,rx,ry,size=7){const ps=[];for(let i=0;i<=36;i++){const a=i/36*Math.PI*2;ps.push([cx+Math.cos(a)*rx,cy+Math.sin(a)*ry]);}path(ps,size,2.8);}
+    function eye(x,y){path([[x,y]],9,0);}
+    function tail(x,y){path([[x,y],[x-30,y-28],[x-47,y+5],[x-35,y+26]],6);}
+    function legs(xs,y,bottom=335){xs.forEach((x,i)=>path([[x,y],[x+(i%2?14:-12),(y+bottom)/2],[x+(i%2?-5:8),bottom],[x+22,bottom+2]],7));}
+    if(kind===0){
+      // A horse that is mostly horizontal.
+      path([[100,190],[160,175],[435,178],[466,120],[475,94],[489,115],[522,111],[556,140],[552,165],[516,168],[491,206],[450,231],[167,233],[100,211],[100,190]]);
+      legs([140,198,416,456],232,303);tail(102,194);eye(516,135);path([[474,121],[465,150],[454,177]],10);
+    }else if(kind===1){
+      // Impossibly large torso, apologetically tiny legs.
+      oval(290,216,161,74);path([[409,183],[443,125],[460,111],[465,83],[482,109],[522,115],[543,142],[532,163],[490,167],[456,207]]);
+      legs([208,245,350,386],276,308);tail(132,209);eye(505,133);path([[455,122],[447,152]],11);
+    }else if(kind===2){
+      // Long neck. No giraffes were consulted.
+      oval(277,252,112,52);path([[362,240],[386,106],[404,65],[418,62],[426,39],[441,64],[484,79],[503,101],[481,120],[439,110],[426,259]]);
+      legs([208,244,326,357],291,361);tail(164,244);eye(464,88);path([[386,118],[390,166],[379,201]],9);
+    }else if(kind===3){
+      path([[170,170],[400,170],[426,121],[491,121],[491,163],[452,166],[434,251],[171,251],[170,170]]);
+      legs([200,238,369,411],253,338);path([[426,120],[424,96],[443,119]]);tail(168,181);eye(472,138);
+      path([[179,185],[394,187]],3);path([[418,179],[426,155]],10);
+    }else if(kind===4){
+      path([[177,233],[403,232],[447,147],[490,149]]);path([[447,147],[446,119],[459,142],[506,147],[516,169],[488,181],[462,170]]);
+      path([[210,231],[186,285],[158,344]]);path([[250,232],[270,286],[261,347]]);path([[362,233],[351,288],[328,343]]);path([[398,235],[423,287],[443,341]]);
+      tail(177,231);eye(493,160);path([[443,151],[430,173]],12);
+    }else if(kind===5){
+      oval(301,230,151,95,9);path([[419,179],[443,145],[482,143],[485,120],[501,146],[535,159],[544,187],[523,210],[476,207],[447,241]],8);
+      legs([218,271,350,393],312,345);tail(151,219);eye(515,171);path([[454,150],[443,174]],9);
+    }else if(kind===6){
+      oval(292,213,143,62);path([[406,179],[431,123],[451,107],[455,83],[472,106],[517,116],[531,143],[516,159],[475,159],[440,221]]);
+      legs([180,219,258,297,336,375,408],261,331);tail(148,207);eye(505,131);path([[445,127],[432,160]],11);
+    }else{
+      oval(295,228,73,50);path([[345,206],[379,156],[402,157],[408,139],[420,157],[455,179],[447,195],[413,199],[367,244]]);
+      legs([246,276,326,346],271,335);tail(221,226);eye(431,175);path([[379,164],[365,189]],9);path([[294,217],[305,222],[298,235]],4);
+    }
+    const h=buildHorse(strokes,name,'bot-'+index,1000+index*719);h.bot=true;return h;
+  });
+}
+
+/* Seeded, UI-independent race simulation. All time values are seconds. */
+function makeRace(entrants, seed = 1) {
+  if (!Array.isArray(entrants) || !entrants.length) throw new Error('Race needs horses.');
+  let state = Number(seed) >>> 0, nextSnapshot = 0, nextComment = 2, winnerAnnounced = false;
+  const random = () => {
+    let t = state += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  const stat = (horse, key) => Math.max(0, Math.min(100, Number(horse.stats?.[key]) || 0));
+  const pick = list => list[Math.floor(random() * list.length)];
+  const race = {
+    time: 0, distance: 2000, finished: false, results: [], snapshots: [], logs: [],
+    lastComment: 'Sju hästar. Tveksam anatomi. Nu kör vi.', lastEvent: null,
+    photoFinish: false,
+    runners: entrants.map((horse, index) => ({
+      horse, index, x: 0, speed: 0, finish: null, event: null,
+      eventUntil: 0, boostUntil: 0, phase: random() * Math.PI * 2,
+      base: 64 + stat(horse, 'speed') * .115 + stat(horse, 'legs') * .035
+        - stat(horse, 'weight') * .018 + (random() - .5) * 5,
+      nextEvent: 2.5 + random() * 4.5, nextCheer: 0
+    })),
+    get cheerReady() { return this.readyFor(0); },
+    get nextCheer() { return this.runners[0].nextCheer; },
+    get commentary() { return this.lastComment; },
+    readyFor(i) { const r = this.runners[i]; return !!r && !this.finished && r.finish === null && this.time >= r.nextCheer; },
+    cheer(i = 0) {
+      if (!this.readyFor(i)) return false;
+      const r = this.runners[i];
+      r.nextCheer = this.time + 2.8;
+      r.boostUntil = this.time + 1.15;
+      this.logs.push({ time: this.time, type: 'cheer', index: i, text: 'HEJA!' });
+      return true;
+    },
+    step(dt) {
+      if (this.finished || !Number.isFinite(dt) || dt <= 0) return;
+      // Splitting protects crossing times and events if a caller passes a long frame.
+      for (let remaining = Math.min(dt, 1); remaining > 1e-8 && !this.finished;) {
+        const h = Math.min(remaining, 1 / 60); remaining -= h; tick(h);
+      }
+    }
+  };
+  const compare = (a, b) => a.finish - b.finish || a.index - b.index;
+  function say(text, type = 'comment', index = -1) {
+    race.lastComment = text;
+    race.lastEvent = { time: race.time, type, index, text };
+    race.logs.push(race.lastEvent);
+  }
+  function snapshot() {
+    race.snapshots.push({ time: race.time, commentary: race.lastComment,
+      cheerReady: race.cheerReady, nextCheer: race.nextCheer,
+      runners: race.runners.map(r => ({ x: r.x, speed: r.speed, finish: r.finish,
+        event: r.event, eventUntil: r.eventUntil, boostUntil: r.boostUntil, phase: r.phase })) });
+  }
+  function tick(dt) {
+    const oldTime = race.time; race.time += dt;
+    for (const r of race.runners) {
+      if (r.finish !== null) {
+        r.speed *= Math.exp(-dt * 2); r.x = Math.min(race.distance + 60, r.x + r.speed * dt);
+        continue;
+      }
+      if (r.event && race.time >= r.eventUntil) r.event = null;
+      if (race.time >= r.nextEvent && race.time < 36) {
+        const chaos = stat(r.horse, 'chaos') / 100;
+        const roll = random();
+        r.event = roll < .43 + chaos * .12 ? 'sprint' : roll < .82 ? 'stumble' : 'backwards';
+        r.eventUntil = race.time + (r.event === 'sprint' ? 1.2 + random() * .5 : .55 + random() * .4);
+        r.nextEvent = race.time + 5 + random() * 4 - chaos * 1.7;
+        const lines = {
+          sprint: ['har hittat sportläget!', 'har tydligen en motor.', 'springer som om hyran ska betalas.'],
+          stumble: ['har glömt hur ben fungerar.', 'snubblade på sitt självförtroende.', 'buffrar.'],
+          backwards: ['har valt fel håll.', 'backar in i framtiden.', 'ångrar sig mitt i loppet.']
+        };
+        if (race.time >= nextComment || r.index === 0) {
+          say(`${r.horse.name} ${pick(lines[r.event])}`, r.event, r.index);
+          nextComment = race.time + 1.35;
+        }
+      }
+      const progress = Math.min(1, r.x / race.distance);
+      const fatigue = 1 - Math.max(0, progress - .45) * (1 - stat(r.horse, 'stamina') / 100) * .16;
+      const surge = 1 + Math.sin(race.time * .95 + r.phase) * .045;
+      let factor = r.event === 'sprint' ? 1.43 : r.event === 'stumble' ? .22 : r.event === 'backwards' ? -.38 : 1;
+      if (race.time < r.boostUntil) factor += .17;
+      r.speed = r.base * fatigue * surge * factor;
+      const oldX = r.x; r.x = Math.max(0, oldX + r.speed * dt);
+      if (oldX < race.distance && r.x >= race.distance) {
+        r.finish = oldTime + dt * (race.distance - oldX) / (r.x - oldX);
+        r.event = null;
+      }
+    }
+    // Defensive deadline: preserve the order of estimated arrivals, never leave a race stuck.
+    if (race.time >= 43) {
+      const pending = race.runners.filter(r => r.finish === null).sort((a, b) =>
+        (race.distance - a.x) / a.base - (race.distance - b.x) / b.base || a.index - b.index);
+      pending.forEach((r, i) => { r.finish = oldTime + dt * (i + 1) / (pending.length + 1); r.x = race.distance; r.event = null; });
+    }
+    const finishers = race.runners.filter(r => r.finish !== null).sort(compare);
+    if (finishers.length && !winnerAnnounced) {
+      winnerAnnounced = true;
+      say(`${finishers[0].horse.name} är i mål! Domarna räknar ben.`, 'finish', finishers[0].index);
+    }
+    race.photoFinish = finishers.length > 1 && finishers[1].finish - finishers[0].finish < .18;
+    if (finishers.length === race.runners.length) {
+      race.results = finishers; race.finished = true;
+      say(race.photoFinish ? 'MÅLFOTO! En nos avgjorde. Om det där var en nos.'
+        : `${finishers[0].horse.name} vinner! Hästdefinitionen är fortfarande under utredning.`, 'result', finishers[0].index);
+    }
+    if (race.time + 1e-8 >= nextSnapshot || race.finished) {
+      snapshot(); nextSnapshot = race.time + 1 / 15;
+    }
+  }
+  snapshot(); nextSnapshot = 1 / 15;
+  return race;
+}
+
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const nameInput=document.getElementById('name'),live=document.getElementById('live');
+const P={paper:'#f8f5ed',ink:'#272a24',muted:'#73776a',line:'#d9d9ca',red:'#e65e43',yellow:'#f7cf59',green:'#537b5b',blue:'#527b9c',white:'#fffdf7'};
+const palette=[P.ink,P.red,P.blue,P.green,'#a76c9e','#bd803d'];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let W=0,H=0,dpr=1,left=0,cw=0,mobile=false,screen='draw',hits=[],focusId='',hoverId='';
+let pointCount=0,layoutScreen='';
+let strokes=[],redo=[],activePointer=null,pen=palette[0],brush=7,drawRect=null,sliderRect=null;
+let player=null,race=null,record=null,replayClock=0,replaySpeed=1,replayPaused=false,countdown=0,finishHold=0;
+let stablePage=0,backScreen='draw',toast='',toastUntil=0,clock=0,paused=false,statsSaved=false;
+let storageOK=true,loadWarning='',lastAudioBeat=-1,lastComment='',lastCount=4,shareImage=null;
+const inkCanvas=document.createElement('canvas');inkCanvas.width=DW;inkCanvas.height=DH;
+const inkCtx=inkCanvas.getContext('2d');
+const STORE='draw-your-horse.v1';
+function tell(t){toast=t;toastUntil=clock+4;live.textContent=t;}
+function uid(){return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);}
+function cleanStrokes(a){
+ if(!Array.isArray(a)||a.length>2000)return null;
+ let total=0;const out=[];
+ for(const s of a){if(!s||!/^#[0-9a-f]{6}$/i.test(s.color)||!Number.isFinite(s.size)||!Array.isArray(s.points))return null;
+  const points=[];for(const p of s.points){if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||++total>120000)return null;points.push({x:clamp(p.x,0,DW),y:clamp(p.y,0,DH)});}
+  if(points.length)out.push({color:s.color,size:clamp(s.size,1,30),points});
+ }return out;
+}
+function readStable(){
+ try{const raw=localStorage.getItem(STORE);if(!raw)return [];const data=JSON.parse(raw);if(data.version!==1||!Array.isArray(data.horses))throw Error();
+  return data.horses.map(h=>{const ss=cleanStrokes(h.strokes);if(!ss||!ss.length)return null;
+   const horse=buildHorse(ss,String(h.name||'Mystisk häst').slice(0,26),String(h.id||uid()),Number(h.seed)||1);
+   if(!horse)return null;horse.wins=Math.max(0,Math.floor(Number(h.wins)||0));horse.races=Math.max(horse.wins,Math.floor(Number(h.races)||0));return horse;
+  }).filter(Boolean);
+ }catch(e){storageOK=false;loadWarning='Stallet kunde inte läsas. Nya hästar sparas bara denna session.';return [];}
+}
+let stable=readStable();
+const bots=makeBots();
+function persist(){
+ if(!storageOK){tell('Stallet finns bara i denna session. Webbläsarlagring är blockerad.');return false;}
+ try{localStorage.setItem(STORE,JSON.stringify({version:1,horses:stable}));return true;}
+ catch(e){storageOK=false;tell('Stallet är fullt eller blockerat. Hästen finns kvar tills sidan stängs.');return false;}
+}
+function saveHorse(h){if(!stable.some(x=>x.id===h.id))stable.unshift(h);persist();}
+function rebuildInk(){pointCount=strokes.reduce((n,s)=>n+s.points.length,0);inkCtx.clearRect(0,0,DW,DH);paintStrokes(inkCtx,strokes);}
+function newDrawing(){screen='draw';strokes=[];redo=[];nameInput.value='';player=null;rebuildInk();drawRect=null;nameInput.blur();markDrawing();}
+function finishDrawing(){
+ endStroke();const h=buildHorse(strokes.map(s=>({color:s.color,size:s.size,points:s.points.map(p=>({...p}))})),nameInput.value,uid(),Math.floor(Math.random()*2147483647));
+ if(!h){tell('En prick räcker. Men rita åtminstone något.');return;}player=h;nameInput.value=h.name;saveHorse(h);screen='card';nameInput.blur();sound('ding');
+}
+function startRace(){
+ if(!player)return;if(room){toLobby();return;}nameInput.blur();meIdx=0;mpRole='';const old=stable.filter(h=>h.id!==player.id).sort(()=>Math.random()-.5).slice(0,2);
+ const pool=bots.slice().sort(()=>Math.random()-.5);race=makeRace([player,...old,...pool.slice(0,6-old.length)],Math.floor(Math.random()*2147483647));
+ screen='race';countdown=3;finishHold=0;paused=false;lastCount=4;lastAudioBeat=-1;lastComment='';statsSaved=false;record=null;shareImage=null;sound('tick');
+}
+function completeRace(){
+ if(statsSaved)return;statsSaved=true;const n=race.runners.length,mine=race.runners[meIdx],pos=race.results.findIndex(r=>r===mine)+1;
+ const horse=mine.horse;horse.races++;if(pos===1)horse.wins++;persist();
+ if(mpRole==='host'&&room)room.setMeta({phase:'lobby'});mpRole='';
+ record={race,player:horse,pos,count:n,quote:pos===1?'Zero anatomy. Maximum horsepower.':pos===n?'Built different. Unfortunately.':pos===2&&race.photoFinish?'Lost by a nose. I forgot to draw one.':'The legs were more of a suggestion.'};
+ shareImage=makeShareCard();screen='result';sound(pos===1?'win':'finish');live.textContent=horse.name+' kom på plats '+pos+' av '+n+'.';
+}
+function playReplay(){if(!record)return;screen='replay';replayClock=0;replaySpeed=1;replayPaused=false;paused=false;}
+function enterStable(){backScreen=screen;screen='stable';stablePage=0;nameInput.blur();}
+function undo(){if(strokes.length){redo.push(strokes.pop());rebuildInk();sound('tap');}}
+function redoStroke(){if(redo.length){strokes.push(redo.pop());rebuildInk();}}
+
+/* Online rooms (optional). Everyone in the room draws a horse; the host (oldest peer) runs the
+   race simulation and broadcasts positions about 8 times a second; other players interpolate.
+   Drawings travel as simplified, delta-encoded strokes in chunks well under the 4 KB limit. */
+const MP_GAME='draw-your-horse',MP_PARAM='draw-your-horse',MP_MAX=7,MP_CHUNK=3000,MP_MAXDATA=36000;
+const MP_ERR={'not-found':'Rummet finns inte.',full:'Rummet är fullt.','rate-limited':'För många försök. Vänta en stund.','bad-request':'Koden fungerar inte.',offline:'Ingen anslutning.',network:'Ingen anslutning.',timeout:'Ingen anslutning.',unavailable:'Online är inte tillgängligt just nu.'};
+const codeInput=document.getElementById('code');
+let room=null,mpBusy=false,mpError='',peerHorses=new Map(),selfReady=false,sentHorseId='',myVersion=0,packCache=null,outbox=[],pumpTick=0;
+let mpGo=null,mpAway='',awayTimer=0,mpRole='',mpOrder=[],meIdx=0,liveClock=0,latestTm=0,lastSnapAt=0,cheerLocalAt=0,mpEndSent=false,lastSentComment='';
+function mpApi(){const L=window.Ludvig;return L&&L.mp&&typeof L.mp.join==='function'?L:null;}
+const B64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+function encNum(n,out){let z=n>=0?n*2:-n*2-1;do{let c=z&31;z=Math.floor(z/32);if(z)c|=32;out.push(B64[c]);}while(z);}
+function decNums(str){const out=[];let z=0,mul=1;for(let i=0;i<str.length;i++){const c=B64.indexOf(str[i]);if(c<0)return null;z+=(c&31)*mul;if(c&32){mul*=32;if(mul>1e9)return null;}else{out.push(z%2?-(z+1)/2:z/2);z=0;mul=1;}}return mul===1?out:null;}
+function simplify(pts,eps){
+ if(pts.length<3)return pts;const keep=new Uint8Array(pts.length),stack=[[0,pts.length-1]];keep[0]=keep[pts.length-1]=1;
+ while(stack.length){const [a,b]=stack.pop();const ax=pts[a].x,ay=pts[a].y,dx=pts[b].x-ax,dy=pts[b].y-ay,len=Math.hypot(dx,dy);let md=0,mi=-1;
+  for(let i=a+1;i<b;i++){const d=len<1e-6?Math.hypot(pts[i].x-ax,pts[i].y-ay):Math.abs((pts[i].x-ax)*dy-(pts[i].y-ay)*dx)/len;if(d>md){md=d;mi=i;}}
+  if(mi>0&&md>eps){keep[mi]=1;stack.push([a,mi],[mi,b]);}}
+ return pts.filter((_,i)=>keep[i]);
+}
+function packStrokes(ss){
+ const enc=(list,eps)=>JSON.stringify(list.map(s=>{const out=[];let px=0,py=0,first=true;for(const p of simplify(s.points,eps)){const x=Math.round(p.x),y=Math.round(p.y);if(!first&&x===px&&y===py)continue;encNum(x-px,out);encNum(y-py,out);px=x;py=y;first=false;}return[s.color.slice(1),Math.round(s.size),out.join('')];}));
+ let list=ss,data='';for(const eps of [.6,1.2,2,3.5,5]){data=enc(list,eps);if(data.length<=MP_MAXDATA)return data;}
+ while(list.length>1&&data.length>MP_MAXDATA){list=list.slice(0,Math.floor(list.length*.8));data=enc(list,5);}return data;
+}
+function unpackStrokes(data){
+ try{const arr=JSON.parse(data);if(!Array.isArray(arr))return null;
+  return cleanStrokes(arr.map(e=>{const nums=Array.isArray(e)&&typeof e[2]==='string'?decNums(e[2]):null;if(!nums||nums.length%2)return null;const points=[];let x=0,y=0;for(let i=0;i<nums.length;i+=2){x+=nums[i];y+=nums[i+1];points.push({x,y});}return{color:'#'+String(e[0]),size:Number(e[1]),points};}));
+ }catch(e){return null;}
+}
+function setInviteUrl(code){try{const u=new URL(location.href);if(code)u.searchParams.set(MP_PARAM,code);else u.searchParams.delete(MP_PARAM);history.replaceState(history.state,'',u);}catch(e){}}
+function inviteCode(){try{return(new URLSearchParams(location.search).get(MP_PARAM)||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');}catch(e){return'';}}
+function openOnline(){mpError='';mpAway='';codeInput.value='';nameInput.blur();screen='online';}
+function joinByCode(){const code=codeInput.value.trim().toUpperCase();if(code.length!==4){mpError='Koden har fyra tecken.';return;}codeInput.blur();mpConnect('join',code);}
+async function mpConnect(kind,code){
+ const L=mpApi();if(!L||mpBusy||room)return;mpBusy=true;mpError='';mpAway='';
+ try{const r=kind==='quick'?await L.mp.join({game:MP_GAME,quick:true,max:MP_MAX}):kind==='create'?await L.mp.create({game:MP_GAME,max:MP_MAX,visible:false}):await L.mp.join({game:MP_GAME,room:code,max:MP_MAX});attachRoom(r);}
+ catch(e){mpError=MP_ERR[e&&e.code]||MP_ERR.network;if(kind==='invite'){setInviteUrl(null);tell(mpError);}}
+ finally{mpBusy=false;}
+}
+function attachRoom(r){
+ room=r;peerHorses=new Map();selfReady=false;sentHorseId='';outbox=[];mpRole='';
+ r.on('message',(from,data)=>{if(room===r)onMpMessage(from,data);});
+ r.on('join',p=>{if(room!==r)return;if(selfReady&&player)sendMyHorse(p.id);
+  // A racer from this race came back: send the start again so they join it where it is now.
+  if(mpRole==='host'&&screen==='race'&&race&&!race.finished&&mpGo&&mpOrder.includes(p.id))outbox.push({to:p.id,msg:{...mpGo,mid:1}});});
+ r.on('leave',p=>{if(room===r)peerHorses.delete(p.id);});
+ r.on('host',id=>{if(room!==r||id!==r.self.id)return;if(mpRole==='client')takeOverRace();else if(mpRole!=='host'&&r.meta?.phase==='race')r.setMeta({phase:'lobby'});});
+ r.on('close',reason=>{if(room!==r)return;const inRace=screen==='race'&&mpRole;dropRoom();tell(reason==='replaced'?'Rummet öppnades i en annan flik.':'Anslutningen till rummet bröts.');if(screen==='lobby'||screen==='online'||inRace)screen=player?'card':'draw';});
+ setInviteUrl(r.code);nameInput.blur();codeInput.blur();screen='lobby';if(player)sendMyHorse();
+}
+function dropRoom(){room=null;mpRole='';peerHorses=new Map();outbox=[];selfReady=false;sentHorseId='';setInviteUrl(null);}
+// A hidden host barely moves the shared race, so after a few seconds away it leaves and the next player takes over.
+function hostingRace(){return !!room&&mpRole==='host'&&screen==='race'&&!!race&&!race.finished&&room.peers.length>=2;}
+function leaveWhileAway(){clearTimeout(awayTimer);if(!hostingRace())return;const code=room.code;leaveRoom();mpError='';codeInput.value=code;mpAway='Du var borta. Tryck på Gå med för att komma tillbaka.';screen='online';}
+function leaveRoom(){const r=room;if(!r)return;dropRoom();r.leave();screen=player?'card':'draw';}
+function toLobby(){if(!room)return;nameInput.blur();if(player&&(!selfReady||sentHorseId!==player.id))sendMyHorse();screen='lobby';}
+function markDrawing(){if(!room||!selfReady)return;selfReady=false;sentHorseId='';outbox=outbox.filter(o=>o.msg.t!=='h');outbox.push({msg:{t:'d'}});}
+function sendMyHorse(to){
+ if(!room||!player)return;
+ if(!packCache||packCache.id!==player.id)packCache={id:player.id,data:packStrokes(player.strokes)};
+ if(!to){myVersion++;selfReady=true;sentHorseId=player.id;outbox=outbox.filter(o=>o.msg.t!=='h'&&o.msg.t!=='d');}
+ const data=packCache.data,n=Math.max(1,Math.ceil(data.length/MP_CHUNK)),st=['speed','stamina','legs','chaos','weight'].map(k=>player.stats[k]);
+ for(let i=0;i<n;i++){const msg={t:'h',v:myVersion,i,n,d:data.slice(i*MP_CHUNK,(i+1)*MP_CHUNK)};if(i===0){msg.nm=player.name;msg.st=st;msg.sd=player.seed;}outbox.push(to?{to,msg}:{msg});}
+}
+function onHorseChunk(from,m){
+ if(typeof m.d!=='string'||!Number.isInteger(m.v)||!Number.isInteger(m.i)||!Number.isInteger(m.n)||m.n<1||m.n>16||m.i<0||m.i>=m.n)return;
+ let e=peerHorses.get(from);if(!e){e={v:-1,parts:[],meta:null,horse:null,drawing:false};peerHorses.set(from,e);}
+ if(m.v<e.v)return;if(m.v>e.v){e.v=m.v;e.parts=[];e.meta=null;}
+ e.parts[m.i]=m.d;if(m.i===0)e.meta={nm:String(m.nm||'').slice(0,26),st:m.st,sd:m.sd};
+ for(let k=0;k<m.n;k++)if(typeof e.parts[k]!=='string')return;if(!e.meta)return;
+ const ss=unpackStrokes(e.parts.join(''));e.parts=[];if(!ss||!ss.length)return;
+ const h=buildHorse(ss,e.meta.nm,'peer-'+from+'-'+e.v,(Number(e.meta.sd)>>>0)||1);if(!h)return;
+ if(Array.isArray(e.meta.st)&&e.meta.st.length===5)['speed','stamina','legs','chaos','weight'].forEach((k,j)=>{const v=Number(e.meta.st[j]);if(Number.isFinite(v))h.stats[k]=clamp(Math.round(v),0,100);});
+ h.ownerName=room?.peers.find(p=>p.id===from)?.name||'';e.horse=h;e.drawing=false;
+ const idx=mpOrder.indexOf(from);if(race&&screen==='race'&&idx>=0&&race.runners[idx]&&race.runners[idx].horse.bot)race.runners[idx].horse=h;
+}
+function readyPeers(){if(!room)return[];const me=room.self.id;return room.peers.filter(p=>p.id===me?selfReady&&!!player:!!peerHorses.get(p.id)?.horse&&!peerHorses.get(p.id).drawing);}
+function mpStart(){
+ if(!room||room.host!==room.self.id||!selfReady||mpRole)return;const ids=readyPeers().map(p=>p.id).slice(0,MP_MAX);if(ids.length<2)return;
+ const msg={t:'go',sd:Math.floor(Math.random()*2147483647),o:ids,b:bots.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,Math.max(0,7-ids.length))};
+ room.send(msg);room.setMeta({phase:'race',open:false});beginMpRace(msg,'host');
+}
+function beginMpRace(m,role){
+ if(!room||!Array.isArray(m.o)||!Array.isArray(m.b)||m.o.length<1||m.o.length+m.b.length>16)return;
+ const me=room.self.id,idx=m.o.indexOf(me);if(idx<0||!player)return;
+ const entrants=m.o.map(id=>id===me?player:peerHorses.get(id)?.horse||bots[0]).concat(m.b.map(i=>bots[i]||bots[0]));
+ nameInput.blur();codeInput.blur();race=makeRace(entrants,Number(m.sd)>>>0);mpGo={t:'go',sd:m.sd,o:m.o,b:m.b};mpOrder=m.o.slice();meIdx=idx;mpRole=role;mpAway='';
+ screen='race';countdown=3;finishHold=0;paused=false;lastCount=4;lastAudioBeat=-1;lastComment='';statsSaved=false;record=null;shareImage=null;
+ liveClock=0;latestTm=0;lastSnapAt=performance.now();cheerLocalAt=0;mpEndSent=false;lastSentComment='';sound('tick');
+}
+const EV={s:'sprint',t:'stumble',b:'backwards'};
+function sendSnapshot(){
+ const rs=race.runners,m={t:'s',tm:+race.time.toFixed(2),x:rs.map(r=>Math.round(r.x*10)/10),e:rs.map(r=>r.event==='sprint'?'s':r.event==='stumble'?'t':r.event==='backwards'?'b':'0').join(''),b:rs.reduce((a,r,i)=>a|(race.time<r.boostUntil?1<<i:0),0),f:rs.map(r=>r.finish===null?-1:+r.finish.toFixed(3))};
+ if(race.lastComment!==lastSentComment||pumpTick%20===0){m.c=race.lastComment.slice(0,160);m.ci=race.lastEvent?race.lastEvent.index:-1;lastSentComment=race.lastComment;}
+ room.send(m);
+}
+function sendEnd(){mpEndSent=true;if(!room)return;sendSnapshot();room.send({t:'end',tm:+race.time.toFixed(3),f:race.runners.map(r=>+(r.finish??race.time).toFixed(3)),p:race.photoFinish?1:0,c:race.lastComment.slice(0,160)});}
+function onSnapshot(m){
+ const rs=race.runners,n=rs.length;if(!Array.isArray(m.x)||m.x.length!==n||!Array.isArray(m.f)||m.f.length!==n||!Number.isFinite(m.tm)||m.tm<=latestTm)return;
+ if(typeof m.c==='string'&&m.c!==race.lastComment){race.lastComment=m.c.slice(0,160);live.textContent=race.lastComment;if(m.ci===meIdx)sound('event');}
+ const e=String(m.e||''),runners=[];
+ for(let i=0;i<n;i++){const x=Number(m.x[i]),f=Number(m.f[i]);if(!Number.isFinite(x))return;if(f>=0&&rs[i].finish===null)rs[i].finish=f;runners.push({x:clamp(x,0,2100),speed:0,finish:f>=0?f:null,event:EV[e[i]]||null,eventUntil:m.tm+.3,boostUntil:(m.b>>i)&1?m.tm+.3:0,phase:rs[i].phase});}
+ if(!latestTm)liveClock=Math.max(0,m.tm-.2);
+ race.snapshots.push({time:m.tm,commentary:race.lastComment,runners});latestTm=m.tm;lastSnapAt=performance.now();
+}
+function onEnd(m){
+ const rs=race.runners;if(!Array.isArray(m.f)||m.f.length!==rs.length||!Number.isFinite(m.tm))return;
+ rs.forEach((r,i)=>{const f=Number(m.f[i]);r.finish=Number.isFinite(f)?f:m.tm;});
+ if(typeof m.c==='string')race.lastComment=m.c.slice(0,160);
+ const last=race.snapshots[race.snapshots.length-1];if(last&&last.time<m.tm)race.snapshots.push({...last,time:m.tm,commentary:race.lastComment});
+ race.time=Math.max(m.tm,latestTm);latestTm=race.time;race.photoFinish=!!m.p;race.results=rs.slice().sort((a,b)=>a.finish-b.finish||a.index-b.index);race.finished=true;lastSnapAt=performance.now();
+}
+function updateClient(dt){
+ if(countdown>0){countdown-=dt;const k=Math.ceil(countdown);if(k!==lastCount){lastCount=k;sound(k<=0?'go':'tick');}return;}
+ if(race.finished&&liveClock>=race.time-1e-6){finishHold+=dt;if(finishHold>1.35)completeRace();return;}
+ const lag=latestTm-liveClock;liveClock=Math.min(latestTm,liveClock+dt*(race.finished?1.6:lag>.35?1.12:lag<.1?.88:1));if(latestTm-liveClock>.8)liveClock=latestTm-.25;
+ if(latestTm>0)raceAudio(liveClock);
+ if(!race.finished&&performance.now()-lastSnapAt>12000){mpRole='';tell('Loppet avbröts.');screen='lobby';}
+}
+function takeOverRace(){
+ if(mpRole!=='client'||!race||race.finished)return;const s=race.snapshots[race.snapshots.length-1];
+ if(s&&s.time>0){race.time=s.time;race.runners.forEach((r,i)=>{const q=s.runners[i];r.x=q.x;r.finish=q.finish;r.event=q.event;r.eventUntil=s.time+.4;r.boostUntil=0;r.speed=r.base;r.nextEvent=s.time+1.5+Math.random()*3;r.nextCheer=Math.max(s.time,cheerLocalAt);});}
+ mpRole='host';mpEndSent=false;room.setMeta({phase:'race',open:false});
+}
+function onMpMessage(from,m){
+ if(!m||typeof m!=='object')return;
+ if(m.t==='h')onHorseChunk(from,m);
+ else if(m.t==='d'){const e=peerHorses.get(from);if(e)e.drawing=true;else peerHorses.set(from,{v:-1,parts:[],meta:null,horse:null,drawing:true});}
+ else if(m.t==='go'&&from===room.host&&!mpRole){beginMpRace(m,'client');if(m.mid&&mpRole)countdown=0;}
+ else if(m.t==='s'&&mpRole==='client'&&screen==='race')onSnapshot(m);
+ else if(m.t==='end'&&mpRole==='client'&&screen==='race')onEnd(m);
+ else if(m.t==='ch'&&mpRole==='host'&&screen==='race'&&countdown<=0){const i=mpOrder.indexOf(from);if(i>=0)race.cheer(i);}
+}
+function pump(){
+ if(!room)return;pumpTick++;
+ if(mpRole==='host'&&screen==='race'&&countdown<=0&&!mpEndSent&&pumpTick%5){sendSnapshot();return;}
+ const o=outbox.shift();if(o){if(o.to)room.sendTo(o.to,o.msg);else room.send(o.msg);}
+}
+setInterval(pump,100);
+document.addEventListener('freeze',()=>leaveWhileAway());
+addEventListener('pagehide',e=>{if(e.persisted)leaveWhileAway();if(room&&!e.persisted){const r=room;room=null;r.leave();}});
+let bgLast=0;
+setInterval(()=>{if(!document.hidden||!(room&&mpRole==='host'&&screen==='race')){bgLast=0;return;}const now=performance.now(),dt=bgLast?Math.min((now-bgLast)/1000,1):0;bgLast=now;if(dt>0)update(dt);},250);
+async function copyInvite(){
+ if(!room)return;const url=location.origin+location.pathname+'?'+MP_PARAM+'='+room.code;
+ try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(url);tell('Länken är kopierad.');}catch(e){window.prompt('Kopiera länken:',url);}
+}
+function drawOnline(){
+ const lw=Math.min(cw,520),lx=left+(cw-lw)/2;let y=mobile?118:128;
+ text('Tävla online',lx,y,mobile?25:39,P.ink,900);y+=mobile?36:54;
+ button('quick',mpBusy?'Ansluter…':'SNABBMATCH',lx,y,lw,53,()=>mpConnect('quick'),'yellow',mpBusy,mpBusy?null:['arrowR','right']);y+=63;
+ button('create','Skapa privat rum',lx,y,lw,48,()=>mpConnect('create'),'normal',mpBusy);y+=86;
+ drawField(codeInput,'code','RUMSKOD','Ange rumskod','',lx,y,lw-110);button('joincode','Gå med',lx+lw-100,y,100,46,joinByCode,'normal',mpBusy);y+=72;
+ if(mpError)text(fit(mpError,lw,13),lx,y,13,P.red,600);else if(mpAway)text(fit(mpAway,lw,13),lx,y,13,P.muted,600);y+=28;
+ button('onlineBack','Tillbaka',lx,y,lw,44,()=>{mpError='';mpAway='';screen=player?'card':'draw';},'normal',mpBusy,['arrowL','left']);
+}
+function drawLobby(){
+ const lw=Math.min(cw,640),lx=left+(cw-lw)/2,me=room.self.id,isHost=room.host===me;let y=mobile?118:128;
+ text('Rum '+room.code,lx,y,mobile?25:39,P.ink,900);text(room.peers.length+' / '+MP_MAX,lx+lw,y,13,P.muted,600,'right');
+ const bw=(lw-10)/2;button('invite','Kopiera länk',lx,146,bw,44,copyInvite);button('leave','Lämna',lx+bw+10,146,bw,44,leaveRoom);y=206;
+ for(const p of room.peers){
+  const mine=p.id===me,e=peerHorses.get(p.id),horse=mine?(selfReady?player:null):e?.horse||null,drawing=mine?false:!!e?.drawing;
+  const status=drawing?'Ritar…':horse?'Klar':'Ingen häst';
+  box(lx,y,lw,58,mine?'#f8eabc':P.white,P.line,8);
+  if(horse&&!drawing)horseSprite(ctx,horse,lx+44,y+51,66,42,clock,.25);else{ctx.save();ctx.setLineDash([4,4]);box(lx+14,y+10,60,38,null,P.line,6);ctx.restore();}
+  const tw=lw-190;text(fit(horse&&!drawing?horse.name:p.name,tw,15),lx+88,y+21,15,P.ink,700);
+  text(fit((horse&&!drawing?p.name:'')+(mine?(horse&&!drawing?' · du':'Du'):'')+(p.id===room.host?' · värd':''),tw,12),lx+88,y+40,12,P.muted,500);
+  text(status,lx+lw-14,y+29,12,status==='Klar'?P.green:P.muted,700,'right');y+=64;
+ }
+ y+=8;const racing=room.meta?.phase==='race'&&!mpRole,ok=isHost&&selfReady&&readyPeers().length>=2&&!racing;
+ const label=racing?'LOPPET PÅGÅR':!isHost?'VÄRDEN STARTAR':ok?'STARTA LOPPET':'VÄNTAR PÅ HÄSTAR';
+ button('mpstart',label,lx,y,lw,53,mpStart,selfReady?'yellow':'normal',!ok,ok?['arrowR','right']:null);y+=63;
+ button('mpdraw',selfReady?'Rita ny häst':'Rita din häst',lx,y,lw,46,newDrawing,selfReady?'normal':'yellow');
+}
+// Small original synthesizer: hoofbeats, plucky race music, cheering and results.
+let audio=null,master=null,soundOn=true;
+function audioStart(){try{if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=.18;master.connect(audio.destination);}if(audio.state==='suspended')audio.resume().catch(()=>{});}catch(e){soundOn=false;}}
+function tone(f,d=.08,type='triangle',vol=.12,delay=0,end=f){
+ if(!audio||!soundOn||audio.state!=='running')return;
+ const at=audio.currentTime+delay,o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,at);o.frequency.exponentialRampToValueAtTime(Math.max(20,end),at+d);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.008);g.gain.exponentialRampToValueAtTime(.0001,at+d);o.connect(g);g.connect(master);o.start(at);o.stop(at+d+.02);o.onended=()=>{o.disconnect();g.disconnect();};
+}
+function sound(s){if(s==='tap')tone(440,.04,'sine',.13);if(s==='tick')tone(420,.1,'sine',.25);if(s==='go')tone(840,.25,'triangle',.3);if(s==='ding'){tone(660,.12);tone(990,.18,'sine',.18,.08);}if(s==='cheer'){[420,560,750].forEach((f,i)=>tone(f,.13,'triangle',.22,i*.07));}if(s==='event')tone(220,.18,'triangle',.14,0,90);if(s==='win'||s==='finish')[523,659,784,s==='win'?1046:587].forEach((f,i)=>tone(f,.22,'triangle',.2,i*.15));}
+function raceAudio(t){const beat=Math.floor(t/.19);if(beat===lastAudioBeat)return;lastAudioBeat=beat;tone(beat%2?180:140,.045,'sine',.16,0,65);if(beat%2===0){const notes=[262,330,392,330,294,349,440,349];tone(notes[Math.floor(beat/2)%8],.13,'triangle',.09);}}
+function cheerReadyNow(){if(mpRole==='client'){const r=race.runners[meIdx];return !race.finished&&latestTm>0&&r.finish===null&&liveClock>=cheerLocalAt;}return race.readyFor(meIdx);}
+function cheer(){
+ if(screen!=='race'||paused||countdown>0||!cheerReadyNow())return;
+ if(mpRole==='client'){cheerLocalAt=liveClock+2.8;room.sendTo(room.host,{t:'ch'});sound('cheer');return;}
+ if(race.cheer(meIdx))sound('cheer');
+}
+
+function lobbyHeight(){return 206+(room?room.peers.length:1)*64+150;}
+function resize(){
+ mobile=innerWidth<760;W=Math.max(320,document.documentElement.clientWidth);cw=Math.min(W-36,1080);
+ const minH=screen==='lobby'?Math.max(mobile?560:760,lobbyHeight()):mobile?(screen==='result'?640+Math.min(cw,500)*675/1200:screen==='stable'?835:screen==='draw'?530+Math.min(cw,500)*DH/DW:screen==='card'?690:screen==='online'?560:640):760;
+ H=Math.ceil(Math.max(minH,innerHeight));dpr=Math.min(devicePixelRatio||1,2);
+ canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';cw=Math.min(W-36,1080);left=(W-cw)/2;ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);resize();
+function text(s,x,y,size=16,color=P.ink,weight=400,align='left',g=ctx){g.fillStyle=color;g.font=weight+' '+size+'px Arial, sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(String(s),x,y);}
+function fit(s,width,size=16,g=ctx){g.font='600 '+size+'px Arial, sans-serif';let v=String(s);while(v.length>1&&g.measureText(v).width>width)v=v.slice(0,-2)+'…';return v;}
+function box(x,y,w,h,fill=P.white,stroke=P.line,r=10,g=ctx){g.beginPath();g.roundRect(x,y,w,h,r);if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=1.3;g.stroke();}}
+function line(x1,y1,x2,y2,color=P.line,width=1,g=ctx){g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.strokeStyle=color;g.lineWidth=width;g.stroke();}
+const ICONS={arrowR:'M5 12h14M13 6l6 6-6 6',arrowL:'M19 12H5M11 6l-6 6 6 6',down:'M12 4v11M7 10l5 5 5-5M5 20h14',replay:'M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4h4',soundOn:'M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13',soundOff:'M11 5 6 9H3v6h3l5 4zM16 9.5l5 5M21 9.5l-5 5',minus:'M6 12h12',plus:'M12 6v12M6 12h12',chevL:'M15 6l-6 6 6 6',chevR:'M9 6l6 6-6 6'};
+const iconPaths={};
+function icon(name,cx,cy,size=18,color=P.ink,g=ctx){const path=iconPaths[name]||(iconPaths[name]=new Path2D(ICONS[name]));g.save();g.translate(cx-size/2,cy-size/2);g.scale(size/24,size/24);g.strokeStyle=color;g.lineWidth=2;g.lineCap='round';g.lineJoin='round';g.stroke(path);g.restore();}
+function button(id,label,x,y,w,h,fn,kind='normal',disabled=false,ic=null){
+ const active=hoverId===id||focusId===id;const fill=kind==='primary'?P.ink:kind==='yellow'?P.yellow:kind==='red'?P.red:active?'#eeeee3':P.white;
+ ctx.save();if(disabled)ctx.globalAlpha=.43;box(x,y,w,h,fill,kind==='normal'?P.line:fill,8);const fg=kind==='primary'?P.white:P.ink,fs=mobile?14:15;
+ if(ic&&ic[1]==='only')icon(ic[0],x+w/2,y+h/2,20,fg);
+ else if(ic){ctx.font='700 '+fs+'px Arial, sans-serif';const tw=ctx.measureText(label).width,gap=8,total=tw+gap+18,sx=x+w/2-total/2;if(ic[1]==='left'){icon(ic[0],sx+9,y+h/2,18,fg);text(label,sx+18+gap+tw/2,y+h/2,fs,fg,700,'center');}else{text(label,sx+tw/2,y+h/2,fs,fg,700,'center');icon(ic[0],sx+tw+gap+9,y+h/2,18,fg);}}
+ else text(label,x+w/2,y+h/2,fs,fg,700,'center');
+ if(focusId===id){ctx.setLineDash([4,3]);box(x-4,y-4,w+8,h+8,null,P.blue,11);ctx.setLineDash([]);}ctx.restore();hits.push({id,label,x,y,w,h,fn,disabled});
+}
+function hitArea(id,label,x,y,w,h,fn){hits.push({id,label,x,y,w,h,fn});}
+function stamp(label,x,y,color=P.red,angle=-.07){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.font='700 13px Arial';let w=ctx.measureText(label).width+20;box(-w/2,-14,w,28,null,color,3);text(label,0,0,13,color,700,'center');ctx.restore();}
+function background(){ctx.fillStyle=P.paper;ctx.fillRect(0,0,W,H);ctx.fillStyle='#dfded1';for(let y=14;y<H;y+=22)for(let x=14;x<W;x+=22)ctx.fillRect(x,y,1,1);}
+function header(){
+ const locked=screen==='race'||screen==='replay';text('Draw Your Horse',left,38,W<360?15:mobile?17:20,P.ink,900);
+ if(!locked&&screen!=='draw'){ctx.font='900 '+(W<360?15:mobile?17:20)+'px Arial, sans-serif';hitArea('home','Draw Your Horse',left,16,ctx.measureText('Draw Your Horse').width,44,newDrawing);}
+ button('sound',soundOn?'Ljud på':'Ljud av',W-left-44,16,44,44,()=>{audioStart();soundOn=!soundOn;},'normal',false,[soundOn?'soundOn':'soundOff','only']);
+ if(!locked&&screen!=='stable')button('stable','Stall · '+stable.length,W-left-(mobile?136:150),16,mobile?84:98,44,enterStable);
+ line(left,76,W-left,76);
+}
+function drawField(input,id,label,aria,placeholder,x,y,w){
+ text(label,x,y-14,10,P.muted,700);box(x,y,w,46,P.white,document.activeElement===input?P.ink:P.line,7);
+ const s=input.value||placeholder;ctx.save();ctx.beginPath();ctx.rect(x+12,y,w-24,46);ctx.clip();text(s,x+12,y+23,14,input.value?P.ink:P.muted,500);
+ if(document.activeElement===input&&Math.floor(clock*2)%2===0){ctx.font='500 14px Arial';const xx=x+12+ctx.measureText(input.value.slice(0,input.selectionStart||0)).width;line(xx,y+12,xx,y+33,P.ink,1.2);}ctx.restore();
+ hitArea(id,aria,x,y,w,46,()=>{input.focus({preventScroll:true});});
+}
+function drawNameField(x,y,w){drawField(nameInput,'name','HÄSTENS NAMN','Ange hästens namn','Lämna tomt för ett idiotiskt namn',x,y,w);}
+function drawTools(x,y,w){
+ palette.forEach((c,i)=>{const xx=x+i*44;ctx.beginPath();ctx.arc(xx+18,y+22,13,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();if(pen===c){ctx.beginPath();ctx.arc(xx+18,y+22,17,0,Math.PI*2);ctx.strokeStyle=c;ctx.lineWidth=1.6;ctx.stroke();}hitArea('color'+i,['Grafit','Röd','Blå','Grön','Lila','Brun'][i],xx-4,y,44,44,()=>{pen=c;});});
+ const yy=mobile?y+52:y;const ux=mobile?x:x+w-188;
+ button('undo','Ångra',ux,yy,86,44,undo,'normal',!strokes.length);button('clear','Rensa',ux+94,yy,86,44,()=>{if(strokes.length){redo=strokes.slice().reverse();strokes=[];rebuildInk();tell(touchUsed?'Duken är tom.':'Duken är tom. Återställ med Ctrl+Y.');}},'normal',!strokes.length);
+ const sy=y+(mobile?122:70);text('PENNA',x,sy,10,P.muted,700);const rail=Math.min(140,w-190);line(x+58,sy,x+58+rail,sy,P.line,4);const knob=x+58+(brush-2)/22*rail;ctx.beginPath();ctx.arc(knob,sy,7,0,Math.PI*2);ctx.fillStyle=P.ink;ctx.fill();text(Math.round(brush)+' px',x+72+rail,sy,11,P.muted);sliderRect={x:x+48,y:sy-19,w:rail+20,h:38};
+ hitArea('thinner','Tunnare penna',x+w-92,sy-22,44,44,()=>{brush=Math.max(2,brush-2);});icon('minus',x+w-70,sy,20);
+ hitArea('thicker','Tjockare penna',x+w-44,sy-22,44,44,()=>{brush=Math.min(24,brush+2);});icon('plus',x+w-22,sy,20);
+}
+function drawDrawing(){
+ text('Draw your horse.',left,mobile?132:150,mobile?31:48,P.ink,900);
+ const boardW=mobile?Math.min(cw,500):Math.min(cw-292,(H-327)*DW/DH),boardH=boardW*DH/DW;
+ drawRect={x:mobile?left+(cw-boardW)/2:left,y:mobile?168:205,w:boardW,h:boardH};const r=drawRect;
+ box(r.x+4,r.y+5,r.w,r.h,'#e4e3d6',null,9);box(r.x,r.y,r.w,r.h,P.white,P.ink,9);
+ ctx.save();ctx.beginPath();ctx.rect(r.x+1,r.y+1,r.w-2,r.h-2);ctx.clip();ctx.globalAlpha=.48;for(let y=r.y+24;y<r.y+r.h;y+=24)line(r.x,y,r.x+r.w,y,'#e0e5db');ctx.globalAlpha=1;ctx.drawImage(inkCanvas,r.x,r.y,r.w,r.h);
+ if(!strokes.length){text('Rita med fingret eller musen.',r.x+r.w/2,r.y+r.h/2,mobile?13:16,P.muted,400,'center');}ctx.restore();
+ drawTools(mobile?left:r.x,r.y+r.h+15,mobile?cw:r.w);
+ if(mobile){const yy=r.y+r.h+186;drawNameField(left,yy,cw);button('done','DEN ÄR EN HÄST.',left,yy+61,cw,49,finishDrawing,'yellow',false,['arrowR','right']);}
+ else{const sx=r.x+r.w+32,sw=cw-r.w-32;horseSprite(ctx,bots[2],sx+sw/2,395,sw-34,112,clock,.35);
+  drawNameField(sx,508,sw);button('done','DEN ÄR EN HÄST.',sx,570,sw,51,finishDrawing,'yellow',false,['arrowR','right']);
+ }
+}
+function statBar(label,val,x,y,w,color){text(label,x,y,12,P.muted,600);text(val,x+w,y,13,P.ink,700,'right');box(x,y+15,w,6,'#e9e8dd',null,3);box(x,y+15,w*val/100,6,color,null,3);}
+function drawCard(){
+ const x=mobile?left:left+100,w=mobile?cw:cw-200,y=104,h=mobile?350:334;
+ box(x+4,y+5,w,h,'#dfdfd1',null,13);box(x,y,w,h,P.white,P.ink,13);
+ const hx=mobile?x+w/2:x+w*.28;horseSprite(ctx,player,hx,y+(mobile?145:211),mobile?w-74:w*.46,mobile?106:160,clock,.65);
+ text(fit(player.name,mobile?w-40:w*.47,mobile?27:32),hx,y+(mobile?176:249),mobile?27:32,P.ink,800,'center');
+ text(fit(player.epithet,mobile?w-42:w*.49,mobile?10:13),hx,y+(mobile?198:282),mobile?10:13,P.muted,400,'center');
+ const sx=mobile?x+24:x+w*.56,sy=y+(mobile?215:52),sw=mobile?w-48:w*.38;
+ const stats=[['Fart',player.stats.speed,P.red],['Uthållighet',player.stats.stamina,P.green],['Benkraft',player.stats.legs,P.blue],['Kaos',player.stats.chaos,'#9c6b98']];
+ stats.forEach(([l,v,c],i)=>{if(mobile){const col=i%2,row=Math.floor(i/2);statBar(l,v,sx+col*(sw/2+9),sy+row*57,sw/2-12,c);}else statBar(l,v,sx,sy+i*55,sw,c);});
+ stamp(player.tier,hx,y+25,P.red);
+ const by=y+h+24;let ey=by+66;
+ if(room)button('race','TILL RUMMET',x,by,w,53,toLobby,'yellow',false,['arrowR','right']);
+ else{button('race','SLÄPP LÖS DEN',x,by,w,53,startRace,'yellow',false,['arrowR','right']);if(mpApi()){button('online','Tävla online',x,by+63,w,46,openOnline);ey=by+121;}}
+ button('edit','Finjustera katastrofen',x,ey,w,44,()=>{nameInput.value=player.name;strokes=player.strokes.map(s=>({...s,points:s.points.map(p=>({...p}))}));redo=[];rebuildInk();screen='draw';markDrawing();},'normal',false,['arrowL','left']);
+}
+function wrap(s,x,y,width,size=15,color=P.ink,align='left',g=ctx){
+ g.font='500 '+size+'px Arial';const words=String(s).split(' ');let row='',lineY=y;
+ for(const word of words){const next=row?row+' '+word:word;if(g.measureText(next).width>width&&row){text(row,x,lineY,size,color,500,align,g);row=word;lineY+=size*1.45;}else row=next;}text(row,x,lineY,size,color,500,align,g);
+}
+function frameAt(src,t){
+ const frames=src.snapshots;let lo=0,hi=frames.length-1;
+ while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(frames[mid].time<=t)lo=mid;else hi=mid-1;}
+ const a=frames[lo],b=frames[Math.min(lo+1,frames.length-1)],p=b.time>a.time?clamp((t-a.time)/(b.time-a.time),0,1):0;
+ return{...a,runners:a.runners.map((r,i)=>({...src.runners[i],...r,x:r.x+(b.runners[i].x-r.x)*p,finish:src.runners[i].finish!==null&&src.runners[i].finish<=t?src.runners[i].finish:null}))};
+}
+function drawScenery(x,y,w,camera){
+ ctx.save();ctx.beginPath();ctx.rect(x,y,w,75);ctx.clip();
+ ctx.beginPath();ctx.moveTo(x,y+66);for(let i=0;i<=w;i+=8)ctx.lineTo(x+i,y+40+Math.sin((i+camera*.12)*.008)*15+Math.sin((i+camera*.12)*.022)*6);ctx.lineTo(x+w,y+75);ctx.lineTo(x,y+75);ctx.closePath();ctx.fillStyle='#e7eadb';ctx.fill();
+ for(let i=0;i<18;i++){const xx=x+((i*81-camera*.25)%(w+100)+w+100)%(w+100)-40,yy=y+54+(i%3)*3;ctx.strokeStyle=i%3===0?'#b4b7a3':'#a2aa95';ctx.lineWidth=1.7;ctx.beginPath();ctx.arc(xx,yy-15,3,0,Math.PI*2);ctx.moveTo(xx,yy-11);ctx.lineTo(xx,yy);ctx.moveTo(xx-6,yy-8);ctx.lineTo(xx,yy-4);ctx.lineTo(xx+6,yy-9);ctx.moveTo(xx-4,yy+6);ctx.lineTo(xx,yy);ctx.lineTo(xx+5,yy+5);ctx.stroke();}
+ ctx.restore();
+}
+function drawRace(){
+ const replay=screen==='replay',liveView=!replay&&mpRole==='client',t=replay?replayClock:liveView?liveClock:race.time;
+ const frame=replay?frameAt(record.race,t):liveView?frameAt(race,t):null,rs=frame?frame.runners:race.runners,n=rs.length,me=clamp(meIdx,0,n-1);
+ const ranked=rs.slice().sort((a,b)=>a.finish!==null&&b.finish!==null?a.finish-b.finish||a.index-b.index:a.finish!==null?-1:b.finish!==null?1:b.x-a.x||a.index-b.index),pos=ranked.findIndex(r=>r.index===me)+1;
+ text(pos+' / '+n,left,106,mobile?26:36,P.red,800);
+ text(replay?t.toFixed(1)+' s / '+record.race.time.toFixed(1)+' s':t.toFixed(1)+' s',W-left,106,11,P.muted,500,'right');
+ const trackX=left,trackW=cw,trackTop=193,trackBottom=H-192,laneH=(trackBottom-trackTop)/n;
+ const view=mobile?780:1150,camera=clamp(rs[me].x-view*.28,-100,2000-view+190),world=x=>trackX+(x-camera)/view*trackW;
+ drawScenery(trackX,119,trackW,camera);line(trackX,188,trackX+trackW,188,P.ink,1.5);
+ for(let d=0;d<=2000;d+=250){const x=world(d);if(x<trackX||x>trackX+trackW)continue;line(x,180,x,193,P.muted,1);text(d===2000?'MÅL':d+' m',x,169,10,P.muted,600,'center');}
+ ctx.save();ctx.beginPath();ctx.rect(trackX,trackTop,trackW,trackBottom-trackTop);ctx.clip();
+ for(let i=0;i<n;i++){const y=trackTop+i*laneH;ctx.fillStyle=i===me?'#f8eabc':i%2?'#f2f0e5':'#f7f5ec';ctx.fillRect(trackX,y,trackW,laneH);line(trackX,y+laneH,trackX+trackW,y+laneH,'#e0dfd2');
+  for(let d=Math.floor(camera/110)*110;d<camera+view;d+=110){const xx=world(d);line(xx,y+laneH*.72,xx+7,y+laneH*.72,'#d3d0ba');}
+ }
+ const fx=world(2000);if(fx>-25&&fx<W+25){for(let j=0;j<(trackBottom-trackTop)/9;j++)for(let k=0;k<2;k++){ctx.fillStyle=(j+k)%2?P.white:P.ink;ctx.fillRect(fx-9+k*9,trackTop+j*9,9,9);}}
+ rs.forEach((r,i)=>{
+  const y=trackTop+(i+1)*laneH-7,x=world(r.x),run=countdown>0&&!replay?0:r.finish===null?1:Math.max(0,1-(t-r.finish)*2),boost=t<r.boostUntil;
+  if(x<trackX+8||x>trackX+trackW-8){text((x<trackX?'‹ ':'')+fit(r.horse.name,84,10)+(x>trackX+trackW?' ›':''),clamp(x,trackX+5,trackX+trackW-5),y-8,10,i===me?P.red:P.muted,700,x<trackX?'left':'right');return;}
+  const hw=Math.min(mobile?86:126,laneH*2.25),hh=laneH*.64;
+  ctx.fillStyle='rgba(80,74,54,.1)';ctx.beginPath();ctx.ellipse(x,y-1,hw*.3,3,0,0,Math.PI*2);ctx.fill();
+  if(boost&&run){ctx.strokeStyle=P.red;ctx.lineWidth=2;for(let j=0;j<3;j++)line(x-hw*.55-5-j*6,y-hh*.25-j*4,x-hw*.55-16-j*6,y-hh*.25-j*4,P.red,2);}
+  if(run){for(let j=0;j<3;j++){const age=(t*3+j/3)%1;ctx.globalAlpha=(1-age)*.24;ctx.fillStyle=P.muted;ctx.beginPath();ctx.arc(x-hw*.35-age*18,y-2-age*5,1+age*3,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
+  horseSprite(ctx,r.horse,x,y,hw,hh,t,run,r.event);
+  const rank=ranked.findIndex(a=>a.index===i)+1;const tag=(i===me?'DU · ':rank+' · ')+fit(r.horse.name,mobile?92:149,10);
+  text(tag,clamp(x,trackX+58,trackX+trackW-58),y-hh-9,10,i===me?P.red:P.muted,i===me?800:500,'center');
+  if(r.event){text(r.event==='sprint'?'ZOOM!':r.event==='stumble'?'?!':'FEL HÅLL',x+hw*.4,y-hh*.5,9,P.red,800);}
+ });ctx.restore();
+ const barY=trackBottom+15;line(left,barY,left+cw,barY,P.line,3);line(left,barY,left+cw*clamp(rs[me].x/2000,0,1),barY,P.red,3);
+ const comment=frame?frame.commentary:race.lastComment;
+ text('KOMMENTATORN',left,H-149,9,P.muted,700);wrap(comment,left,H-124,cw,mobile?14:17);
+ if(replay){
+  const w=(cw-16)/3;button('replaypause',replayPaused?'Spela':'Pausa',left,H-68,w,46,()=>{if(replayClock>=record.race.time)replayClock=0;replayPaused=!replayPaused;});button('speed',replaySpeed+'×',left+w+8,H-68,w,46,()=>{replaySpeed=replaySpeed===1?.5:replaySpeed===.5?2:1;});button('backresult','Resultat',left+2*(w+8),H-68,w,46,()=>{screen='result';},'yellow');
+ }else{
+  const online=mpRole!=='',mine=rs[me],ready=countdown<=0&&!paused&&cheerReadyNow();
+  const wait=liveView?cheerLocalAt-t:race.runners[me].nextCheer-t;
+  const label=countdown>0?'SNART SÅ…':mine.finish!==null?'I MÅL!':ready?'HEJA!  + LITEN BOOST':'LADDAR · '+Math.max(0,wait).toFixed(1)+' s';
+  button('cheer',label,left,H-68,online?cw:cw-94,46,cheer,'yellow',!ready);if(!online)button('pause',paused?'Fortsätt':'Pausa',left+cw-86,H-68,86,46,()=>{paused=!paused;});
+  if(countdown>0){ctx.fillStyle='rgba(248,245,237,.6)';ctx.fillRect(left,trackTop,cw,trackBottom-trackTop);text(Math.ceil(countdown),W/2,(trackTop+trackBottom)/2,88,P.ink,900,'center');}
+ }
+ if(paused&&!replay){ctx.fillStyle='rgba(248,245,237,.88)';ctx.fillRect(left,trackTop,cw,trackBottom-trackTop);text('Hästarna tar fem.',W/2,(trackTop+trackBottom)/2-30,mobile?25:34,P.ink,800,'center');button('resume','FORTSÄTT',W/2-100,(trackTop+trackBottom)/2+12,200,48,()=>{paused=false;audioStart();},'yellow',false,['arrowR','right']);}
+ if(!replay&&race.photoFinish&&race.finished)stamp('MÅLFOTO!',W/2,147,P.red);
+}
+function makeShareCard(){
+ const c=document.createElement('canvas');c.width=1200;c.height=675;const g=c.getContext('2d'),r=record;
+ g.fillStyle=P.paper;g.fillRect(0,0,1200,675);g.fillStyle='#deded0';for(let y=16;y<675;y+=24)for(let x=16;x<1200;x+=24)g.fillRect(x,y,1,1);
+ text('Draw Your Horse',55,52,26,P.ink,900,'left',g);line(55,87,1145,87,P.ink,1.5,g);
+ g.save();g.translate(320,368);g.rotate(-.025);box(-265,-219,530,300,P.white,P.line,12,g);g.restore();horseSprite(g,r.player,320,412,440,249,0,0);
+ text(fit(r.player.name,565,40,g),55,482,40,P.ink,900,'left',g);text(r.player.tier,57,527,21,P.red,700,'left',g);
+ text('#'+r.pos,897,248,165,r.pos===1?P.red:P.ink,900,'center',g);text('AV '+r.count+' TVEKSAMMA HÄSTAR',897,357,20,P.muted,700,'center',g);
+ wrap(r.quote,897,426,405,25,P.ink,'center',g);line(55,570,1145,570,P.ink,1.5,g);
+ text('#DrawYourHorse',55,620,23,P.ink,800,'left',g);return c;
+}
+function shareText(){return 'Jag ritade '+record.player.name+'. Den kom '+record.pos+'/'+record.count+'. '+record.quote+' Kan du rita något värre? #DrawYourHorse';}
+async function copyShare(){
+ const value=shareText();try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(value);tell('Kopierat! Klistra in på X och bifoga bilden.');}
+ catch(e){const t=document.createElement('textarea');t.value=value;t.style.cssText='position:fixed;left:0;top:0;opacity:0';document.body.appendChild(t);t.focus();t.select();let ok=false;try{ok=document.execCommand('copy');}catch(_){}t.remove();if(ok)tell('Kopierat! Klistra in på X och bifoga bilden.');else window.prompt('Kopiera texten:',value);}
+}
+function downloadCard(){if(!shareImage||!record)return;const card=shareImage,horseName=record.player.name;card.toBlob(blob=>{if(!blob){tell('Bilden kunde inte skapas. Försök igen.');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='draw-your-horse-'+horseName.replace(/[^a-zåäö0-9]+/gi,'-')+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);tell('Resultatkortet är klart som PNG.');},'image/png');}
+function drawResults(){
+ const pos=record.pos;const title=pos===1?'En mycket tveksam mästare.':pos===record.count?'Sist. Men oförglömlig.':'Konst har ett pris.';
+ if(pos===1){for(let i=0;i<35;i++){const x=left+(Math.sin(i*7.4)*.5+.5)*cw,y=82+((clock*24+i*41)%540);ctx.save();ctx.translate(x,y);ctx.rotate(clock+i);ctx.fillStyle=[P.red,P.yellow,P.blue][i%3];ctx.fillRect(-2,-4,4,8);ctx.restore();}}
+ text(mobile?fit(title,cw,25):title,left,mobile?112:118,mobile?25:39,P.ink,900);
+ const pw=mobile?Math.min(cw,500):cw*.53,ph=pw*675/1200,px=mobile?left+(cw-pw)/2:left,py=mobile?141:164;
+ ctx.save();box(px+4,py+5,pw,ph,'#dddccd',null,4);ctx.drawImage(shareImage,px,py,pw,ph);box(px,py,pw,ph,null,P.ink,4);ctx.restore();
+ const by=py+ph+14,bw=(pw-10)/2;button('download','Spara bild',px,by,bw,44,downloadCard,'yellow',false,['down','right']);button('copy','Kopiera för X',px+bw+10,by,bw,44,copyShare);
+ const tx=mobile?left:left+pw+38,ty=mobile?by+78:171,tw=mobile?cw:cw-pw-38,rh=mobile?30:46;
+ text('SLUTRESULTAT',tx,ty,10,P.muted,800);if(record.race.photoFinish)text('MÅLFOTO · '+((record.race.results[1].finish-record.race.results[0].finish)*1000).toFixed(0)+' ms',tx+tw,ty,10,P.red,700,'right');
+ record.race.results.forEach((r,i)=>{const yy=ty+28+i*rh,mine=r.index===meIdx;if(mine)box(tx-7,yy-rh/2+1,tw+14,rh-2,'#f7e6a8',null,4);text(i+1,tx,yy,14,mine?P.red:P.muted,700);text(fit(r.horse.name+(mine?' · DU':r.horse.ownerName?' · '+r.horse.ownerName:''),tw-121,13),tx+27,yy,13,P.ink,mine?800:500);text(r.finish.toFixed(2)+' s',tx+tw,yy,12,P.muted,500,'right');});
+ const yy=mobile?ty+28+7*rh+17:Math.max(by+78,ty+28+7*rh+12);const half=(cw-10)/2;
+ button('again',room?'TILL RUMMET':mobile?'TÄVLA IGEN':'SAMMA HÄST. IGEN.',left,yy,half,48,room?toLobby:startRace,'yellow',false,['arrowR','right']);button('replay','Se replay',left+half+10,yy,half,48,playReplay,'normal',false,['replay','right']);
+ button('new','Rita en ny katastrof',left,yy+61,cw,44,newDrawing);
+ text('Din häst: '+record.player.wins+' vinster på '+record.player.races+' lopp.',W/2,yy+129,11,P.muted,500,'center');
+}
+function drawStable(){
+ text('Dina tveksamma fullblod.',left,mobile?118:128,mobile?25:39,P.ink,900);
+ if(!storageOK)text('Stallet finns bara i den här sessionen.',left,mobile?152:168,mobile?11:14,P.red);
+ if(!stable.length){horseSprite(ctx,bots[0],W/2,380,cw*.7,123,clock,.25);text('Här ekar det.',W/2,430,28,P.ink,700,'center');button('stableNew','RITA DIN FÖRSTA HÄST',left,500,cw,52,newDrawing,'yellow',false,['arrowR','right']);return;}
+ const cols=mobile?2:3,pageSize=6,rows=3;const gap=14,w=(cw-gap*(cols-1))/cols,h=mobile?154:191,totalPages=Math.ceil(stable.length/pageSize);stablePage=clamp(stablePage,0,totalPages-1);
+ stable.slice(stablePage*pageSize,(stablePage+1)*pageSize).forEach((horse,i)=>{const x=left+(i%cols)*(w+gap),y=213+Math.floor(i/cols)*(h+gap);box(x,y,w,h,P.white,P.line,9);horseSprite(ctx,horse,x+w/2,y+h*.52,w*.78,h*.36,clock,.15);text(fit(horse.name,w-22,mobile?13:17),x+w/2,y+h*.64,mobile?13:17,P.ink,700,'center');text(horse.wins+' vinster · '+horse.races+' lopp',x+w/2,y+h*.79,11,P.muted,500,'center');text('TÄVLA',x+w/2,y+h*.92,10,P.red,800,'center');hitArea('horse'+horse.id,'Tävla med '+horse.name,x,y,w,h,()=>{player=horse;nameInput.value=horse.name;screen='card';});});
+ const bottom=213+Math.ceil(pageSize/cols)*(h+gap)+10;
+ button('prev','Föregående',left,bottom,46,44,()=>stablePage--,'normal',stablePage===0,['chevL','only']);text((stablePage+1)+' / '+totalPages,W/2,bottom+22,13,P.muted);button('next','Nästa',W-left-46,bottom,46,44,()=>stablePage++,'normal',stablePage===totalPages-1,['chevR','only']);
+ button('stableBack','Tillbaka',left,bottom+57,(cw-10)/2,46,()=>{screen=backScreen==='stable'?'draw':backScreen;});button('stableDraw','Rita en ny',left+(cw+10)/2,bottom+57,(cw-10)/2,46,newDrawing,'yellow',false,['arrowR','right']);
+}
+function syncAccessibility(){
+ const host=document.getElementById('controls'),signature=hits.map(h=>h.id+':'+h.label+':'+!!h.disabled).join('|');
+ if(host.dataset.signature===signature)return;host.dataset.signature=signature;
+ const old=document.activeElement?.dataset?.id;host.replaceChildren();
+ for(const h of hits){const b=document.createElement('button');b.textContent=h.label;b.disabled=!!h.disabled;b.dataset.id=h.id;b.onclick=()=>{audioStart();hits.find(a=>a.id===h.id)?.fn();};b.onfocus=()=>focusId=h.id;b.onblur=()=>focusId='';host.appendChild(b);if(h.id===old)b.focus({preventScroll:true});}
+}
+function draw(){
+ const lk=screen==='lobby'?'lobby:'+(room?room.peers.length:0):screen;
+ if(layoutScreen!==lk){const same=layoutScreen.split(':')[0]===screen;layoutScreen=lk;resize();if(!same)window.scrollTo(0,0);}else if(W!==Math.max(320,document.documentElement.clientWidth))resize();
+ hits=[];drawRect=null;sliderRect=null;background();header();
+ if(screen==='lobby'&&!room)screen=player?'card':'draw';
+ if(screen==='draw')drawDrawing();else if(screen==='online')drawOnline();else if(screen==='lobby')drawLobby();else if(screen==='card')drawCard();else if(screen==='race'||screen==='replay')drawRace();else if(screen==='result')drawResults();else if(screen==='stable')drawStable();
+ if(toast&&clock<toastUntil){const w=Math.min(cw,660);box(W/2-w/2,H-121,w,49,P.ink,null,8);text(fit(toast,w-24,mobile?11:13),W/2,H-96,mobile?11:13,P.white,600,'center');}
+ syncAccessibility();
+}
+function locationOf(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
+function inside(p,r){return r&&p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h;}
+let drawingStroke=null,pressed=null,sliding=false,scrollDrag=null,touchUsed=matchMedia('(pointer: coarse)').matches;
+function endStroke(){if(drawingStroke){drawingStroke=null;rebuildInk();}if(activePointer!==null&&canvas.hasPointerCapture(activePointer))canvas.releasePointerCapture(activePointer);activePointer=null;}
+function addPoint(e){if(!drawingStroke||!drawRect)return;const p=locationOf(e),r=drawRect,q={x:Math.round(clamp((p.x-r.x)/r.w*DW,0,DW)*10)/10,y:Math.round(clamp((p.y-r.y)/r.h*DH,0,DH)*10)/10},prev=drawingStroke.points.at(-1);
+ if(prev&&Math.hypot(q.x-prev.x,q.y-prev.y)<.45)return;if(pointCount>=120000){tell('Duken är full. Dags att tävla med mästerverket.');return;}drawingStroke.points.push(q);pointCount++;
+ paintStrokes(inkCtx,[{color:drawingStroke.color,size:drawingStroke.size,points:prev?[prev,q]:[q]}]);
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(e.pointerType==='touch')touchUsed=true;if(e.button!==0||!e.isPrimary||activePointer!==null)return;e.preventDefault();audioStart();const p=locationOf(e);pressed=hits.slice().reverse().find(h=>inside(p,h))||null;scrollDrag=e.pointerType==='touch'?{y:e.clientY,scroll:scrollY,moved:false}:null;
+ if(pressed){if(pressed.id!=='name')nameInput.blur();if(pressed.id!=='code')codeInput.blur();return;}
+ if(screen==='draw'&&inside(p,sliderRect)){scrollDrag=null;sliding=true;activePointer=e.pointerId;canvas.setPointerCapture(e.pointerId);brush=clamp(2+(p.x-sliderRect.x-10)/(sliderRect.w-20)*22,2,24);return;}
+ if(screen==='draw'&&inside(p,drawRect)){scrollDrag=null;if(strokes.length>=2000||pointCount>=120000){tell('Duken är full. Dags att tävla.');return;}nameInput.blur();canvas.focus({preventScroll:true});activePointer=e.pointerId;canvas.setPointerCapture(e.pointerId);drawingStroke={color:pen,size:Math.round(brush),points:[]};strokes.push(drawingStroke);redo=[];addPoint(e);return;}
+ if(e.pointerType==='touch')scrollDrag={y:e.clientY,scroll:scrollY,moved:false};
+});
+canvas.addEventListener('pointermove',e=>{
+ const p=locationOf(e);hoverId=hits.slice().reverse().find(h=>inside(p,h)&&!h.disabled)?.id||'';canvas.style.cursor=hoverId?'pointer':screen==='draw'&&inside(p,drawRect)?'crosshair':'default';
+ if(sliding&&activePointer===e.pointerId){brush=clamp(2+(p.x-sliderRect.x-10)/(sliderRect.w-20)*22,2,24);return;}
+ if(e.pointerId===activePointer&&drawingStroke){e.preventDefault();const events=e.getCoalescedEvents?.();for(const event of events?.length?events:[e])addPoint(event);}
+ if(scrollDrag){const d=scrollDrag.y-e.clientY;if(Math.abs(d)>6)scrollDrag.moved=true;window.scrollTo(0,scrollDrag.scroll+d);}
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!e.isPrimary)return;const p=locationOf(e);if(activePointer===e.pointerId){sliding=false;endStroke();return;}
+ const h=pressed;pressed=null;if(h&&inside(p,h)&&!h.disabled&&!scrollDrag?.moved){sound('tap');h.fn();}else if(!h&&!scrollDrag?.moved&&screen==='race')cheer();scrollDrag=null;
+});
+canvas.addEventListener('pointercancel',e=>{if(e.pointerId===activePointer){sliding=false;endStroke();}pressed=null;scrollDrag=null;});
+canvas.addEventListener('lostpointercapture',e=>{if(e.pointerId===activePointer){drawingStroke=null;activePointer=null;sliding=false;rebuildInk();}});
+nameInput.addEventListener('input',()=>{nameInput.value=nameInput.value.replace(/[\n\r\t]/g,' ').slice(0,26);});
+nameInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameInput.blur();canvas.focus({preventScroll:true});}});
+codeInput.addEventListener('input',()=>{codeInput.value=codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);mpError='';});
+codeInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();codeInput.blur();joinByCode();}});
+addEventListener('keydown',e=>{
+ if(document.activeElement===nameInput||document.activeElement===codeInput)return;const key=e.key.toLowerCase();
+ if(screen==='draw'&&(e.ctrlKey||e.metaKey)&&key==='z'){e.preventDefault();e.shiftKey?redoStroke():undo();return;}
+ if(screen==='draw'&&(e.ctrlKey||e.metaKey)&&key==='y'){e.preventDefault();redoStroke();return;}
+ if(e.target.tagName==='BUTTON')return;
+ if(e.code==='Space'&&screen==='race'){e.preventDefault();if(!e.repeat)cheer();}
+ if(key==='p'&&screen==='race'&&!mpRole){paused=!paused;}
+ if(key==='r'&&screen==='result')startRace();
+ if(e.key==='Enter'&&screen==='card')startRace();
+});
+document.addEventListener('visibilitychange',()=>{clearTimeout(awayTimer);if(document.hidden){if(hostingRace())awayTimer=setTimeout(()=>{if(document.hidden)leaveWhileAway();},3000);if(screen==='race'&&!mpRole)paused=true;if(screen==='replay')replayPaused=true;if(audio)audio.suspend().catch(()=>{});}else if(audio&&soundOn)audio.resume().catch(()=>{});});
+let lastFrame=0,acc=0;
+function update(dt){
+ clock+=dt;
+ if(screen==='race'&&mpRole==='client')updateClient(dt);
+ else if(screen==='race'&&!paused){
+  if(countdown>0){countdown-=dt;const n=Math.ceil(countdown);if(n!==lastCount){lastCount=n;sound(n<=0?'go':'tick');}}
+  else if(!race.finished){race.step(dt);raceAudio(race.time);if(race.lastComment!==lastComment){lastComment=race.lastComment;live.textContent=lastComment;if(race.lastEvent?.index===meIdx)sound('event');}}
+  else{if(mpRole==='host'&&!mpEndSent)sendEnd();finishHold+=dt;if(finishHold>1.35)completeRace();}
+ }else if(screen==='replay'&&!replayPaused){replayClock=Math.min(record.race.time,replayClock+dt*replaySpeed);if(replayClock>=record.race.time)replayPaused=true;}
+}
+function frame(now){
+ const dt=lastFrame?Math.min((now-lastFrame)/1000,.1):0;lastFrame=now;acc+=dt;
+ while(acc>=1/60){update(1/60);acc-=1/60;}draw();requestAnimationFrame(frame);
+}
+if(loadWarning)tell(loadWarning);requestAnimationFrame(frame);
+{const code=inviteCode();if(code.length===4&&mpApi())mpConnect('invite',code);else if(code)setInviteUrl(null);}
+
+</script>
+</body>
+</html>

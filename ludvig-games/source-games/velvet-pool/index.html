@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b110e">
+<title>Velvet Pool</title>
+<style>
+:root{--bg:#0b110e;--ink:#efe7d4;--muted:#a3ad9f;--line:rgba(239,231,212,.14);--accent:#e6cf9c;--panel:rgba(15,23,19,.95);--bad:#e48a76}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;overscroll-behavior:none}
+button{font:inherit;color:inherit}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#hud{display:flex;align-items:center;gap:6px;padding:6px 8px 2px;flex-wrap:wrap;flex:none}
+#hud[hidden]{display:none}
+.icon{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;border:0;background:rgba(239,231,212,.06);color:var(--ink);cursor:pointer;flex:none;padding:0}
+.icon:hover{background:rgba(239,231,212,.11)}
+.icon svg{width:22px;height:22px}
+.chip{flex:0 1 220px;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:44px;padding:4px 10px;border-radius:12px;border:1px solid transparent;opacity:.55;transition:opacity .2s,border-color .2s,background .2s}
+.chip.on{opacity:1;border-color:var(--line);background:rgba(239,231,212,.06)}
+.chip .nm{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dots{display:flex;gap:3px;height:9px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.gone{opacity:.16}
+#p1{align-items:flex-end;text-align:right}
+#p1 .dots{flex-direction:row-reverse}
+#status{flex:1.3 1 0;min-width:0;text-align:center;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#status.alert{color:var(--accent)}
+@media (max-width:640px){.chip{flex:1 1 0}#status{order:9;flex-basis:100%;font-size:13px;line-height:18px;min-height:18px}.wide{display:none!important}}
+#stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;-webkit-user-select:none;user-select:none}
+#power{position:absolute;display:none;border-radius:14px;background:rgba(239,231,212,.06);border:1px solid var(--line);touch-action:none;overflow:hidden;cursor:grab}
+#power.show{display:block}
+#power.off{opacity:.35}
+#powerFill{position:absolute;left:0;top:0;width:100%;height:0;background:linear-gradient(180deg,#e6cf9c,#d07d4f)}
+#power.h #powerFill{height:100%;width:0;background:linear-gradient(90deg,#e6cf9c,#d07d4f)}
+#power svg{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);color:var(--muted);pointer-events:none}
+#power.h svg{transform:translate(-50%,-50%) rotate(90deg)}
+#overlay{position:fixed;inset:0;display:grid;place-items:center;padding:calc(12px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));background:rgba(5,9,7,.5);z-index:10;overflow:auto}
+#overlay[hidden]{display:none}
+#overlay.clear{background:rgba(5,9,7,.25)}
+.card{position:relative;width:min(100%,380px);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+h1{margin:2px 0 6px;font-size:30px;font-weight:650;letter-spacing:-.01em;text-align:center;white-space:nowrap}
+h2{margin:0 0 2px;font-size:22px;font-weight:650;text-align:center}
+.btn{min-height:48px;border-radius:12px;border:1px solid var(--line);background:rgba(239,231,212,.06);font-weight:600;cursor:pointer;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn:hover{background:rgba(239,231,212,.11)}
+.btn.primary{background:var(--accent);color:#1d1b14;border-color:transparent}
+.btn.primary:hover{background:#efdcb0}
+.btn:disabled{opacity:.45;cursor:default}
+.btn svg{width:20px;height:20px}
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.seg button{min-height:44px;border-radius:10px;border:1px solid var(--line);background:transparent;font-size:12.5px;cursor:pointer;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.seg button[aria-pressed=true]{background:rgba(230,207,156,.16);border-color:var(--accent)}
+.seg svg{width:12px;height:12px;color:var(--accent)}
+.muted{color:var(--muted);text-align:center;font-size:14px;margin:0}
+.err{color:var(--bad);text-align:center;font-size:14px;margin:0;min-height:19px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.icons{display:flex;justify-content:center;gap:8px;margin-top:2px}
+input.code{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:600 20px/1 system-ui,sans-serif;letter-spacing:.25em;text-transform:uppercase;text-align:center;padding:0 8px}
+input.code::placeholder{letter-spacing:.05em;font-size:15px;color:var(--muted);text-transform:none}
+.codebig{font-size:40px;letter-spacing:.2em;text-align:center;font-weight:700;margin:0}
+.x{position:absolute;top:8px;right:8px}
+ul.help{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;font-size:14.5px}
+.sep{height:1px;background:var(--line);margin:2px 0}
+@media (max-height:460px){.card{gap:7px;padding:14px 16px}h1{font-size:24px;margin:0}.btn{min-height:44px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17h.01"/></g></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11"/></g></symbol>
+<symbol id="i-mute" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></g></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><path d="M7 9h10M7 12h10M7 15h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</defs>
+</svg>
+<div id="app">
+  <header id="hud" hidden>
+    <button class="icon" id="menuBtn" aria-label="Menu"><svg><use href="#i-menu"/></svg></button>
+    <div class="chip" id="p0"><span class="nm"></span><span class="dots"></span></div>
+    <div id="status" aria-live="polite"></div>
+    <div class="chip" id="p1"><span class="nm"></span><span class="dots"></span></div>
+    <button class="icon wide" id="soundBtn" aria-label="Sound"><svg><use href="#i-sound"/></svg></button>
+    <button class="icon" id="helpBtn" aria-label="How to play"><svg><use href="#i-help"/></svg></button>
+  </header>
+  <main id="stage">
+    <canvas id="c" aria-label="Pool table"></canvas>
+    <div id="power" role="slider" aria-label="Shot power" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="powerFill"></div><svg><use href="#i-grip"/></svg></div>
+  </main>
+</div>
+<div id="overlay" hidden><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
+<script>
+(() => {
+'use strict';
+const SLUG = 'velvet-pool', KEY = 'velvet-pool:';
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(KEY + k); return v == null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(KEY + k, v); } catch { /* storage blocked */ } },
+};
+
+/* ---------- Table and physics (fixed step, deterministic: only + - * / sqrt) ---------- */
+const W = 1000, H = 500, R = 11.25, D = R * 2, CJ = 30, SJ = 21, RAIL = 42;
+const HEAD_X = 250, FOOT_X = 750;
+const POCKETS = [[-6, -6, 23], [W / 2, -12, 20], [W + 6, -6, 23], [-6, H + 6, 23], [W / 2, H + 12, 20], [W + 6, H + 6, 23]];
+const AIMPTS = [[-1, -1], [W / 2, -6], [W + 1, -1], [-1, H + 1], [W / 2, H + 6], [W + 1, H + 1]];
+const JAWS = [[CJ, 0], [0, CJ], [W - CJ, 0], [W, CJ], [0, H - CJ], [CJ, H], [W - CJ, H], [W, H - CJ], [W / 2 - SJ, 0], [W / 2 + SJ, 0], [W / 2 - SJ, H], [W / 2 + SJ, H]];
+const DT = 1 / 480, VMAX = 2700, MU_S = 1100, MU_R = 95, DAMP = 0.26, STOP = 3, MAX_STEPS = 480 * 40;
+const EC = 0.76, ET = 0.96, EB = 0.94, EJ = 0.55;
+const COLORS = ['#f2eee2', '#f0bf2c', '#2457b8', '#cf3a2c', '#68409c', '#ea7a22', '#1f8a52', '#8a2e28', '#141414'];
+const colorOf = n => COLORS[n > 8 ? n - 8 : n];
+
+const mkBall = (n, x, y) => ({ n, x, y, vx: 0, vy: 0, wx: 0, wy: 0, live: true });
+const moving = b => b.vx !== 0 || b.vy !== 0 || b.wx !== 0 || b.wy !== 0;
+const cloneBalls = bs => bs.map(b => ({ ...b }));
+
+function bounce(b, nx, ny, e, ev, fx) {
+  const vn = b.vx * nx + b.vy * ny;
+  if (vn >= 0) return;
+  const tx = -ny, ty = nx, vt = b.vx * tx + b.vy * ty;
+  b.vx = -vn * e * nx + vt * ET * tx; b.vy = -vn * e * ny + vt * ET * ty;
+  const wn = b.wx * nx + b.wy * ny, wt = b.wx * tx + b.wy * ty;
+  b.wx = -wn * 0.3 * nx + wt * ET * tx; b.wy = -wn * 0.3 * ny + wt * ET * ty;
+  if (ev.firstHit !== null) ev.rail = true;
+  if (fx) fx.hit(1, -vn);
+}
+
+function pot(b, k, ev, fx) {
+  b.live = false; b.vx = b.vy = b.wx = b.wy = 0;
+  ev.pocketed.push(b.n);
+  if (fx) fx.pot(b, k);
+}
+
+function step(bs, ev, fx) {
+  for (let i = 0; i < 16; i++) {
+    const b = bs[i];
+    if (!b.live || !moving(b)) continue;
+    const sx = b.vx - b.wx, sy = b.vy - b.wy, s = Math.sqrt(sx * sx + sy * sy);
+    if (s > 1) {
+      const dv = MU_S * DT;
+      if (dv * 3.5 >= s) {
+        const rx = (5 * b.vx + 2 * b.wx) / 7, ry = (5 * b.vy + 2 * b.wy) / 7;
+        b.vx = b.wx = rx; b.vy = b.wy = ry;
+      } else {
+        const ux = sx / s, uy = sy / s;
+        b.vx -= ux * dv; b.vy -= uy * dv; b.wx += ux * dv * 2.5; b.wy += uy * dv * 2.5;
+      }
+    } else {
+      const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy), ns = sp - (MU_R + DAMP * sp) * DT;
+      if (ns <= STOP) { b.vx = b.vy = b.wx = b.wy = 0; continue; }
+      const k = ns / sp; b.vx *= k; b.vy *= k; b.wx = b.vx; b.wy = b.vy;
+    }
+    b.x += b.vx * DT; b.y += b.vy * DT;
+    if (b.y > CJ && b.y < H - CJ) {
+      if (b.x < R) { b.x = R; bounce(b, 1, 0, EC, ev, fx); }
+      else if (b.x > W - R) { b.x = W - R; bounce(b, -1, 0, EC, ev, fx); }
+    }
+    if (b.x > CJ && b.x < W - CJ && Math.abs(b.x - W / 2) > SJ) {
+      if (b.y < R) { b.y = R; bounce(b, 0, 1, EC, ev, fx); }
+      else if (b.y > H - R) { b.y = H - R; bounce(b, 0, -1, EC, ev, fx); }
+    }
+    if (b.x < CJ + R || b.x > W - CJ - R || b.y < D || b.y > H - D || Math.abs(b.x - W / 2) < SJ + R) {
+      for (let j = 0; j < 12; j++) {
+        const dx = b.x - JAWS[j][0], dy = b.y - JAWS[j][1], d2 = dx * dx + dy * dy;
+        if (d2 < R * R && d2 > 1e-9) {
+          const d = Math.sqrt(d2), nx = dx / d, ny = dy / d;
+          b.x = JAWS[j][0] + nx * R; b.y = JAWS[j][1] + ny * R;
+          bounce(b, nx, ny, EJ, ev, fx);
+        }
+      }
+      let near = -1, best = 1e9;
+      for (let k = 0; k < 6; k++) {
+        const dx = b.x - POCKETS[k][0], dy = b.y - POCKETS[k][1], d2 = dx * dx + dy * dy;
+        if (d2 < best) { best = d2; near = k; }
+      }
+      const pr = POCKETS[near][2];
+      if (best < pr * pr || b.x < -R || b.x > W + R || b.y < -R || b.y > H + R) pot(b, near, ev, fx);
+    }
+  }
+  for (let i = 0; i < 15; i++) {
+    const a = bs[i];
+    if (!a.live) continue;
+    const am = moving(a);
+    for (let j = i + 1; j < 16; j++) {
+      const b = bs[j];
+      if (!b.live || (!am && !moving(b))) continue;
+      const dx = b.x - a.x;
+      if (dx > D || dx < -D) continue;
+      const dy = b.y - a.y;
+      if (dy > D || dy < -D) continue;
+      const d2 = dx * dx + dy * dy;
+      if (d2 >= D * D) continue;
+      const d = Math.sqrt(d2) || 1e-6, nx = dx / d, ny = dy / d, ov = (D - d) / 2;
+      a.x -= nx * ov; a.y -= ny * ov; b.x += nx * ov; b.y += ny * ov;
+      const vn = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+      if (vn > 0) {
+        const jn = vn * (1 + EB) / 2;
+        a.vx -= jn * nx; a.vy -= jn * ny; b.vx += jn * nx; b.vy += jn * ny;
+        if (fx) fx.hit(0, vn);
+      }
+      if (ev.firstHit === null && (a.n === 0 || b.n === 0)) ev.firstHit = a.n === 0 ? b.n : a.n;
+    }
+  }
+}
+const anyMoving = bs => { for (let i = 0; i < 16; i++) if (bs[i].live && moving(bs[i])) return true; return false; };
+const stopAll = bs => bs.forEach(b => { b.vx = b.vy = b.wx = b.wy = 0; });
+const newEvents = rem => ({ firstHit: null, rail: false, pocketed: [], startRem: rem });
+
+function simulate(bs, vx, vy, ev) {
+  bs[0].vx = vx; bs[0].vy = vy; bs[0].wx = 0; bs[0].wy = 0;
+  let n = 0;
+  while (n < MAX_STEPS) { step(bs, ev, null); n++; if ((n & 7) === 0 && !anyMoving(bs)) break; }
+  stopAll(bs);
+}
+
+/* ---------- Rules (WPA-style eight-ball, no called pockets) ---------- */
+const groupOf = n => (n < 8 ? 'solid' : 'stripe');
+const groupName = g => (g === 'solid' ? 'Solids' : 'Stripes');
+function remainingOf(bs, g) { let c = 0; for (const b of bs) if (b.live && b.n && b.n !== 8 && groupOf(b.n) === g) c++; return c; }
+function freeSpot(bs, x, y, skip) {
+  for (const b of bs) if (b.live && b.n !== skip) { const dx = b.x - x, dy = b.y - y; if (dx * dx + dy * dy < (D + 0.3) * (D + 0.3)) return false; }
+  return true;
+}
+const inCloth = (x, y) => x >= R && x <= W - R && y >= R && y <= H - R;
+function validCue(bs, x, y, kitchen) { return inCloth(x, y) && (!kitchen || x <= HEAD_X) && freeSpot(bs, x, y, 0); }
+function placeCue(bs) {
+  const q = bs[0]; q.live = true; stopAll([q]);
+  for (let r = 0; r < 400; r += 6) for (let a = 0; a < 12; a++) {
+    const x = HEAD_X - r * Math.abs(Math.cos(a * 0.5236)), y = H / 2 + r * Math.sin(a * 0.5236);
+    if (validCue(bs, x, y, false)) { q.x = x; q.y = y; return; }
+  }
+}
+function respot8(bs) {
+  const e = bs[8]; e.live = true; stopAll([e]);
+  for (let x = FOOT_X; x < W - R; x += 2) if (freeSpot(bs, x, H / 2, 8)) { e.x = x; e.y = H / 2; return; }
+  for (let x = FOOT_X; x > R; x -= 2) if (freeSpot(bs, x, H / 2, 8)) { e.x = x; e.y = H / 2; return; }
+}
+function legalTargets(bs, S, seat) {
+  const g = S.groups[seat];
+  if (S.breakShot || !g) return bs.filter(b => b.live && b.n && b.n !== 8);
+  const own = bs.filter(b => b.live && b.n && b.n !== 8 && groupOf(b.n) === g);
+  return own.length ? own : [bs[8]];
+}
+function legalFirst(S, n) {
+  const g = S.groups[S.turn];
+  if (S.breakShot) return true;
+  if (!g) return n !== 8;
+  return remainingOf(S.balls, g) > 0 ? n !== 8 && groupOf(n) === g : n === 8;
+}
+
+function resolve(S, ev) {
+  const N = { ...S, groups: [...S.groups], msg: '', seq: S.seq + 1 };
+  const bs = N.balls, me = S.turn, opp = 1 - me, g = S.groups[me];
+  const pots = ev.pocketed, obj = pots.filter(n => n > 0 && n !== 8), eight = pots.includes(8), scratch = pots.includes(0);
+  let foul = '';
+  if (scratch) foul = 'scratch';
+  else if (ev.firstHit === null) foul = 'no ball hit';
+  else if (!S.breakShot) {
+    if (!g) { if (ev.firstHit === 8) foul = 'hit the 8 first'; }
+    else if (ev.startRem > 0) { if (ev.firstHit === 8 || groupOf(ev.firstHit) !== g) foul = 'wrong ball first'; }
+    else if (ev.firstHit !== 8) foul = 'wrong ball first';
+    if (!foul && !pots.length && !ev.rail) foul = 'no rail after contact';
+  }
+  if (eight && !S.breakShot) {
+    const legal = !foul && g && ev.startRem === 0;
+    N.over = true; N.winner = legal ? me : opp; N.reason = legal ? '' : (foul ? 'foul' : 'early'); N.placing = false; N.kitchen = false;
+    return N;
+  }
+  if (eight) respot8(bs);
+  if (!S.breakShot && !g && !foul && obj.length) {
+    const t = groupOf(obj[0]); N.groups[me] = t; N.groups[opp] = t === 'solid' ? 'stripe' : 'solid'; N.assigned = true;
+  } else N.assigned = false;
+  const g2 = N.groups[me];
+  const scored = !foul && obj.some(n => !g2 || groupOf(n) === g2);
+  if (foul) { N.turn = opp; N.placing = true; N.msg = 'Foul: ' + foul; if (!bs[0].live) placeCue(bs); }
+  else if (!scored) { N.turn = opp; N.placing = false; }
+  else N.placing = false;
+  if (eight && S.breakShot) N.msg = N.msg || '8 ball back on its spot';
+  N.breakShot = false; N.kitchen = false;
+  return N;
+}
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function freshState(breaker) {
+  const bs = new Array(16);
+  bs[0] = mkBall(0, HEAD_X, H / 2);
+  const sol = shuffle([1, 2, 3, 4, 5, 6, 7]), str = shuffle([9, 10, 11, 12, 13, 14, 15]);
+  const slots = new Array(15).fill(0); slots[4] = 8;
+  const sFirst = Math.random() < 0.5;
+  slots[10] = sFirst ? sol.pop() : str.pop(); slots[14] = sFirst ? str.pop() : sol.pop();
+  const rest = shuffle([...sol, ...str]);
+  for (let i = 0; i < 15; i++) if (!slots[i]) slots[i] = rest.pop();
+  const sp = D + 0.06; let i = 0;
+  for (let r = 0; r < 5; r++) for (let j = 0; j <= r; j++) { const n = slots[i++]; bs[n] = mkBall(n, FOOT_X + r * sp * 0.8660254, H / 2 + (j - r / 2) * sp); }
+  return { balls: bs, turn: breaker, breaker, groups: [null, null], placing: true, kitchen: true, breakShot: true, over: false, winner: -1, reason: '', msg: '', seq: 0, seats: null, names: null, assigned: false };
+}
+const pack = bs => bs.map(b => [b.x, b.y, b.live ? 1 : 0]);
+const unpackBalls = arr => arr.map((p, n) => { const b = mkBall(n, p[0], p[1]); b.live = !!p[2]; return b; });
+const packState = S => ({ ...S, balls: pack(S.balls) });
+const unpackState = s => ({ ...s, balls: unpackBalls(s.balls) });
+
+/* ---------- Computer opponent ---------- */
+const LEVELS = ['Beginner', 'Easy', 'Medium', 'Hard', 'Pro'];
+const AI = [
+  { noise: 0.03, pn: 0.2, sims: 0, pick: 3, brk: 0.72, powers: [] },
+  { noise: 0.015, pn: 0.12, sims: 0, pick: 1, brk: 0.88, powers: [] },
+  { noise: 0.0075, pn: 0.07, sims: 3, pick: 1, brk: 1, powers: [0.85, 1.2] },
+  { noise: 0.004, pn: 0.05, sims: 6, pick: 1, brk: 1, powers: [0.8, 1, 1.3], pos: true },
+  { noise: 0.0017, pn: 0.03, sims: 8, pick: 1, brk: 1, powers: [0.75, 1, 1.3, 1.7], pos: true, safe: true },
+];
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2832 * v); }
+function clear(bs, ax, ay, bx, by, a, b) {
+  const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
+  for (const o of bs) {
+    if (!o.live || o.n === a || o.n === b) continue;
+    let t = ((o.x - ax) * dx + (o.y - ay) * dy) / L2; t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const px = ax + dx * t - o.x, py = ay + dy * t - o.y;
+    if (px * px + py * py < (D - 0.5) * (D - 0.5)) return false;
+  }
+  return true;
+}
+function candidates(bs, S, seat) {
+  const cue = bs[0], out = [];
+  if (!cue.live) return out;
+  for (const t of legalTargets(bs, S, seat)) for (let k = 0; k < 6; k++) {
+    const px = AIMPTS[k][0], py = AIMPTS[k][1];
+    let ux = px - t.x, uy = py - t.y; const d2 = Math.sqrt(ux * ux + uy * uy); ux /= d2; uy /= d2;
+    const side = k === 1 || k === 4;
+    if (side && Math.abs(uy) < 0.45) continue;
+    const gx = t.x - ux * D, gy = t.y - uy * D;
+    let cx = gx - cue.x, cy = gy - cue.y; const d1 = Math.sqrt(cx * cx + cy * cy);
+    if (d1 < 1) continue; cx /= d1; cy /= d1;
+    const cos = cx * ux + cy * uy;
+    if (cos < 0.22) continue;
+    if (!clear(bs, cue.x, cue.y, gx, gy, 0, t.n) || !clear(bs, t.x, t.y, px, py, 0, t.n)) continue;
+    const diff = d1 * 0.35 + d2 * 0.9 + (1 - cos) * 650 + (side ? 50 : 0) + (cos < 0.5 ? 200 : 0);
+    const vo = Math.sqrt(460 * (d2 + 110)), vc = vo / (cos * 0.97), v0 = Math.sqrt(vc * vc + 460 * d1) * 1.4;
+    out.push({ angle: Math.atan2(cy, cx), power: Math.min(0.92, Math.max(0.1, v0 / VMAX)), diff, n: t.n });
+  }
+  return out.sort((a, b) => a.diff - b.diff);
+}
+function evalShot(bs, S, seat, angle, power, L) {
+  const c = cloneBalls(bs), g = S.groups[seat], ev = newEvents(g ? remainingOf(c, g) : 7);
+  simulate(c, Math.cos(angle) * power * VMAX, Math.sin(angle) * power * VMAX, ev);
+  const N = resolve({ ...S, balls: c, turn: seat }, ev);
+  if (N.over) return N.winner === seat ? 1e5 : -1e5;
+  let sc;
+  if (N.turn === seat) {
+    sc = 1000;
+    if (L.pos) { const cs = candidates(N.balls, N, seat); sc += cs.length ? Math.max(0, 420 - cs[0].diff * 0.5) : -150; }
+  } else {
+    sc = N.placing ? -2000 : -300;
+    if (L.safe) { const cs = candidates(N.balls, N, 1 - seat); sc += cs.length ? -Math.max(0, 320 - cs[0].diff * 0.4) : 260; }
+  }
+  return sc;
+}
+function aiPlace(bs, S, seat, L) {
+  if (S.breakShot) {
+    for (let i = 0; i < 30; i++) { const x = HEAD_X - Math.random() * 30, y = H / 2 + (Math.random() - 0.5) * 120; if (validCue(bs, x, y, true)) return { x, y }; }
+    return { x: bs[0].x, y: bs[0].y };
+  }
+  const spots = [];
+  for (const t of legalTargets(bs, S, seat)) for (let k = 0; k < 6; k++) {
+    const px = AIMPTS[k][0], py = AIMPTS[k][1];
+    let ux = px - t.x, uy = py - t.y; const d2 = Math.sqrt(ux * ux + uy * uy); ux /= d2; uy /= d2;
+    if ((k === 1 || k === 4) && Math.abs(uy) < 0.6) continue;
+    if (!clear(bs, t.x, t.y, px, py, 0, t.n)) continue;
+    for (const dist of [50, 100, 170]) {
+      const x = t.x - ux * (D + dist), y = t.y - uy * (D + dist);
+      if (validCue(bs, x, y, S.kitchen) && clear(bs, x, y, t.x - ux * D, t.y - uy * D, 0, t.n)) spots.push({ x, y, diff: d2 + dist * 0.3 + (dist === 50 ? 30 : 0) });
+    }
+  }
+  if (!spots.length) {
+    for (let i = 0; i < 200; i++) { const x = R + Math.random() * (W - D), y = R + Math.random() * (H - D); if (validCue(bs, x, y, S.kitchen)) return { x, y }; }
+    return { x: bs[0].x, y: bs[0].y };
+  }
+  spots.sort((a, b) => a.diff - b.diff);
+  return L.pick > 1 ? spots[Math.floor(Math.random() * Math.min(spots.length, 4))] : spots[0];
+}
+function* aiThink(S0, seat, L) {
+  const bs = cloneBalls(S0.balls);
+  let place = null;
+  if (S0.placing) { place = aiPlace(bs, S0, seat, L); bs[0].x = place.x; bs[0].y = place.y; bs[0].live = true; yield; }
+  const cue = bs[0];
+  if (S0.breakShot) {
+    let apex = bs[1], bd = 1e9;
+    for (const b of bs) if (b.n && b.live) { const d = (b.x - FOOT_X) ** 2 + (b.y - H / 2) ** 2; if (d < bd) { bd = d; apex = b; } }
+    return { place, angle: Math.atan2(apex.y - cue.y, apex.x - cue.x) + (Math.random() - 0.5) * 0.006, power: L.brk };
+  }
+  const cands = candidates(bs, S0, seat);
+  if (!L.sims) {
+    if (cands.length) { const c = cands[Math.floor(Math.random() * Math.min(cands.length, L.pick))]; return { place, angle: c.angle, power: c.power }; }
+  }
+  let best = null;
+  for (const c of cands.slice(0, L.sims)) for (const m of L.powers) {
+    const p = Math.min(1, Math.max(0.08, c.power * m)), sc = evalShot(bs, S0, seat, c.angle, p, L);
+    if (!best || sc > best.score) best = { angle: c.angle, power: p, score: sc };
+    yield;
+  }
+  if (!best || best.score < 0) {
+    const tg = legalTargets(bs, S0, seat).slice().sort((a, b) => ((a.x - cue.x) ** 2 + (a.y - cue.y) ** 2) - ((b.x - cue.x) ** 2 + (b.y - cue.y) ** 2));
+    for (const t of tg.slice(0, L.pos ? 6 : L.sims ? 4 : 3)) {
+      const base = Math.atan2(t.y - cue.y, t.x - cue.x), dist = Math.hypot(t.x - cue.x, t.y - cue.y);
+      for (const off of L.pos ? [-0.7, -0.3, 0, 0.3, 0.7] : L.sims ? [-0.4, 0, 0.4] : [0]) for (const p of L.sims ? [0.28, 0.5] : [0.45]) {
+        const a = base + Math.asin(Math.max(-1, Math.min(1, off * D / dist)));
+        const sc = L.sims ? evalShot(bs, S0, seat, a, p, L) : 0;
+        if (!best || sc > best.score) best = { angle: a, power: p, score: sc };
+        if (L.sims) yield;
+      }
+    }
+  }
+  if (!best) best = { angle: Math.random() * 6.283, power: 0.5 };
+  return { place, angle: best.angle, power: best.power };
+}
+
+/* ---------- Sound (tiny synth, no files) ---------- */
+const snd = {
+  ctx: null, on: store.get('sound', 'on') !== 'off', noise: null, budget: 0,
+  init() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); return; }
+    try {
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      this.ctx = new C();
+      const len = Math.floor(this.ctx.sampleRate * 0.25), buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      this.noise = buf;
+    } catch { this.ctx = null; }
+  },
+  play(kind, v) {
+    if (!this.on || !this.ctx || this.ctx.state !== 'running' || this.budget > 5) return;
+    this.budget++;
+    const c = this.ctx, t = c.currentTime, g = c.createGain(), f = c.createBiquadFilter(), src = c.createBufferSource();
+    src.buffer = this.noise; src.connect(f); f.connect(g); g.connect(c.destination);
+    const vol = Math.min(1, Math.max(0.03, v));
+    let dur = 0.04;
+    if (kind === 'ball') { f.type = 'bandpass'; f.frequency.value = 2600 + vol * 1400; f.Q.value = 2; g.gain.setValueAtTime(0.9 * vol, t); dur = 0.035; }
+    else if (kind === 'rail') { f.type = 'lowpass'; f.frequency.value = 500; g.gain.setValueAtTime(0.7 * vol, t); dur = 0.09; }
+    else if (kind === 'cue') { f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 1.2; g.gain.setValueAtTime(0.6 * vol, t); dur = 0.05; }
+    else {
+      f.type = 'lowpass'; f.frequency.value = 260; g.gain.setValueAtTime(0.9, t); dur = 0.22;
+      const o = c.createOscillator(), og = c.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.2);
+      og.gain.setValueAtTime(0.35, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.22); o.connect(og); og.connect(c.destination); o.start(t); o.stop(t + 0.24);
+    }
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.start(t, Math.random() * 0.15); src.stop(t + dur + 0.01);
+  },
+};
+const liveFx = {
+  hit(kind, speed) { if (speed > 25) snd.play(kind ? 'rail' : 'ball', speed / (kind ? 1600 : 1300)); },
+  pot(b, k) { snd.play('pocket', 1); sinks.push({ n: b.n, x: b.x, y: b.y, px: POCKETS[k][0], py: POCKETS[k][1], t: 0 }); },
+};
+
+/* ---------- App state ---------- */
+const canvas = $('c'), ctx = canvas.getContext('2d');
+let mode = 'menu';          // menu | ai | local | online
+let phase = 'idle';         // idle | rolling | waiting
+let S = freshState(0);
+let level = Math.max(0, Math.min(4, +store.get('level', 2) || 0));
+let wins = {}; try { wins = JSON.parse(store.get('wins', '{}')) || {}; } catch { wins = {}; }
+let aim = 0, pull = 0, shot = null, sinks = [], aiJob = null, nextBreaker = 0;
+let drag = null, touchMode = matchMedia('(pointer: coarse)').matches, spaceCharge = -1;
+let view = { s: 1, port: false, dpr: 1, w: 0, h: 0, T: [1, 0, 0, 1, 0, 0] };
+let tableLayer = null, sprites = [], spriteSize = 0;
+let resultTimer = 0;
+
+const net = { room: null, code: '', again: [false, false], lastSend: 0, sentAim: '', remoteAim: null, waitTimer: 0, pending: null, offs: [] };
+
+const isOnline = () => mode === 'online';
+const mySeat = () => (isOnline() && S.seats && net.room ? S.seats.indexOf(net.room.self.id) : 0);
+const oppId = () => (S.seats ? S.seats[1 - mySeat()] : null);
+const oppPresent = () => !!(net.room && oppId() && net.room.peers.some(p => p.id === oppId()));
+function humanTurn() {
+  if (mode === 'ai') return S.turn === 0;
+  if (mode === 'local') return true;
+  if (isOnline()) return !!S.seats && S.turn === mySeat() && oppPresent();
+  return false;
+}
+const overlayOpen = () => !$('overlay').hidden;
+const canAct = () => mode !== 'menu' && !overlayOpen() && phase === 'idle' && !S.over && humanTurn() && !aiJob;
+
+function seatName(seat, subject) {
+  if (mode === 'ai') return seat === 0 ? (subject ? 'You' : 'You') : 'Computer';
+  if (mode === 'local') return 'Player ' + (seat + 1);
+  if (isOnline() && S.names) return seat === mySeat() ? 'You' : (S.names[seat] || 'Opponent');
+  return 'Player ' + (seat + 1);
+}
+
+/* ---------- Layout and drawing ---------- */
+function layout() {
+  const st = $('stage').getBoundingClientRect(), w = Math.max(1, st.width), h = Math.max(1, st.height);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  const port = h > w * 1.05;
+  const bar = touchMode && mode !== 'menu' ? 58 : 0;
+  const TW = W + 2 * RAIL, TH = H + 2 * RAIL;
+  let aw = w - 8, ah = h - 8;
+  if (port) ah -= bar; else aw -= bar;
+  const s = port ? Math.min(aw / TH, ah / TW) : Math.min(aw / TW, ah / TH);
+  const cx = port ? w / 2 : (w - bar) / 2, cy = port ? (h - bar) / 2 : h / 2;
+  const k = s * dpr;
+  view = { s, port, dpr, w, h, cx, cy, T: port ? [0, -k, k, 0, (cx - s * H / 2) * dpr, (cy + s * W / 2) * dpr] : [k, 0, 0, k, (cx - s * W / 2) * dpr, (cy - s * H / 2) * dpr] };
+  const pw = $('power');
+  pw.classList.toggle('show', bar > 0);
+  pw.classList.toggle('h', port);
+  if (bar) {
+    if (port) { const bw = Math.min(TH * s * 0.86, 420); Object.assign(pw.style, { width: bw + 'px', height: '46px', left: (cx - bw / 2) + 'px', top: (cy + TW * s / 2 + 6) + 'px' }); }
+    else { const bh = Math.min(TH * s * 0.86, 420); Object.assign(pw.style, { width: '46px', height: bh + 'px', left: (cx + TW * s / 2 + 6) + 'px', top: (cy - bh / 2) + 'px' }); }
+  }
+  buildTable(); buildSprites();
+}
+function setT(c) { const T = view.T; c.setTransform(T[0], T[1], T[2], T[3], T[4], T[5]); }
+function toScreen(x, y) { const T = view.T; return [T[0] * x + T[2] * y + T[4], T[1] * x + T[3] * y + T[5]]; }
+function toTable(e) {
+  const r = canvas.getBoundingClientRect(), sx = (e.clientX - r.left), sy = (e.clientY - r.top), s = view.s;
+  if (view.port) return { x: W / 2 - (sy - view.cy) / s, y: (sx - view.cx) / s + H / 2 };
+  return { x: (sx - view.cx) / s + W / 2, y: (sy - view.cy) / s + H / 2 };
+}
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function buildTable() {
+  const L = tableLayer || document.createElement('canvas'); tableLayer = L;
+  L.width = canvas.width; L.height = canvas.height;
+  const c = L.getContext('2d');
+  c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0b110e'; c.fillRect(0, 0, L.width, L.height);
+  setT(c);
+  const sh = c.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, W * 0.75); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = 'rgba(0,0,0,.45)'; rr(c, -RAIL - 6, -RAIL + 4, W + 2 * RAIL + 12, H + 2 * RAIL + 12, 30); c.fill();
+  const wood = c.createLinearGradient(0, -RAIL, 0, H + RAIL); wood.addColorStop(0, '#6e4527'); wood.addColorStop(0.5, '#56341c'); wood.addColorStop(1, '#43280f');
+  c.fillStyle = wood; rr(c, -RAIL, -RAIL, W + 2 * RAIL, H + 2 * RAIL, 26); c.fill();
+  c.strokeStyle = 'rgba(255,220,170,.12)'; c.lineWidth = 2; rr(c, -RAIL + 4, -RAIL + 4, W + 2 * RAIL - 8, H + 2 * RAIL - 8, 22); c.stroke();
+  c.fillStyle = '#165640'; c.fillRect(-14, -14, W + 28, H + 28);
+  const cloth = c.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * 0.62); cloth.addColorStop(0, '#24795b'); cloth.addColorStop(1, '#1a5f47');
+  c.fillStyle = cloth; c.fillRect(0, 0, W, H);
+  c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 3; c.strokeRect(-1.5, -1.5, W + 3, H + 3);
+  c.strokeStyle = 'rgba(240,230,200,.09)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(HEAD_X, 0); c.lineTo(HEAD_X, H); c.stroke();
+  c.fillStyle = 'rgba(240,230,200,.22)'; c.beginPath(); c.arc(FOOT_X, H / 2, 2.6, 0, 6.283); c.fill(); c.beginPath(); c.arc(HEAD_X, H / 2, 2.6, 0, 6.283); c.fill();
+  c.fillStyle = 'rgba(240,226,190,.75)';
+  const dy = -(RAIL + 14) / 2;
+  for (let k = 1; k < 8; k++) if (k !== 4) for (const y of [dy, H - dy]) { c.beginPath(); c.arc(W * k / 8, y, 3, 0, 6.283); c.fill(); }
+  for (let k = 1; k < 4; k++) for (const x of [dy, W - dy]) { c.beginPath(); c.arc(x, H * k / 4, 3, 0, 6.283); c.fill(); }
+  c.fillStyle = '#08100c';
+  const mouth = pts => { c.beginPath(); c.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); c.closePath(); c.fill(); };
+  for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+    const ox = sx > 0 ? 0 : W, oy = sy > 0 ? 0 : H;
+    mouth([ox + sx * CJ, oy, ox + sx * (CJ - 8), oy - sy * 15, ox - sx * 15, oy + sy * (CJ - 8), ox, oy + sy * CJ, ox, oy]);
+  }
+  for (const yy of [0, H]) { const sy = yy ? -1 : 1; mouth([W / 2 - SJ, yy, W / 2 - SJ + 5, yy - sy * 15, W / 2 + SJ - 5, yy - sy * 15, W / 2 + SJ, yy]); }
+  for (const [x, y, r] of POCKETS) {
+    const g = c.createRadialGradient(x, y, 2, x, y, r + 4); g.addColorStop(0, '#000'); g.addColorStop(0.75, '#050806'); g.addColorStop(1, '#1b130b');
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r + 3, 0, 6.283); c.fill();
+  }
+}
+function buildSprites() {
+  const px = D * view.s * view.dpr, size = Math.ceil(px) + 4;
+  spriteSize = size; sprites = [];
+  for (let n = 0; n < 16; n++) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = size;
+    const c = cv.getContext('2d'), r = px / 2;
+    c.translate(size / 2, size / 2);
+    c.save(); c.beginPath(); c.arc(0, 0, r, 0, 6.283); c.clip();
+    c.fillStyle = n > 8 ? '#f2eee2' : colorOf(n); c.fillRect(-r, -r, 2 * r, 2 * r);
+    if (n > 8) { c.fillStyle = colorOf(n); c.fillRect(-r, -r * 0.52, 2 * r, r * 1.04); }
+    if (n) {
+      c.fillStyle = '#f7f3e8'; c.beginPath(); c.arc(0, 0, r * 0.47, 0, 6.283); c.fill();
+      c.fillStyle = '#161616'; c.font = `700 ${Math.max(6, r * (n > 9 ? 0.52 : 0.6))}px system-ui,Arial,sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(n), 0, r * 0.04);
+    }
+    const sh = c.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r * 1.05);
+    sh.addColorStop(0, 'rgba(255,255,255,.28)'); sh.addColorStop(0.45, 'rgba(255,255,255,0)'); sh.addColorStop(0.8, 'rgba(0,0,0,.12)'); sh.addColorStop(1, 'rgba(0,0,0,.42)');
+    c.fillStyle = sh; c.fillRect(-r, -r, 2 * r, 2 * r);
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(-r * 0.36, -r * 0.42, r * 0.2, r * 0.12, -0.6, 0, 6.283); c.fill();
+    c.restore();
+    sprites.push(cv);
+  }
+}
+function drawBall(n, x, y, scale) {
+  const [sx, sy] = toScreen(x, y), sz = spriteSize * (scale || 1);
+  ctx.drawImage(sprites[n], sx - sz / 2, sy - sz / 2, sz, sz);
+}
+function aimInfo() {
+  const q = S.balls[0], ux = Math.cos(aim), uy = Math.sin(aim);
+  let tMin = Infinity, hit = null;
+  for (const b of S.balls) {
+    if (!b.live || !b.n) continue;
+    const fx = b.x - q.x, fy = b.y - q.y, tc = fx * ux + fy * uy;
+    if (tc <= 0) continue;
+    const d2 = fx * fx + fy * fy - tc * tc;
+    if (d2 > D * D) continue;
+    const t = tc - Math.sqrt(D * D - d2);
+    if (t < tMin) { tMin = t; hit = b; }
+  }
+  const tx = ux > 0 ? (W - R - q.x) / ux : ux < 0 ? (R - q.x) / ux : Infinity;
+  const ty = uy > 0 ? (H - R - q.y) / uy : uy < 0 ? (R - q.y) / uy : Infinity;
+  const tr = Math.max(0, Math.min(tx, ty));
+  if (tr < tMin) { tMin = tr; hit = null; }
+  return { ux, uy, t: tMin, hit, gx: q.x + ux * tMin, gy: q.y + uy * tMin };
+}
+function drawGuide() {
+  const q = S.balls[0], s = view.s, a = aimInfo();
+  ctx.lineCap = 'round';
+  ctx.setLineDash([7 / s * 1.2, 7 / s * 1.2]); ctx.lineWidth = 1.6 / s; ctx.strokeStyle = 'rgba(248,240,214,.6)';
+  ctx.beginPath(); ctx.moveTo(q.x + a.ux * R, q.y + a.uy * R); ctx.lineTo(a.gx - a.ux * R, a.gy - a.uy * R); ctx.stroke();
+  ctx.setLineDash([]);
+  const bad = a.hit && !legalFirst(S, a.hit.n);
+  ctx.strokeStyle = bad ? 'rgba(228,138,118,.95)' : 'rgba(248,240,214,.8)'; ctx.lineWidth = 1.6 / s;
+  ctx.beginPath(); ctx.arc(a.gx, a.gy, R, 0, 6.283); ctx.stroke();
+  if (a.hit && !bad) {
+    const nx = (a.hit.x - a.gx) / D, ny = (a.hit.y - a.gy) / D, cos = a.ux * nx + a.uy * ny;
+    ctx.strokeStyle = 'rgba(248,240,214,.75)'; ctx.lineWidth = 2 / s;
+    ctx.beginPath(); ctx.moveTo(a.hit.x + nx * R, a.hit.y + ny * R); ctx.lineTo(a.hit.x + nx * (R + 30 + 150 * cos), a.hit.y + ny * (R + 30 + 150 * cos)); ctx.stroke();
+    let tx = a.ux - cos * nx, ty = a.uy - cos * ny; const tl = Math.hypot(tx, ty);
+    if (tl > 0.02) { tx /= tl; ty /= tl; const len = 15 + 80 * (1 - cos); ctx.strokeStyle = 'rgba(248,240,214,.35)'; ctx.beginPath(); ctx.moveTo(a.gx, a.gy); ctx.lineTo(a.gx + tx * len, a.gy + ty * len); ctx.stroke(); }
+  }
+}
+function drawCue() {
+  const q = S.balls[0], ux = Math.cos(aim), uy = Math.sin(aim), s = view.s;
+  const start = R + 5 + pull * 85, len = 400;
+  const p = k => [q.x - ux * (start + k), q.y - uy * (start + k)];
+  ctx.lineCap = 'butt';
+  const seg = (a, b, w, col) => { const [x1, y1] = p(a), [x2, y2] = p(b); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+  ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 9; ctx.beginPath(); const [a1, b1] = p(4), [a2, b2] = p(len); ctx.moveTo(a1 + 4, b1 + 6); ctx.lineTo(a2 + 4, b2 + 6); ctx.stroke();
+  seg(0, 4, 4.4, '#5c87a8'); seg(4, 14, 4.8, '#f1ead8'); seg(14, len * 0.62, 6, '#d7b07a'); seg(len * 0.62, len * 0.66, 7.4, '#2a1a10'); seg(len * 0.66, len, 8.2, '#4a2a16');
+  void s;
+}
+function drawHand() {
+  const q = S.balls[0], s = view.s, t = performance.now() / 1000;
+  if (S.kitchen) { ctx.fillStyle = 'rgba(240,230,200,.05)'; ctx.fillRect(0, 0, HEAD_X, H); ctx.strokeStyle = 'rgba(240,230,200,.28)'; ctx.lineWidth = 1.5 / s; ctx.beginPath(); ctx.moveTo(HEAD_X, 0); ctx.lineTo(HEAD_X, H); ctx.stroke(); }
+  ctx.strokeStyle = `rgba(230,207,156,${0.55 + 0.3 * Math.sin(t * 4)})`; ctx.lineWidth = 2 / s; ctx.setLineDash([5 / s, 4 / s]);
+  ctx.beginPath(); ctx.arc(q.x, q.y, R + 7 + Math.sin(t * 4) * 1.5, 0, 6.283); ctx.stroke(); ctx.setLineDash([]);
+}
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+  snd.budget = 0;
+  if (phase === 'rolling' && shot) {
+    shot.acc += dt; let n = 0;
+    while (shot.acc >= DT && n < 60 && shot.steps < MAX_STEPS) { step(S.balls, shot.ev, liveFx); shot.acc -= DT; shot.steps++; n++; }
+    if (n === 60) shot.acc = 0;
+    if (shot.steps >= MAX_STEPS || !anyMoving(S.balls)) endShot();
+  }
+  if (aiJob) runAi(now);
+  if (net.remoteAim && phase === 'idle' && !humanTurn()) {
+    let d = net.remoteAim.a - aim; d = Math.atan2(Math.sin(d), Math.cos(d)); aim += d * Math.min(1, dt * 12); pull += (net.remoteAim.p - pull) * Math.min(1, dt * 12);
+  }
+  if (spaceCharge >= 0 && canAct()) { spaceCharge = Math.min(1, spaceCharge + dt * 0.7); pull = spaceCharge; setPowerUI(spaceCharge); }
+  draw(dt);
+  requestAnimationFrame(frame);
+}
+function draw(dt) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (tableLayer) ctx.drawImage(tableLayer, 0, 0);
+  setT(ctx);
+  const q = S.balls[0], idle = phase === 'idle' && !S.over && mode !== 'menu';
+  if (idle && S.placing && q.live && (humanTurn() || mode === 'local')) drawHand();
+  const showAim = idle && q.live && (canAct() || aiJob?.plan || (isOnline() && net.remoteAim && !humanTurn()));
+  if (showAim && !drag?.moving) drawGuide();
+  ctx.fillStyle = 'rgba(0,0,0,.32)';
+  for (const b of S.balls) if (b.live) { ctx.beginPath(); ctx.arc(b.x + 2.5, b.y + 3.5, R * 0.98, 0, 6.283); ctx.fill(); }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  for (let i = sinks.length - 1; i >= 0; i--) {
+    const k = sinks[i]; k.t += dt / 0.2;
+    if (k.t >= 1) { sinks.splice(i, 1); continue; }
+    drawBall(k.n, k.x + (k.px - k.x) * k.t, k.y + (k.py - k.y) * k.t, 1 - k.t * 0.6);
+  }
+  for (const b of S.balls) if (b.live) drawBall(b.n, b.x, b.y);
+  if (showAim) { setT(ctx); ctx.save(); rr(ctx, -RAIL, -RAIL, W + 2 * RAIL, H + 2 * RAIL, 26); ctx.clip(); drawCue(); ctx.restore(); }
+}
+
+/* ---------- HUD and power bar ---------- */
+function setPowerUI(p) {
+  const f = $('powerFill');
+  if (view.port) { f.style.width = (p * 100) + '%'; f.style.height = '100%'; } else { f.style.height = (p * 100) + '%'; f.style.width = '100%'; }
+  $('power').setAttribute('aria-valuenow', String(Math.round(p * 100)));
+}
+function dotsHtml(seat) {
+  const g = S.groups[seat]; if (!g) return '';
+  const ns = g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15];
+  let h = '';
+  for (const n of ns) {
+    const c = colorOf(n), style = n > 8 ? `background:linear-gradient(180deg,#f2eee2 26%,${c} 26%,${c} 74%,#f2eee2 74%)` : `background:${c}`;
+    h += `<span class="dot${S.balls[n].live ? '' : ' gone'}" style="${style}"></span>`;
+  }
+  if (remainingOf(S.balls, g) === 0) h += '<span class="dot" style="background:#141414;box-shadow:0 0 0 1px rgba(239,231,212,.5)"></span>';
+  return h;
+}
+function hud() {
+  $('hud').hidden = mode === 'menu';
+  for (const seat of [0, 1]) {
+    const el = $('p' + seat);
+    el.querySelector('.nm').textContent = seatName(seat);
+    el.querySelector('.dots').innerHTML = dotsHtml(seat);
+    el.classList.toggle('on', !S.over && S.turn === seat);
+    el.title = S.groups[seat] ? groupName(S.groups[seat]) : '';
+  }
+  const st = $('status');
+  let t = '', alert = false;
+  if (mode === 'menu' || S.over) t = '';
+  else if (isOnline() && !oppPresent()) t = 'Opponent away';
+  else if (phase !== 'idle') t = phase === 'waiting' ? 'Syncing…' : '';
+  else {
+    const who = S.turn, mine = humanTurn();
+    const name = mode === 'local' ? 'Player ' + (who + 1) : mine ? 'You' : seatName(who);
+    if (S.breakShot) t = mode === 'local' ? `${name} breaks` : mine ? 'Your break' : `${name} breaks`;
+    else if (mode === 'local') t = `${name}`;
+    else t = mine ? 'Your turn' : (mode === 'ai' ? 'Computer’s turn' : `${name}’s turn`);
+    const g = S.groups[who];
+    if (!S.breakShot) t += g ? ' · ' + (remainingOf(S.balls, g) ? groupName(g) : 'the 8') : ' · Open table';
+    if (S.placing && !S.breakShot) t += ' · Ball in hand';
+    if (S.msg) { t = S.msg + ' · ' + (S.placing && !S.breakShot ? (mine && mode !== 'local' ? 'Ball in hand' : name + ': ball in hand') : t); alert = true; }
+    else if (S.assigned && g) { t = (mine && mode !== 'local' ? 'You have ' : name + ' has ') + groupName(g).toLowerCase(); alert = true; }
+  }
+  st.textContent = t; st.classList.toggle('alert', alert);
+  $('power').classList.toggle('off', !canAct());
+  const ic = snd.on ? '#i-sound' : '#i-mute';
+  $('soundBtn').innerHTML = `<svg><use href="${ic}"/></svg>`; $('soundBtn').setAttribute('aria-label', snd.on ? 'Sound on' : 'Sound off');
+}
+
+/* ---------- Turn flow ---------- */
+function aimAtNearest() {
+  const q = S.balls[0]; if (!q.live) return;
+  let best = null, bd = 1e12;
+  for (const b of legalTargets(S.balls, S, S.turn)) { const d = (b.x - q.x) ** 2 + (b.y - q.y) ** 2; if (d < bd) { bd = d; best = b; } }
+  if (best) aim = Math.atan2(best.y - q.y, best.x - q.x);
+}
+function startShot(vx, vy, mine) {
+  const g = S.groups[S.turn];
+  shot = { ev: newEvents(g ? remainingOf(S.balls, g) : 7), mine, acc: 0, steps: 0 };
+  if (isOnline() && mine && net.room) net.room.send({ t: 'shot', seq: S.seq, b: pack(S.balls), v: [vx, vy] });
+  const q = S.balls[0]; q.live = true; q.vx = vx; q.vy = vy; q.wx = 0; q.wy = 0;
+  S.placing = false; S.msg = ''; phase = 'rolling'; pull = 0; setPowerUI(0); net.remoteAim = null;
+  snd.play('cue', Math.hypot(vx, vy) / VMAX + 0.15);
+  hud();
+}
+function shoot(p) {
+  if (!canAct()) return;
+  p = Math.max(0.03, Math.min(1, p));
+  startShot(Math.cos(aim) * p * VMAX, Math.sin(aim) * p * VMAX, true);
+}
+function endShot() {
+  stopAll(S.balls);
+  const mine = shot.mine; phase = 'idle';
+  if (isOnline() && !mine) {
+    phase = 'waiting'; hud();
+    if (net.pending) { const N = net.pending; net.pending = null; applyState(N); return; }
+    clearTimeout(net.waitTimer);
+    net.waitTimer = setTimeout(waitCheck, 2500);
+    return;
+  }
+  commit(resolve(S, shot.ev), true);
+}
+function waitCheck() {
+  if (phase !== 'waiting' || !isOnline()) return;
+  if (oppPresent()) { net.room.send({ t: 'need' }); net.waitTimer = setTimeout(waitCheck, 3000); }
+  else commit(resolve(S, shot.ev), false);
+}
+function commit(N, broadcast) {
+  S = N; shot = null; phase = 'idle';
+  if (isOnline() && broadcast && net.room) net.room.send({ t: 'state', s: packState(S) });
+  afterCommit();
+}
+function afterCommit() {
+  drag = null; pull = 0; setPowerUI(0);
+  if (!S.over) aimAtNearest();
+  hud();
+  clearTimeout(resultTimer);
+  if (S.over) { recordResult(); resultTimer = setTimeout(showResults, 900); return; }
+  if (mode === 'ai' && S.turn === 1) aiJob = { gen: aiThink(S, 1, AI[level]), t0: performance.now(), plan: null };
+}
+function newRack(breaker) {
+  S = freshState(breaker); phase = 'idle'; shot = null; sinks = []; aiJob = null; net.remoteAim = null;
+  afterCommit();
+}
+
+/* Computer turn: think in small slices, then place, rotate, pull and strike. */
+function runAi(now) {
+  const j = aiJob;
+  if (mode !== 'ai' || S.over || S.turn !== 1 || phase !== 'idle') { aiJob = null; return; }
+  if (overlayOpen()) { j.t0 = now; return; }
+  if (!j.plan) {
+    const t = performance.now(); let r;
+    do { r = j.gen.next(); } while (!r.done && performance.now() - t < 7);
+    if (r.done) { j.plan = r.value; j.stage = 'place'; j.ts = Math.max(now, j.t0 + 500); j.a0 = aim; j.from = { x: S.balls[0].x, y: S.balls[0].y }; }
+    return;
+  }
+  const p = j.plan, t = now - j.ts;
+  if (t < 0) return;
+  if (j.stage === 'place') {
+    if (p.place) {
+      const k = Math.min(1, t / 380), e = k * k * (3 - 2 * k), q = S.balls[0];
+      q.live = true; q.x = j.from.x + (p.place.x - j.from.x) * e; q.y = j.from.y + (p.place.y - j.from.y) * e;
+      if (k < 1) return;
+    }
+    j.stage = 'aim'; j.ts = now; j.a0 = aim; return;
+  }
+  if (j.stage === 'aim') {
+    let d = p.angle - j.a0; d = Math.atan2(Math.sin(d), Math.cos(d));
+    const k = Math.min(1, t / 650), e = k * k * (3 - 2 * k); aim = j.a0 + d * e;
+    if (k >= 1) { j.stage = 'pull'; j.ts = now; }
+    return;
+  }
+  if (j.stage === 'pull') {
+    const k = Math.min(1, t / 420); pull = Math.min(1, p.power * 1.1) * k;
+    if (k < 1) return;
+    const L = AI[level];
+    const a = p.angle + gauss() * L.noise * (S.breakShot ? 0.3 : 1), pw = Math.max(0.05, Math.min(1, p.power * (1 + gauss() * L.pn)));
+    aiJob = null; aim = a;
+    startShot(Math.cos(a) * pw * VMAX, Math.sin(a) * pw * VMAX, true);
+  }
+}
+
+/* ---------- Input ---------- */
+function setTouch(on) { if (touchMode !== on) { touchMode = on; layout(); hud(); } }
+function nearCue(p) { const q = S.balls[0]; const r = Math.max(D * 1.7, 30 / view.s); return q.live && (p.x - q.x) ** 2 + (p.y - q.y) ** 2 < r * r; }
+function moveCue(x, y) {
+  const q = S.balls[0];
+  x = Math.max(R, Math.min((S.kitchen ? HEAD_X : W - R), x)); y = Math.max(R, Math.min(H - R, y));
+  if (validCue(S.balls, x, y, S.kitchen)) { q.x = x; q.y = y; q.live = true; }
+  else {
+    const dx = x - q.x, dy = y - q.y;
+    for (let k = 0.9; k > 0; k -= 0.1) { const nx = q.x + dx * k, ny = q.y + dy * k; if (validCue(S.balls, nx, ny, S.kitchen)) { q.x = nx; q.y = ny; break; } }
+  }
+  sendAim(true);
+}
+function setAimTo(p) { const q = S.balls[0]; const dx = p.x - q.x, dy = p.y - q.y; if (dx * dx + dy * dy > 16) { aim = Math.atan2(dy, dx); sendAim(false); } }
+function sendAim(force) {
+  if (!isOnline() || !net.room || !humanTurn()) return;
+  const now = performance.now();
+  if (!force && now - net.lastSend < 100) { clearTimeout(net.aimTimer); net.aimTimer = setTimeout(() => sendAim(true), 110); return; }
+  const q = S.balls[0], msg = { t: 'aim', seq: S.seq, a: +aim.toFixed(4), p: +pull.toFixed(2) };
+  if (S.placing) msg.c = [+q.x.toFixed(2), +q.y.toFixed(2)];
+  const key = JSON.stringify(msg); if (key === net.sentAim) return;
+  net.sentAim = key; net.lastSend = now; net.room.send(msg);
+}
+canvas.addEventListener('pointerdown', e => {
+  snd.init();
+  setTouch(e.pointerType !== 'mouse');
+  if (!canAct() || e.button > 0) return;
+  const p = toTable(e);
+  if (S.placing && nearCue(p)) { const q = S.balls[0]; drag = { kind: 'move', ox: q.x - p.x, oy: q.y - p.y, moving: true }; }
+  else if (e.pointerType === 'mouse') drag = { kind: 'pull', x: e.clientX, y: e.clientY, p: 0, at: p };
+  else { drag = { kind: 'aim' }; setAimTo(p); }
+  try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!canAct()) { canvas.style.cursor = ''; return; }
+  const p = toTable(e);
+  if (!drag) {
+    if (e.pointerType === 'mouse') {
+      const grab = S.placing && nearCue(p);
+      canvas.style.cursor = grab ? 'grab' : 'crosshair';
+      if (!grab) setAimTo(p);
+    }
+    return;
+  }
+  if (drag.kind === 'move') moveCue(p.x + drag.ox, p.y + drag.oy);
+  else if (drag.kind === 'aim') setAimTo(p);
+  else if (drag.kind === 'pull') {
+    let ux = Math.cos(aim), uy = Math.sin(aim);
+    if (view.port) { const t = ux; ux = uy; uy = -t; }
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y, back = -(dx * ux + dy * uy);
+    drag.p = Math.max(0, Math.min(1, back / Math.max(160, Math.min(view.w, view.h) * 0.42)));
+    pull = drag.p; setPowerUI(drag.p); sendAim(false);
+  }
+});
+function endDrag(e, cancel) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.kind === 'pull') {
+    if (!cancel && d.p > 0.02) shoot(d.p);
+    else { pull = 0; setPowerUI(0); if (!cancel) setAimTo(d.at); }
+  }
+  if (d.kind === 'move') sendAim(true);
+  void e;
+}
+canvas.addEventListener('pointerup', e => endDrag(e, false));
+canvas.addEventListener('pointercancel', e => endDrag(e, true));
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+const bar = $('power');
+let barDrag = null;
+bar.addEventListener('pointerdown', e => {
+  snd.init(); setTouch(e.pointerType !== 'mouse');
+  if (!canAct()) return;
+  barDrag = { x: e.clientX, y: e.clientY, p: 0 };
+  try { bar.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+  e.preventDefault();
+});
+bar.addEventListener('pointermove', e => {
+  if (!barDrag) return;
+  const r = bar.getBoundingClientRect();
+  const d = view.port ? Math.abs(e.clientX - barDrag.x) / (r.width * 0.92) : Math.abs(e.clientY - barDrag.y) / (r.height * 0.92);
+  barDrag.p = Math.max(0, Math.min(1, d)); pull = barDrag.p; setPowerUI(barDrag.p); sendAim(false);
+});
+const barEnd = cancel => { if (!barDrag) return; const p = barDrag.p; barDrag = null; if (!cancel && p > 0.03) shoot(p); else { pull = 0; setPowerUI(0); sendAim(true); } };
+bar.addEventListener('pointerup', () => barEnd(false));
+bar.addEventListener('pointercancel', () => barEnd(true));
+
+window.addEventListener('keydown', e => {
+  if (e.target instanceof HTMLInputElement) return;
+  if (e.key === 'Escape') { if (overlayOpen()) { if (card.dataset.kind === 'help' || card.dataset.kind === 'pause') closeOverlay(); } else if (mode !== 'menu') showPause(); return; }
+  if (!canAct()) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    const sgn = (e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1;
+    aim += sgn * (e.shiftKey ? 0.02 : 0.002); sendAim(false); e.preventDefault();
+  } else if (e.code === 'Space') {
+    e.preventDefault(); if (!e.repeat && spaceCharge < 0) { snd.init(); spaceCharge = 0; }
+  }
+});
+window.addEventListener('keyup', e => {
+  if (e.code === 'Space' && spaceCharge >= 0) { const p = spaceCharge; spaceCharge = -1; if (canAct() && p > 0.02) shoot(p); else { pull = 0; setPowerUI(0); } }
+});
+window.addEventListener('resize', () => layout());
+if (window.ResizeObserver) { let rw = 0, rh = 0; new ResizeObserver(es => { const r = es[0].contentRect; if (Math.abs(r.width - rw) > 0.5 || Math.abs(r.height - rh) > 0.5) { rw = r.width; rh = r.height; layout(); } }).observe($('stage')); }
+if (window.visualViewport) window.visualViewport.addEventListener('resize', () => layout());
+
+/* ---------- Overlays ---------- */
+const card = $('card');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ICON = id => `<svg aria-hidden="true"><use href="#i-${id}"/></svg>`;
+function openOverlay(kind, html, clear) {
+  card.dataset.kind = kind; card.innerHTML = html;
+  $('overlay').hidden = false; $('overlay').classList.toggle('clear', !!clear);
+  card.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', ev => { snd.init(); const a = b.dataset.act; b.blur(); ACT[a] && ACT[a](b, ev); }));
+  const f = card.querySelector('[autofocus]') || card.querySelector('.btn.primary'); if (f && !touchMode) f.focus({ preventScroll: true });
+}
+function closeOverlay() { $('overlay').hidden = true; card.dataset.kind = ''; hud(); }
+const soundBtnHtml = () => `<button class="icon" data-act="sound" aria-label="${snd.on ? 'Sound on' : 'Sound off'}">${ICON(snd.on ? 'sound' : 'mute')}</button>`;
+function levelSeg() {
+  return `<div class="seg" role="group" aria-label="Computer level">${LEVELS.map((n, i) => `<button data-act="level" data-i="${i}" aria-pressed="${i === level}">${esc(n)}${wins[n] ? ICON('check') : ''}</button>`).join('')}</div>`;
+}
+function showMenu() {
+  mode = 'menu'; aiJob = null; phase = 'idle';
+  S = freshState(0); S.placing = false; sinks = [];
+  layout(); hud();
+  openOverlay('menu', `<h1>Velvet Pool</h1>
+    <button class="btn primary" data-act="ai">Play computer</button>
+    ${levelSeg()}
+    <div class="sep"></div>
+    <button class="btn" data-act="local">Two players</button>
+    <button class="btn" data-act="online">Online</button>
+    <div class="icons">${soundBtnHtml()}<button class="icon" data-act="help" aria-label="How to play">${ICON('help')}</button></div>`, true);
+}
+function helpHtml() {
+  const ctl = touchMode
+    ? '<li>Drag on the table to aim.</li><li>Slide the power bar and let go to shoot.</li>'
+    : '<li>Move the mouse to aim. Click to lock the aim on a spot.</li><li>Press, pull back and release to shoot. Arrow keys fine-tune, hold Space for power.</li>';
+  return `<button class="icon x" data-act="close" aria-label="Close">${ICON('close')}</button><h2>How to play</h2>
+    <ul class="help"><li>Pot all your balls, solids or stripes, then the 8.</li>${ctl}
+    <li>After a foul the other player has ball in hand: drag the white ball anywhere.</li>
+    <li>Fouls: potting the white, hitting nothing or the wrong ball first, or no ball touching a rail after contact.</li>
+    <li>Pot the 8 before your group, or with a foul, and you lose.</li></ul>
+    <button class="btn primary" data-act="close">Got it</button>`;
+}
+let helpReturn = null;
+function showHelp() { helpReturn = overlayOpen() ? card.dataset.kind : null; openOverlay('help', helpHtml()); }
+function showPause() {
+  const online = isOnline();
+  openOverlay('pause', `<button class="icon x" data-act="close" aria-label="Close">${ICON('close')}</button><h2>Velvet Pool</h2>
+    ${online && net.room ? `<p class="muted">Room ${esc(net.room.code)}</p>` : ''}
+    <button class="btn primary" data-act="close">Resume</button>
+    ${online ? '' : '<button class="btn" data-act="restart">Restart rack</button>'}
+    <div class="row"><button class="btn" data-act="sound">${ICON(snd.on ? 'sound' : 'mute')}${snd.on ? 'Sound on' : 'Sound off'}</button><button class="btn" data-act="help">${ICON('help')}Help</button></div>
+    <button class="btn" data-act="${online ? 'leave' : 'menu'}">${online ? 'Leave game' : 'Main menu'}</button>`);
+}
+function recordResult() {
+  if (mode === 'ai' && S.winner === 0) { const n = LEVELS[level]; wins[n] = (wins[n] || 0) + 1; store.set('wins', JSON.stringify(wins)); }
+  nextBreaker = 1 - S.breaker;
+}
+function showResults() {
+  if (!S.over || mode === 'menu') return;
+  const w = S.winner, me = mode === 'local' ? -1 : mySeat();
+  const title = mode === 'local' ? `Player ${w + 1} wins` : w === me ? 'You win' : `${seatName(w)} wins`;
+  const loser = 1 - w, lname = mode === 'local' ? `Player ${loser + 1}` : seatName(loser);
+  const reason = S.reason === 'early' ? `${lname} potted the 8 too early.` : S.reason === 'foul' ? `${lname} fouled on the 8.` : '';
+  let extra = '', btns = '';
+  if (mode === 'ai') {
+    const n = LEVELS[level];
+    extra = `<p class="muted">${esc(n)} · ${wins[n] || 0} ${(wins[n] || 0) === 1 ? 'win' : 'wins'}</p>`;
+    if (w === 0 && level < 4) btns = `<button class="btn primary" data-act="next">Next level: ${LEVELS[level + 1]}</button><button class="btn" data-act="again">Play again</button>`;
+    else btns = '<button class="btn primary" data-act="again">Play again</button>';
+  } else if (isOnline()) {
+    const gone = !oppPresent();
+    btns = `<button class="btn primary" data-act="again" ${gone || net.again[0] ? 'disabled' : ''}>${gone ? 'Opponent left' : net.again[0] ? 'Waiting for ' + esc(seatName(1 - mySeat())) + '…' : 'Play again'}</button>`;
+    if (!gone && net.again[1] && !net.again[0]) extra = `<p class="muted">${esc(seatName(1 - mySeat()))} wants a rematch</p>`;
+  } else btns = '<button class="btn primary" data-act="again">Play again</button>';
+  openOverlay('results', `<h2>${esc(title)}</h2>${reason ? `<p class="muted">${esc(reason)}</p>` : ''}${extra}${btns}
+    <button class="btn" data-act="${isOnline() ? 'leave' : 'menu'}">${isOnline() ? 'Leave' : 'Main menu'}</button>`, true);
+}
+function startOffline(m) {
+  mode = m; closeOverlay(); layout();
+  nextBreaker = 0; newRack(0);
+}
+const ACT = {
+  ai: () => startOffline('ai'),
+  local: () => startOffline('local'),
+  online: () => showOnline(''),
+  level: b => { level = +b.dataset.i; store.set('level', String(level)); card.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.i === level))); },
+  help: () => showHelp(),
+  close: () => {
+    if (card.dataset.kind === 'help' && helpReturn) { const k = helpReturn; helpReturn = null; if (k === 'menu') return showMenu(); if (k === 'pause') return showPause(); if (k === 'results') return showResults(); }
+    if (mode === 'menu') return showMenu();
+    closeOverlay();
+  },
+  sound: () => {
+    snd.on = !snd.on; store.set('sound', snd.on ? 'on' : 'off');
+    const k = card.dataset.kind; hud();
+    if (k === 'menu') { const i = card.querySelector('[data-act=sound]'); i.outerHTML = soundBtnHtml(); card.querySelector('[data-act=sound]').addEventListener('click', () => ACT.sound()); }
+    else if (k === 'pause') showPause();
+  },
+  restart: () => { closeOverlay(); newRack(S.breaker); },
+  menu: () => showMenu(),
+  again: () => {
+    if (isOnline()) { net.again[0] = true; net.room && net.room.send({ t: 'again' }); checkRematch(); showResults(); return; }
+    closeOverlay(); newRack(nextBreaker);
+  },
+  next: () => { level = Math.min(4, level + 1); store.set('level', String(level)); closeOverlay(); newRack(nextBreaker); },
+  quick: () => goOnline('quick'),
+  create: () => goOnline('create'),
+  join: () => { const v = (card.querySelector('input.code')?.value || '').trim().toUpperCase(); if (!/^[A-Z0-9]{4}$/.test(v)) { showOnline('Codes have 4 letters or digits.'); return; } goOnline('join', v); },
+  invite: b => shareInvite(b),
+  cancel: () => leaveOnline(),
+  leave: () => leaveOnline(),
+  rejoin: () => { const code = net.code; leaveOnline(true); if (code) goOnline('join', code); },
+};
+$('menuBtn').addEventListener('click', () => { snd.init(); showPause(); });
+$('helpBtn').addEventListener('click', () => { snd.init(); showHelp(); });
+$('soundBtn').addEventListener('click', () => { snd.init(); ACT.sound(); });
+
+/* ---------- Online (Ludvig.mp, turn-based: the shooter simulates and sends the result) ---------- */
+const ERR = { 'not-found': 'No game with that code.', full: 'That game is full.', 'rate-limited': 'Too many tries. Wait a minute.', 'bad-request': 'Check the code.' };
+function showOnline(err, code) {
+  if (!window.Ludvig || !window.Ludvig.mp) err = err || 'Online play is not available here.';
+  openOverlay('online', `<button class="icon x" data-act="menu" aria-label="Back">${ICON('close')}</button><h2>Online</h2>
+    <button class="btn primary" data-act="quick">Quick match</button>
+    <button class="btn" data-act="create">Private game</button>
+    <div class="sep"></div>
+    <div class="row"><input class="code" maxlength="4" placeholder="Code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Game code" value="${esc(code || '')}"><button class="btn" data-act="join" style="flex:.6">Join</button></div>
+    <p class="err" role="alert">${esc(err || '')}</p>`);
+  const inp = card.querySelector('input.code');
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') ACT.join(); });
+}
+function showBusy(text) { openOverlay('busy', `<h2>${esc(text)}</h2><button class="btn" data-act="cancel">Cancel</button>`); }
+function inviteUrl() { return `${location.origin}${location.pathname}?${SLUG}=${net.code}`; }
+function showWaiting() {
+  const share = navigator.share && touchMode;
+  openOverlay('waiting', `<h2>Waiting for an opponent</h2><p class="muted">Share the code or the link</p>
+    <p class="codebig">${esc(net.code)}</p>
+    <button class="btn primary" data-act="invite">${ICON('link')}${share ? 'Share invite link' : 'Copy invite link'}</button>
+    <button class="btn" data-act="cancel">Cancel</button>`, true);
+}
+async function shareInvite(b) {
+  const url = inviteUrl();
+  if (navigator.share && touchMode) { try { await navigator.share({ title: 'Velvet Pool', url }); return; } catch { /* fall back to copy */ } }
+  try { await navigator.clipboard.writeText(url); b.innerHTML = ICON('check') + 'Link copied'; }
+  catch { b.textContent = url; }
+}
+function showNotice(kind, text, rejoin) {
+  openOverlay(kind, `<h2>${esc(text)}</h2>${kind === 'away' ? `<p class="muted">They can come back with code ${esc(net.code)}.</p>` : ''}
+    ${rejoin ? '<button class="btn primary" data-act="rejoin">Rejoin</button>' : ''}
+    <button class="btn" data-act="leave">${kind === 'away' ? 'Leave game' : 'Main menu'}</button>`, true);
+}
+async function goOnline(kind, code, silent) {
+  if (!window.Ludvig || !window.Ludvig.mp) { showOnline('Online play is not available here.'); return; }
+  leaveOnline(true);
+  showBusy(kind === 'quick' ? 'Looking for an opponent…' : silent ? 'Reconnecting…' : 'Connecting…');
+  const token = net.token = {};
+  let room;
+  try {
+    room = kind === 'create' ? await Ludvig.mp.create({ game: SLUG, max: 2 })
+      : kind === 'quick' ? await Ludvig.mp.join({ game: SLUG, quick: true, max: 2 })
+      : await Ludvig.mp.join({ game: SLUG, room: code, max: 2 });
+  } catch (err) {
+    if (net.token !== token) return;
+    try { sessionStorage.removeItem(KEY + 'room'); } catch { /* ignore */ }
+    if (silent) { showMenu(); return; }
+    showOnline(ERR[err && err.code] || 'Can’t connect right now. Try again.', kind === 'join' ? code : '');
+    return;
+  }
+  if (net.token !== token) { room.leave(); return; }
+  net.room = room; net.code = room.code; net.again = [false, false]; net.pending = null; net.remoteAim = null;
+  try { sessionStorage.setItem(KEY + 'room', room.code); } catch { /* ignore */ }
+  mode = 'online'; aiJob = null; phase = 'idle'; shot = null;
+  S = freshState(0); S.placing = false; S.seats = null;
+  layout(); hud();
+  net.offs = [
+    room.on('message', onMessage),
+    room.on('join', onJoin),
+    room.on('leave', onLeave),
+    room.on('close', onClose),
+  ];
+  if (room.peers.length >= 2) {
+    // Joining a room with someone in it: ask them for the game (a rejoin resumes it, otherwise they start one).
+    showBusy('Starting…');
+    room.send({ t: 'need' });
+    const retry = () => { if (isOnline() && net.room === room && !S.seats && room.peers.length >= 2) { room.send({ t: 'need' }); setTimeout(retry, 2000); } };
+    setTimeout(retry, 2000);
+  } else showWaiting();
+}
+function leaveOnline(quiet) {
+  net.token = null;
+  if (net.room) { net.offs.forEach(f => f()); net.offs = []; try { net.room.leave(); } catch { /* ignore */ } }
+  net.room = null; clearTimeout(net.waitTimer); net.pending = null; net.remoteAim = null;
+  try { sessionStorage.removeItem(KEY + 'room'); } catch { /* ignore */ }
+  if (!quiet) showMenu();
+}
+function startMatch(breaker) {
+  const room = net.room, other = room.peers.find(p => p.id !== room.self.id);
+  if (!other) return;
+  const self = room.peers.find(p => p.id === room.self.id) || room.self, prevSeq = S.seats ? S.seq : 0;
+  S = freshState(breaker);
+  S.seats = [room.self.id, other.id]; S.names = [self.name || 'Player', other.name || 'Player'];
+  S.seq = prevSeq + 1;
+  net.again = [false, false]; phase = 'idle'; shot = null; sinks = [];
+  room.setMeta({ open: false });
+  room.send({ t: 'state', s: packState(S) });
+  closeOverlay(); afterCommit();
+}
+function checkRematch() {
+  if (!S.over || !net.again[0] || !net.again[1] || !net.room) return;
+  if (net.room.host !== net.room.self.id) return;
+  const room = net.room, other = room.peers.find(p => p.id !== room.self.id); if (!other) return;
+  const lastSeq = S.seq, seats = S.seats, names = S.names, br = 1 - S.breaker;
+  S = freshState(br); S.seats = seats; S.names = names; S.seq = lastSeq + 1;
+  net.again = [false, false]; phase = 'idle'; shot = null; sinks = [];
+  room.send({ t: 'state', s: packState(S) });
+  closeOverlay(); afterCommit();
+}
+function applyState(N) {
+  clearTimeout(net.waitTimer);
+  const wasOver = S.over;
+  S = N; phase = 'idle'; shot = null; net.remoteAim = null;
+  const seat = mySeat();
+  if (seat < 0) { showNotice('full', 'That game is already running.', false); try { net.room.leave(); } catch { /* ignore */ } return; }
+  if (!S.over) { net.again = [false, false]; if (['busy', 'waiting', 'away', 'results'].includes(card.dataset.kind)) closeOverlay(); }
+  if (S.over && wasOver && card.dataset.kind === 'results') { hud(); return; }
+  afterCommit();
+}
+function onMessage(from, m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'state' && m.s && Array.isArray(m.s.balls) && m.s.balls.length === 16) {
+    const N = unpackState(m.s);
+    if (S.seats && N.seq < S.seq) return;
+    if (S.seats && N.seq === S.seq && phase !== 'waiting') return;
+    if (phase === 'rolling' && shot && !shot.mine && !document.hidden) { net.pending = N; return; }
+    applyState(N);
+  } else if (m.t === 'shot' && S.seats && from === S.seats[S.turn] && Array.isArray(m.b) && m.b.length === 16 && Array.isArray(m.v)) {
+    if (m.seq !== S.seq || phase !== 'idle') { net.room.send({ t: 'need' }); return; }
+    S.balls = unpackBalls(m.b);
+    startShot(+m.v[0] || 0, +m.v[1] || 0, false);
+  } else if (m.t === 'aim' && S.seats && from === S.seats[S.turn] && m.seq === S.seq && phase === 'idle') {
+    net.remoteAim = { a: +m.a || 0, p: Math.max(0, Math.min(1, +m.p || 0)) };
+    if (Array.isArray(m.c) && S.placing) { const q = S.balls[0]; q.x = +m.c[0]; q.y = +m.c[1]; q.live = true; }
+  } else if (m.t === 'need') {
+    if (S.seats && S.seats.includes(from)) { if (phase !== 'rolling') net.room.send({ t: 'state', s: packState(S) }); }
+    else if (!S.seats || S.over || !oppPresent()) startMatch(S.seats ? 1 - S.breaker : Math.abs(net.room.seed | 0) % 2);
+  } else if (m.t === 'again') {
+    net.again[1] = true; checkRematch(); if (card.dataset.kind === 'results') showResults();
+  }
+}
+function onJoin(peer) {
+  const room = net.room; if (!room || peer.id === room.self.id) return;
+  if (S.seats && S.seats.includes(peer.id)) {
+    const i = S.seats.indexOf(peer.id); if (S.names) S.names[i] = peer.name || S.names[i];
+    if (phase !== 'rolling') room.send({ t: 'state', s: packState(S) });
+    if (card.dataset.kind === 'away') closeOverlay();
+    if (card.dataset.kind === 'results') showResults();
+    hud(); return;
+  }
+  if (!S.seats || S.over || !oppPresent()) startMatch(S.seats ? 1 - S.breaker : Math.abs(room.seed | 0) % 2);
+}
+function onLeave(peer) {
+  if (!S.seats || peer.id !== oppId()) { hud(); return; }
+  net.again[1] = false;
+  if (card.dataset.kind === 'results' || S.over) { if (card.dataset.kind === 'results') showResults(); hud(); return; }
+  hud();
+  if (!overlayOpen() || card.dataset.kind === 'pause') showNotice('away', `${seatName(1 - mySeat())} left`, false);
+}
+function onClose(reason) {
+  if (reason === 'left') return;
+  net.offs.forEach(f => f()); net.offs = []; net.room = null;
+  hud();
+  showNotice('lost', reason === 'replaced' ? 'This game is open in another tab' : reason === 'not-found' ? 'The game has ended' : 'Connection lost', reason !== 'replaced' && reason !== 'not-found');
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && isOnline() && net.room && phase === 'waiting') net.room.send({ t: 'need' });
+});
+
+/* ---------- Boot ---------- */
+layout();
+requestAnimationFrame(t => { lastT = t; frame(t); });
+const params = new URLSearchParams(location.search), invite = params.get(SLUG);
+let saved = null; try { saved = sessionStorage.getItem(KEY + 'room'); } catch { /* ignore */ }
+if (invite) {
+  params.delete(SLUG);
+  const q = params.toString();
+  try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash); } catch { /* ignore */ }
+  showMenu();
+  if (/^[A-Za-z0-9]{4}$/.test(invite.trim())) goOnline('join', invite.trim().toUpperCase());
+  else showOnline('Check the code.');
+} else if (saved) { showMenu(); goOnline('join', saved, true); }
+else showMenu();
+
+window.__velvet = { get S() { return S; }, get phase() { return phase; }, get mode() { return mode; }, get aim() { return aim; }, set aim(v) { aim = v; }, shoot, simulate, resolve, freshState, candidates, AI, aiThink, newEvents, remainingOf, VMAX, net, get view() { return view; }, moveCue, get aiBusy() { return !!aiJob; } };
+})();
+</script>
+</body>
+</html>

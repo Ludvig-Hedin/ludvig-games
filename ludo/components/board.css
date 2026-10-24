@@ -1,0 +1,140 @@
+.ludo-board {
+  --board-radius: 4.2%;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  container-type: inline-size;
+}
+
+.ludo-board-edge {
+  position: absolute;
+  inset: 1% 0 -1.45%;
+  border-radius: var(--board-radius);
+  background: linear-gradient(90deg, #ded6c4, #d4cbb8 45%, #c8bfac);
+  box-shadow: 0 2px 1px rgb(94 78 49 / 12%), 0 15px 20px -13px rgb(70 56 31 / 25%), 0 35px 45px -20px rgb(92 77 48 / 24%);
+}
+
+.ludo-board-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--board-radius);
+  background: linear-gradient(135deg, #fffdf5 0%, #fbf7eb 60%, #eee7d6 100%);
+  border: 1px solid #fdfbf5;
+  box-shadow: inset 0 1px 1px #fff, inset -2px -2px 3px rgb(149 130 96 / 12%);
+}
+
+.ludo-board-inlay {
+  position: absolute;
+  inset: 4.1%;
+  border-radius: 2.2%;
+  box-shadow: 0 -1px 2px rgb(88 74 47 / 14%), 0 1px 1px #fff;
+  background: #f8f5eb;
+}
+
+.ludo-board-map {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.ludo-board-makers-mark {
+  position: absolute;
+  left: 50%;
+  bottom: 1.22%;
+  transform: translateX(-50%);
+  font-family: inherit;
+  font-size: 1.05cqw;
+  font-weight: 700;
+  letter-spacing: .23em;
+  color: #b6ac94;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ludo-home-zone { transition: opacity .35s ease; }
+.ludo-home-zone.is-empty { opacity: .63; }
+.ludo-home-active-outline { transition: opacity .35s ease; }
+.ludo-pieces-layer { position: absolute; inset: 0; pointer-events: none; }
+
+.ludo-pawn {
+  position: absolute;
+  display: block;
+  width: 7.2%;
+  height: 9.1%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 45%;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  opacity: 1;
+  transform: translate(-50%, -83%);
+  pointer-events: none;
+  touch-action: manipulation;
+  outline-offset: -1px;
+}
+
+.ludo-pawn:disabled { opacity: 1; cursor: default; }
+.ludo-pawn-sculpture {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: scale(var(--pawn-scale, 1));
+  transform-origin: 50% 86%;
+  transition: transform .17s ease, filter .17s ease;
+  filter: drop-shadow(1px 2px 1px rgb(49 36 17 / 11%));
+}
+
+.ludo-pawn-ring {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  bottom: 1%;
+  height: 36%;
+  border: 2px solid var(--pawn-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #fff9ed;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.ludo-pawn.is-playable { cursor: pointer; pointer-events: auto; }
+.ludo-pawn.is-playable .ludo-pawn-ring { opacity: .9; animation: ludo-legal-pulse 1.6s ease-in-out infinite; }
+.ludo-pawn.is-playable:hover .ludo-pawn-sculpture,
+.ludo-pawn.is-playable:focus-visible .ludo-pawn-sculpture {
+  transform: translateY(-7%) scale(calc(var(--pawn-scale, 1) * 1.06));
+  filter: drop-shadow(2px 5px 2px rgb(49 36 17 / 19%));
+}
+.ludo-pawn.is-playable:active .ludo-pawn-sculpture { transform: translateY(0) scale(calc(var(--pawn-scale, 1) * .97)); }
+.ludo-pawn.is-playable:focus-visible { outline: 2px solid var(--pawn-dark); }
+.ludo-pawn.is-home { pointer-events: none; }
+.ludo-board.is-preview .ludo-home-zone.is-empty { opacity: 1; }
+
+@keyframes ludo-legal-pulse {
+  0%, 100% { opacity: .95; transform: scale(1); }
+  50% { opacity: .45; transform: scale(1.12); }
+}
+
+.ludo-board.reduce-motion *, .ludo-board.reduce-motion *::before, .ludo-board.reduce-motion *::after { animation: none !important; transition: none !important; }
+
+@media (max-width: 480px) {
+  .ludo-board-edge { box-shadow: 0 2px 1px rgb(94 78 49 / 12%), 0 15px 25px -15px rgb(70 56 31 / 27%); }
+  .ludo-pawn { width: 7.8%; height: 9.7%; }
+  .ludo-pawn.is-playable { min-width: 29px; min-height: 32px; }
+  .ludo-pawn-ring { border-width: 1.5px; box-shadow: 0 0 0 2px #fff9ed; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ludo-board *, .ludo-board *::before, .ludo-board *::after { animation: none !important; transition: none !important; }
+}

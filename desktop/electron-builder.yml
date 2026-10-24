@@ -1,0 +1,39 @@
+# Mac build. `npm run dist` makes an ad-hoc signed app without a Developer ID (people open it once with System Settings > Privacy &
+# Security > Open Anyway). `npm run dist:signed` is ready for a Developer ID certificate in the keychain and
+# notarization credentials in APPLE_API_KEY / APPLE_API_KEY_ID / APPLE_API_ISSUER (see README).
+appId: com.ludvighedin.games
+productName: Ludvig Games
+copyright: Ludvig Hedin
+directories:
+  output: release
+  buildResources: build
+asar: false
+files:
+  - app/**
+  - runtime/**
+  - bundle/**
+  - package.json
+  - "!**/*.map"
+  - "!.stage/**"
+  - "!spike/**"
+  - "!tests/**"
+  - "!release/**"
+  # The workerd package keeps a second copy of the binary for its own CLI; Miniflare uses the platform package.
+  - "!node_modules/workerd/bin/**"
+mac:
+  category: public.app-category.games
+  target:
+    - dmg
+    - zip
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: false
+  extendInfo:
+    NSLocalNetworkUsageDescription: Ludvig Games finds friends on the same Wi‑Fi so you can play together.
+    NSBonjourServices:
+      - _ludvig-games._tcp
+dmg:
+  title: Ludvig Games
+# Fixed names, so the website's download link (releases/latest/download/…) always gets the newest version.
+artifactName: Ludvig-Games-mac-${arch}.${ext}

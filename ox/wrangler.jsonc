@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // OX on the games' Workers Free account (24 Oct 2026). On Workers Free,
+  // going over a daily limit makes requests fail until 00:00 UTC; it never
+  // bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // The page is a static export in dist/client and never runs the Worker.
+  // The Worker runs only for /api/*: tic-tac-toe rooms in D1, polled over HTTP.
+  "name": "ox",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist/client", "not_found_handling": "404-page", "run_worker_first": ["/api/*"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ox",
+      // Create the database on the Free account, then put its id here.
+      "database_id": "be1a59cb-2d87-449f-984e-bccded9e2d10",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Per-IP limits. Namespace ids are account-wide, so each game has its own.
+  "ratelimits": [
+    { "name": "CREATE_LIMIT", "namespace_id": "1501", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LIMIT", "namespace_id": "1502", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

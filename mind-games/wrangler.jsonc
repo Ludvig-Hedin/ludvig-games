@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Mind Games on the games' Workers Free account (24 Oct 2026). On Workers Free,
+  // going over a daily limit makes requests fail until 00:00 UTC; it never
+  // bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // The page is a static export in dist/client and never runs the Worker.
+  // The Worker runs only for /api/*: rock paper scissors rooms in D1, polled over HTTP.
+  "name": "mind-games",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist/client", "not_found_handling": "404-page", "run_worker_first": ["/api/*"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mind-games",
+      // Create the database on the Free account, then put its id here.
+      "database_id": "17778e33-2761-4999-a476-0fe4bd1f32f6",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Per-IP limits. Namespace ids are account-wide, so each game has its own.
+  "ratelimits": [
+    { "name": "CREATE_LIMIT", "namespace_id": "1601", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LIMIT", "namespace_id": "1602", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

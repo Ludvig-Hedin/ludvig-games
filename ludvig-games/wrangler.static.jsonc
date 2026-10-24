@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Start page games.ludvighedin.com on the current account: static files only, no Worker code, so every request
+  // is free and a flood costs nothing (docs/cost-lockdown-2026-10-24.md, docs/free-account-plan.md "Hub split").
+  // Build first with `LUDVIG_API_BASE=https://ludvig-games-api.<sub>.workers.dev python3 build.py`; only public/
+  // is uploaded. Leaderboards and online play talk to the API Worker on the Free account (wrangler.api.jsonc).
+  // Deploy: npx wrangler deploy --config wrangler.static.jsonc
+  "name": "ludvig-games",
+  "compatibility_date": "2026-10-21",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "games.ludvighedin.com", "custom_domain": true }]
+}

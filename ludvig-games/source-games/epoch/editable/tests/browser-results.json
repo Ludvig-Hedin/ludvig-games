@@ -1,0 +1,64 @@
+{
+  "checks": [
+    "Three.js offline initialization",
+    "Start button and audio unlock",
+    "Three recruitment controls",
+    "Cancellable training queue",
+    "Queue produces actual 3D units",
+    "Build defense and install 3D turret",
+    "Upgrade defense",
+    "Sell defense",
+    "2x battle speed",
+    "Pause freezes simulation",
+    "Resume restores simulation",
+    "Mute",
+    "Targeted special enters aiming mode",
+    "Meteor strike damages enemies and resets cooldown",
+    "Evolution 2: base, troop roster, special",
+    "Evolution 3: base, troop roster, special",
+    "Evolution 4: base, troop roster, special",
+    "Evolution 5: base, troop roster, special",
+    "All 15 models and all five special attack effects constructed",
+    "Victory state",
+    "Victory modal",
+    "Replay resets the match",
+    "Defeat state",
+    "Return to menu",
+    "Mobile command cards remain within viewport",
+    "Landscape command cards remain in viewport"
+  ],
+  "errors": [],
+  "audioEvents": 569,
+  "finalState": {
+    "time": 1.0833333333333344,
+    "result": null,
+    "difficulty": "normal",
+    "units": 2,
+    "kills": 0,
+    "trained": 0,
+    "teams": [
+      {
+        "age": 0,
+        "gold": 232,
+        "xp": 1,
+        "hp": 1600,
+        "maxHp": 1600,
+        "pop": 1,
+        "queue": 0,
+        "turrets": 0,
+        "power": 1
+      },
+      {
+        "age": 0,
+        "gold": 177,
+        "xp": 1,
+        "hp": 1600,
+        "maxHp": 1600,
+        "pop": 1,
+        "queue": 0,
+        "turrets": 0,
+        "power": 1
+      }
+    ]
+  }
+}

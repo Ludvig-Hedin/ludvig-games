@@ -1,0 +1,10 @@
+{
+  "name": "ludvig-games",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "python3 build.py",
+    "dev": "bun scripts/serve.ts",
+    "browser-test": "node scripts/browser-check.cjs"
+  }
+}

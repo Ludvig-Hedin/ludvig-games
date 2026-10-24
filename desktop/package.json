@@ -1,0 +1,32 @@
+{
+  "name": "ludvig-games-desktop",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "dependencies": {
+    "bonjour-service": "^1.4.4",
+    "miniflare": "^4.20260730.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
+    "playwright-core": "^1.64.1"
+  },
+  "productName": "Ludvig Games",
+  "description": "Ludvig's games for Mac. Play offline, or with people on the same Wi-Fi.",
+  "author": "Ludvig Hedin <ludvig@ludvighedin.com>",
+  "main": "app/main.mjs",
+  "scripts": {
+    "stage": "node scripts/stage.mjs",
+    "runtime": "node runtime/server.mjs",
+    "start": "electron .",
+    "test": "node --test tests/*.test.mjs",
+    "dist": "electron-builder --mac --arm64 -c.mac.identity=-",
+    "dist:signed": "electron-builder --mac --arm64 --x64 -c.mac.notarize=true",
+    "browser-test": "node tests/e2e/lan.mjs",
+    "browser-test:one": "node tests/e2e/one.mjs",
+    "browser-test:all": "node tests/e2e/all-games.mjs",
+    "browser-test:react": "node tests/e2e/react-check.mjs"
+  }
+}

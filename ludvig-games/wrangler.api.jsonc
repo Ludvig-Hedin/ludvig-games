@@ -1,0 +1,43 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Games hub API on the separate Workers Free account (docs/free-account-plan.md, "Hub split"): leaderboards at
+  // /api/* and room signaling at /mp/ws. Over the daily Free limits requests fail until 00:00 UTC; it never bills.
+  // No assets: the start page is static on the other account (wrangler.static.jsonc). The board config is bundled
+  // from worker/boards.gen.mjs, so run `python3 build.py` before every deploy.
+  // account_id is not set here on purpose: wrangler reads CLOUDFLARE_ACCOUNT_ID at deploy time.
+  // Deploy: CLOUDFLARE_ACCOUNT_ID=<free account> npx wrangler deploy --config wrangler.api.jsonc
+  "name": "ludvig-games-api",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-21",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ludvig_games",
+      // The main agent fills this in after `npx wrangler d1 create ludvig_games` on the Free account.
+      "database_id": "d194bf42-c188-4b1f-aaef-a8b913fcdde6",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "MP_ROOM", "class_name": "MpRoom" },
+      { "name": "MP_LOBBY", "class_name": "MpLobby" }
+    ]
+  },
+  // Fresh account, so one migration that creates both classes (SQLite-backed, the only kind on Free).
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MpRoom", "MpLobby"] }],
+  // Per-IP and per-player limits (keys are hashed). They keep no rows, so a refused request writes nothing.
+  // Must match RATE_LIMITS in worker/util.mjs (tests/platform/deploy-config.test.mjs checks it).
+  "ratelimits": [
+    { "name": "RL_SCORE_IP", "namespace_id": "4101", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_SCORE_PLAYER", "namespace_id": "4102", "simple": { "limit": 6, "period": 60 } },
+    { "name": "RL_NAME", "namespace_id": "4103", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_ROOM", "namespace_id": "4104", "simple": { "limit": 6, "period": 60 } },
+    { "name": "RL_SOCKET", "namespace_id": "4105", "simple": { "limit": 20, "period": 60 } }
+  ]
+  // No routes and no custom domain: the API lives at ludvig-games-api.<sub>.workers.dev.
+  // No vars: DEV=1 (which also allows http://127.0.0.1:4317) is for local runs only.
+}

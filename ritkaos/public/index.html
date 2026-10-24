@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5ef"><meta name="description" content="Rita fult. Gissa snabbt. Ett kaotiskt ritspel för dina vänner.">
+  <title>Ritkaos — Rita fult. Gissa snabbt.</title><link rel="icon" href="/favicon.svg"><script src="/theme.js"></script><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="connection-banner" role="status" hidden data-i18n="connecting">Ansluter till spelservern…</div>
+<header class="site-header">
+  <button class="brand" id="brand" aria-label="Ritkaos startsida" data-i18n-aria="brand"><img src="/favicon.svg" alt="" width="36" height="36"><span class="brand-word">ritkaos<span class="brand-dot">.</span></span></button>
+  <div class="header-right">
+    <span class="network-status" id="network-status"><i id="connection-dot"></i><span id="connection-text" class="sr-only">Ansluter</span></span>
+    <button class="plus-button" id="plus" type="button" aria-label="Öppna Ritkaos+" data-i18n-aria="plusAria">Ritkaos<span>+</span></button>
+    <button class="icon-button menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="header-menu" aria-label="Meny" data-i18n-aria="menu" data-icon="more"></button>
+    <div class="header-menu" id="header-menu">
+      <button class="lang-toggle" id="lang" type="button"><span data-lang="sv">SV</span><span data-lang="en">EN</span></button>
+      <button class="icon-button" id="theme" type="button" title="Mörkt läge" aria-label="Mörkt läge"></button>
+      <button class="icon-button" id="sound" type="button" title="Slå av ljud" aria-label="Slå av ljud"></button>
+      <button class="icon-button" id="help" type="button" title="Så spelar ni" aria-label="Så spelar ni" data-i18n-title="howToPlay" data-i18n-aria="howToPlay" data-icon="help"><span class="menu-label" data-i18n="howToPlay">Så spelar ni</span></button>
+    </div>
+  </div>
+</header>
+<main>
+<section id="home" class="screen home-screen">
+  <div class="home-copy">
+    <h1 data-i18n-html="headline">Rita <span class="outline-word">fult.</span><br>Gissa <span class="lime-underline">snabbt.</span></h1>
+    <p class="home-subtitle" data-i18n="subtitle">En ritar. Resten gissar.</p>
+    <div class="home-doodle" aria-hidden="true">
+      <svg viewBox="0 0 260 200" fill="none"><path d="M12 190Q79 176 166 186T250 184" stroke="#cecec4" stroke-width="2" stroke-dasharray="4 7"/>
+      <g class="bird-bob"><path d="M97 130C52 122 63 87 87 73C89 25 136 29 151 51C171 40 188 49 181 65L210 72 181 87C188 133 154 156 117 154Z" fill="#cbc2f8" stroke="#282923" stroke-width="3.4" stroke-linejoin="round"/>
+      <path d="M179 66L205 72 181 81" fill="#ffb968" stroke="#282923" stroke-width="3"/><circle cx="159" cy="61" r="4" fill="#282923"/>
+      <path d="M98 109Q120 90 144 102Q129 134 107 130M113 155L109 180 98 184M138 156L148 180 162 181" stroke="#282923" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M106 37L100 16 119 26 131 7 140 31 156 20 148 43Z" fill="#dcfc8b" stroke="#282923" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M80 127L56 139 85 142" fill="#cbc2f8" stroke="#282923" stroke-width="3"/></g>
+      </svg>
+    </div>
+  </div>
+  <div class="entry-card">
+    <div class="identity-row"><div id="big-avatar" class="big-avatar"></div><h2 data-i18n="whoAreYou">Vem är du?</h2></div>
+    <label class="field-label" for="nickname" data-i18n="yourName">Ditt namn</label><input id="nickname" maxlength="20" placeholder="T.ex. Dålig Picasso" data-i18n-ph="namePlaceholder" autocomplete="nickname" value="" class="large-input">
+    <div class="avatar-picker" id="avatar-picker" aria-label="Välj din avatar" data-i18n-aria="pickAvatar"></div>
+    <label class="safe-row home-visible"><input type="checkbox" id="create-visible"><span class="safe-switch" aria-hidden="true"></span><span class="safe-copy"><strong data-i18n="visible">Synligt för andra på samma nätverk</strong></span></label>
+    <button class="button primary huge" id="create-room"><span data-i18n="createRoom">Skapa ett rum</span><i data-icon="arrowRight"></i></button>
+    <div class="or-divider"><span data-i18n="orFriend">eller hoppa in hos en kompis</span></div>
+    <div id="lan-rooms" class="lan-rooms" hidden></div>
+    <form id="join-form" class="join-row"><label class="sr-only" for="room-code" data-i18n="roomCode">Rumskod</label><input id="room-code" class="large-input code-input" maxlength="6" placeholder="RUMSKOD" autocomplete="off" data-i18n-ph="roomCodePlaceholder"><button class="button dark" type="submit" data-i18n="join">Gå med</button></form>
+    <p id="entry-error" class="inline-error" role="alert"></p>
+    <div class="or-divider"><span data-i18n="orStrangers">eller spela med främlingar</span></div>
+    <button class="button subtle huge" id="quick-match"><span data-i18n="quickMatch">Snabbmatch</span><i data-icon="arrowRight"></i></button>
+    <div id="open-rooms-wrap" class="open-rooms" hidden><div class="card-kicker" data-i18n="openMatches">ÖPPNA MATCHER</div><div id="open-rooms" class="lan-rooms"></div></div>
+  </div>
+  <footer class="home-footer"><span id="best-score"></span></footer>
+</section>
+<section id="lobby" class="screen lobby-screen" hidden>
+  <div class="lobby-heading"><h1 data-i18n="lobbyTitle">Lobbyn</h1><button class="button subtle leave-button" data-i18n="leaveRoom">Lämna rummet</button></div>
+  <div class="lobby-grid">
+    <div class="lobby-left">
+      <div class="room-invite"><div><span class="card-kicker" data-i18n="roomCodeKicker">RUMSKOD</span><strong id="lobby-code">------</strong></div><button class="button primary" id="invite-lobby"><i data-icon="userPlus"></i><span data-i18n="inviteFriend">Bjud in</span></button></div>
+      <div class="panel players-panel"><div class="panel-heading"><h3 data-i18n="yourCrew">Ditt gäng</h3><span id="lobby-count" class="count-pill"></span></div><div id="lobby-players"></div><div class="lobby-player-empty"><span data-icon="plus"></span><p data-i18n="moreFun">Bjud in fler med länken.</p></div></div>
+    </div>
+    <div class="panel settings-panel"><div class="panel-heading"><h3 data-i18n="howYouPlay">Inställningar</h3><span id="host-label" class="tag">DU ÄR VÄRD</span></div>
+      <div class="mode-grid" id="modes">
+        <button class="mode-card" data-mode="chaos"><span class="mode-icon purple" data-icon="sparkle"></span><strong data-i18n="modeChaos">Kaos</strong><small data-i18n="modeChaosText">Knäppa motiv + överraskningar</small></button>
+        <button class="mode-card" data-mode="classic"><span class="mode-icon green" data-icon="pen"></span><strong data-i18n="modeClassic">Klassiskt</strong><small data-i18n="modeClassicText">En ritar. Resten gissar.</small></button>
+        <button class="mode-card" data-mode="coop"><span class="mode-icon peach" data-icon="users"></span><strong data-i18n="modeCoop">Dubbeltrubbel</strong><small data-i18n="modeCoopText">Två ritar ihop · minst 3 spelare</small></button>
+        <button class="mode-card" data-mode="studio"><span class="mode-icon blue" data-icon="infinity"></span><strong data-i18n="modeStudio">Fri duk</strong><small data-i18n="modeStudioText">Alla ritar. Inga poäng.</small></button>
+        <button class="mode-card" data-mode="blind"><span class="mode-icon purple" data-icon="eyeOff"></span><strong data-i18n="modeBlind">Blindritning</strong><small data-i18n="modeBlindText">Ritaren ser inget</small></button>
+        <button class="mode-card" data-mode="speed"><span class="mode-icon green" data-icon="bolt"></span><strong data-i18n="modeSpeed">Snabbrunda</strong><small data-i18n="modeSpeedText">30 s · bonus för snabba</small></button>
+        <button class="mode-card" data-mode="telephone"><span class="mode-icon peach" data-icon="phone"></span><strong data-i18n="modeTelephone">Telefonleken</strong><small data-i18n="modeTelephoneText">Skriv, rita, gissa · minst 3</small></button>
+      </div>
+      <div class="settings-fields"><label><span data-i18n="rounds">Rundor</span><select id="setting-rounds"><option value="1">1 runda</option><option value="2">2 rundor</option><option value="3">3 rundor</option><option value="4">4 rundor</option><option value="5">5 rundor</option></select></label><label><span data-i18n="timePer">Tid per teckning</span><select id="setting-seconds"><option value="45">45 sekunder</option><option value="60">60 sekunder</option><option value="75">75 sekunder</option><option value="90">90 sekunder</option><option value="120">120 sekunder</option></select></label></div>
+      <label class="select-label"><span data-i18n="whatDraw">Vad ska ni rita?</span><select id="setting-pack"><option value="mix" data-i18n="packMix">Lite av allt</option><option value="chaos" data-i18n="packChaos">Helt orimliga situationer</option><option value="easy" data-i18n="packEasy">Enkla klassiker</option><option value="swedish" data-i18n="packSwedish">Svenskt kaos</option><option value="nerd" data-i18n="packNerd">Kod, kontor & internet</option><option value="nineties" data-paid>90-talet</option><option value="office" data-paid>Kontoret</option><option value="holidays" data-paid>Jul</option><option value="food" data-paid>Svensk mat</option><option value="internet" data-paid>Internet</option></select></label>
+      <label class="safe-row"><input type="checkbox" id="setting-safe"><span class="safe-switch" aria-hidden="true"></span><span class="safe-copy"><strong data-i18n="officeMode">Kontorsläge</strong><small data-i18n="officeModeText">Inga könsord, knark eller grova stereotyper.</small></span></label>
+      <label class="safe-row" id="visible-row"><input type="checkbox" id="setting-visible"><span class="safe-switch" aria-hidden="true"></span><span class="safe-copy"><strong data-i18n="visible">Synligt för andra på samma nätverk</strong></span></label>
+      <details class="custom-details"><summary data-i18n="addWords">+ Lägg till egna ord</summary><textarea id="setting-custom" rows="3" maxlength="6000" placeholder="Er chef, en bakfull duva, ett pinsamt minne…&#10;Separera med kommatecken." data-i18n-ph="customPlaceholder"></textarea><p data-i18n="customText">Egna ord ersätter ordpaketet. Gissa hela ordet eller frasen.</p></details>
+      <div class="start-area"><button class="button primary huge" id="start-game"><span>Nu kör vi</span></button><p id="start-hint"></p></div>
+    </div>
+  </div>
+</section>
+<section id="game" class="screen game-screen" hidden>
+  <div class="game-topbar"><div class="round-info"><span id="mode-label" class="card-kicker">KAOS</span><strong id="round-label">Runda 1 / 2</strong></div><div class="word-area"><span id="word-label">GISSA HUVUDMOTIVET</span><strong id="word-hint">_ _ _ _</strong><p id="scene-hint"></p></div><div class="timer" id="timer"><svg viewBox="0 0 52 52"><circle class="timer-track" cx="26" cy="26" r="23"/><circle id="timer-ring" cx="26" cy="26" r="23"/></svg><span id="timer-number">75</span></div></div>
+  <div class="game-layout">
+    <aside class="score-sidebar panel"><div class="panel-heading"><h3 data-i18n="theCrew">Gänget</h3><button class="icon-button small" id="invite-game" title="Bjud in" aria-label="Bjud in" data-i18n-title="invite" data-i18n-aria="invite" data-icon="userPlus"></button></div><div id="game-players"></div><div class="score-bottom"><span id="game-room-code"></span><button class="text-button leave-button" data-i18n="leave">Lämna</button></div></aside>
+    <div class="canvas-column">
+      <div class="canvas-frame" id="canvas-frame"><div class="canvas-topline"><span id="drawing-status"></span></div>
+        <div class="canvas-fit">
+        <div class="drawing-surface" id="drawing-surface"><canvas id="canvas" aria-label="Gemensam ritduk" data-i18n-aria="sharedCanvas"></canvas><div id="chaos-badge" hidden></div><div id="cursor-layer" aria-hidden="true"></div><div id="brush-cursor" aria-hidden="true"></div><div id="blind-overlay" hidden><span data-icon="eyeOff"></span><strong data-i18n="trust">Lita på processen.</strong><small data-i18n="trustText">Din kompis ser fortfarande vad du ritar.</small></div><div id="game-overlay" class="game-overlay" hidden></div><form id="tel-form" class="tel-form" hidden><label class="sr-only" for="tel-input" data-i18n="yourGuess">Din gissning</label><input id="tel-input" maxlength="100" autocomplete="off" autocapitalize="off"><button class="button primary" type="submit" data-i18n="telSend">Skicka</button></form><div id="reaction-layer" aria-hidden="true"></div></div></div>
+        <div class="canvas-bottomline"><span id="canvas-hint"></span><button id="end-studio" class="text-button" hidden data-i18n="toLobby">Till lobbyn</button><button id="tel-done" class="button primary tel-done" hidden><i data-icon="check"></i><span data-i18n="telDoneButton">Klar</span></button><button id="save-drawing" class="text-button" title="Spara bild" aria-label="Spara bild" data-i18n-title="saveImage" data-i18n-aria="saveImage" data-icon="download"><span data-i18n="saveImage">Spara bild</span></button></div>
+      </div>
+      <div class="toolbar panel" id="toolbar"><div class="tool-group"><button class="tool-button active" id="tool-pen" title="Penna (B)" aria-label="Penna" data-i18n-title="penKey" data-i18n-aria="pen"></button><button class="tool-button" id="tool-eraser" title="Sudd (E)" aria-label="Sudd" data-i18n-title="eraserKey" data-i18n-aria="eraser"></button><button class="tool-button" id="tool-style" title="Pensel och färger" aria-label="Pensel och färger" data-i18n-title="style" data-i18n-aria="style"></button></div><div class="toolbar-divider"></div><div class="palette" id="palette"></div><div class="toolbar-divider"></div><div class="size-control"><span id="size-preview"></span><label class="sr-only" for="brush-size" data-i18n="brushSize">Penselstorlek</label><input id="brush-size" type="range" min="2" max="42" value="7" title="Penselstorlek" data-i18n-title="brushSize"></div><div class="tool-group toolbar-actions"><button class="tool-button" id="undo" title="Ångra ditt senaste streck (Ctrl/⌘ Z)" aria-label="Ångra" data-i18n-title="undoKey" data-i18n-aria="undo"></button><button class="tool-button" id="clear" title="Töm duken" aria-label="Töm duken" data-i18n-title="clearCanvas" data-i18n-aria="clearCanvas"></button></div></div>
+      <div class="spectator-bar" id="spectator-bar"><span id="role-instruction"></span><div class="reactions"><button data-reaction="😂" aria-label="Skratt" data-i18n-aria="laugh">😂</button><button data-reaction="🔥" aria-label="Eld" data-i18n-aria="fire">🔥</button><button data-reaction="💀" aria-label="Dödskalle" data-i18n-aria="skull">💀</button><button data-reaction="👏" aria-label="Applåd" data-i18n-aria="applause">👏</button></div></div>
+      <div class="keyboard-hint" id="keyboard-hint"><div class="reactions small-reactions"><button data-reaction="😂" aria-label="Skratt" data-i18n-aria="laugh">😂</button><button data-reaction="🔥" aria-label="Eld" data-i18n-aria="fire">🔥</button><button data-reaction="👏" aria-label="Applåd" data-i18n-aria="applause">👏</button></div></div>
+    </div>
+    <aside class="chat-sidebar panel"><div class="panel-heading"><h3 id="chat-title">Gissa här</h3></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div><form id="guess-form" class="guess-form"><label class="sr-only" for="guess-input" data-i18n="yourGuess">Din gissning</label><input id="guess-input" placeholder="Vad är det…?" autocomplete="off" autocapitalize="off" maxlength="160"><button id="guess-submit" type="submit" aria-label="Skicka gissning" data-i18n-aria="sendGuess" data-icon="arrowUp"></button></form><div id="guess-feedback" class="guess-feedback" role="status"></div></aside>
+  </div>
+</section>
+<section id="results" class="screen results-screen" hidden><h1 id="results-title"></h1><div id="podium" class="podium"></div><div class="panel results-table" id="results-table"></div><div class="results-buttons"><button class="button primary huge" id="rematch" data-i18n="rematch">Spela igen</button><button class="button subtle" id="back-lobby" data-i18n="toLobby">Till lobbyn</button></div><p id="results-waiting" hidden></p></section>
+</main>
+<div id="toasts" aria-live="polite"></div>
+<dialog id="modal"><button class="modal-close icon-button" aria-label="Stäng" data-i18n-aria="close" data-icon="close"></button><div id="modal-content"></div></dialog>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<script src="/app.js" type="module"></script>
+</body>
+</html>

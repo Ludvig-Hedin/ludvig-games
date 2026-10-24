@@ -1,0 +1,22 @@
+import type { Cell, Mark } from '../public/engine.js';
+export type MatchState = {
+  board: Cell[];
+  size: number;
+  winLength: number;
+  matchLength: number;
+  target: number | null;
+  turn: Mark;
+  starter: Mark;
+  winner: Mark | null;
+  line: number[];
+  draw: boolean;
+  scores: { X: number; O: number; draw: number };
+  round: number;
+  matchWinner: Mark | null;
+  lastMove: number | null;
+  moves: number;
+};
+export function createMatch(options?: { size?: number; length?: number }): MatchState;
+export function applyMove(state: MatchState, index: number): MatchState;
+export function nextRound(state: MatchState): MatchState;
+export function restartMatch(state: MatchState): MatchState;

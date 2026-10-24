@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171e1b"><meta name="description" content="Ages. A complete, original 3D age-evolving strategy battle. Train an army, defend your stronghold, and fight from stone to stars.">
+<title>Ages</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171e1b'/%3E%3Cpath d='M17 52 28 14h8l11 38h-8l-2.6-9h-8.8L25 52zm12.4-15.5h5.2L32 26.5z' fill-rule='evenodd' fill='%23e5bc76'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="world" aria-label="Three-dimensional battlefield"></canvas><canvas id="fx"></canvas><div id="vignette"></div><div id="flash"></div>
+<div id="loading"><span class="loading-mark">E</span><span>Building your world<span class="dots">…</span></span></div>
+<main id="hud" class="hidden">
+ <header class="topbar">
+  <div class="brand"><span class="brand-mark">A</span><div>Ages</div></div>
+  <div class="chronicle"><div class="age-track" id="ageTrack"></div><div class="age-label" id="ageLabel">Stone age</div></div>
+  <div class="topright"><div class="gold" title="Gold pays for troops and defenses. You also earn gold from defeated enemies."><span class="coin-icon"><svg class="coin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 7 5 5-5 5-5-5z"/></svg></span><span id="gold">225</span></div><div class="top-tools"><button id="speed" class="iconbtn speed" title="Battle speed (F)">1×</button><button id="sound" class="iconbtn" aria-label="Mute sound" title="Mute sound (M)"></button><button id="pause" class="iconbtn" aria-label="Pause game" title="Pause (P / Esc)"></button><button id="fullscreen" class="iconbtn fullscreen" aria-label="Fullscreen" title="Fullscreen"></button></div></div>
+ </header>
+ <div class="stronghold yours" id="base0"><div class="base-title"><span>YOUR STRONGHOLD</span><b id="hp0">1,600</b></div><div class="hp-track"><i id="bar0"></i></div></div>
+ <div class="stronghold enemy" id="base1"><div class="base-title"><span>ENEMY STRONGHOLD</span><b id="hp1">1,600</b></div><div class="hp-track"><i id="bar1"></i></div></div>
+ <div id="objective">Destroy the enemy stronghold</div>
+ <div id="notice" role="status" aria-live="polite"></div>
+ <div id="ageAnnouncement"><h2>Medieval age</h2></div>
+ <div id="aimHint" class="hidden"><span class="gold-text">Choose your target</span><span>Click the battlefield<span class="key-hint"> <i>·</i> Esc to cancel</span></span></div>
+ <section id="commands" aria-label="Battle commands">
+  <div class="command-above"><div id="queueWrap"><span class="queue-label" id="queueLabel">TRAINING</span><div id="queue"></div><span id="population" title="Maximum 28 troops">1 / 28</span></div><div id="battleTime">00:00</div></div>
+  <div class="command-dock">
+   <div class="unit-group" aria-label="Recruit troops">
+    <button class="unit-card" id="unit0" data-unit="0"><kbd>1</kbd><img alt="" draggable="false"><span class="unit-name">Clubber</span><span class="unit-price"><i><svg class="coin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 7 5 5-5 5-5-5z"/></svg></i> <b>55</b></span></button>
+    <button class="unit-card" id="unit1" data-unit="1"><kbd>2</kbd><img alt="" draggable="false"><span class="unit-name">Spear thrower</span><span class="unit-price"><i><svg class="coin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 7 5 5-5 5-5-5z"/></svg></i> <b>85</b></span></button>
+    <button class="unit-card" id="unit2" data-unit="2"><kbd>3</kbd><img alt="" draggable="false"><span class="unit-name">Mammoth rider</span><span class="unit-price"><i><svg class="coin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 7 5 5-5 5-5-5z"/></svg></i> <b>185</b></span></button>
+   </div>
+   <div class="command-divider"></div>
+   <button id="defense" class="ability-card" title="Build, upgrade, or sell base defenses (T)"><kbd>T</kbd><span class="ability-icon" id="defenseIcon"></span><span class="ability-name">Defenses</span><span class="slot-dots" id="slotDots"><i></i><i></i><i></i></span></button>
+   <button id="power" class="ability-card power ready"><kbd>Q</kbd><span class="ability-icon" id="powerIcon"></span><span class="ability-name" id="powerName">Meteor storm</span><span class="ability-meta" id="powerMeta">READY</span><span id="cooldownShade"></span></button>
+   <div class="command-divider"></div>
+   <button id="evolve" class="evolve-card"><div class="evolve-top"><span class="evolution-icon" id="evolutionIcon"></span><span class="evolve-arrow"><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></div><span class="evolve-eyebrow">NEXT AGE</span><span class="evolve-name" id="nextAge">Medieval</span><div class="xp-track"><i id="xpBar"></i></div><span class="xp-text" id="xpText">0 / 340 XP</span><kbd>E</kbd></button>
+  </div>
+  <div id="firstHint">Click a troop to train your army</div>
+ </section>
+ <aside id="tooltip" role="tooltip" class="hidden"></aside>
+ <aside id="defensePanel" class="hidden"><div class="panel-header"><div><small>YOUR STRONGHOLD</small><h3>Base defenses</h3></div><button id="closeDefense" class="iconbtn" aria-label="Close defenses"><svg class="close-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="turretOptions"></div><div class="built-heading">EMPLACEMENTS <span>Automatically upgraded with each age</span></div><div id="builtTurrets"></div></aside>
+</main>
+<section id="intro" class="screen hidden">
+ <div class="intro-content"><h1>Ages</h1><div class="intro-line"></div><p>Destroy the enemy stronghold.</p><button id="start" class="primary">Begin battle <span><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button><div class="difficulty" role="group" aria-label="Difficulty"><button data-difficulty="easy">Relaxed</button><button data-difficulty="normal" class="selected" aria-pressed="true">Normal</button><button data-difficulty="hard">Brutal</button></div></div>
+</section>
+<section id="pauseScreen" class="screen hidden"><div class="modal pause-modal"><h2>Paused</h2><button id="resume" class="primary">Resume battle <span><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button><div class="audio-controls"><label>Music <input id="musicVolume" aria-label="Music volume" type="range" min="0" max="100" value="46"></label><label>Effects <input id="fxVolume" aria-label="Effects volume" type="range" min="0" max="100" value="80"></label></div><div class="key-guide key-hint"><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> Recruit</span><span><kbd>Q</kbd> Special</span><span><kbd>T</kbd> Defenses</span><span><kbd>E</kbd> Evolve</span></div><div class="pause-rule">Gold trains your army. Combat earns experience.<br>Evolution unlocks stronger troops and restores base health.</div><button id="restart" class="textbtn">Restart battle</button></div></section>
+<section id="resultScreen" class="screen hidden"><div class="modal result-modal"><div id="resultEmblem"></div><h2 id="resultTitle">Victory</h2><div class="results"><div><b id="resultTime">00:00</b><span>BATTLE TIME</span></div><div><b id="resultKills">0</b><span>ENEMIES DEFEATED</span></div><div><b id="resultAge">I</b><span>AGE REACHED</span></div></div><button id="playAgain" class="primary">Play again <span><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button><button id="backToMenu" class="textbtn">Menu</button></div></section>
+<div id="errorScreen" class="hidden"><h2>Your browser couldn’t start the 3D battlefield.</h2><p>Open this file in a current version of Chrome, Edge, Firefox, or Safari with hardware acceleration enabled.</p><pre id="errorDetails"></pre><button onclick="location.reload()" class="primary">Try again</button></div>
+<script src="three.min.js"></script><script src="sim.js"></script><script src="audio.js"></script><script src="models.js"></script><script src="scene.js"></script><script src="game.js"></script>
+</body></html>

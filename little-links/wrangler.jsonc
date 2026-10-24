@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Little Links on the games' Workers Free account (24 Oct 2026). On Workers
+  // Free, going over a daily limit makes requests fail until 00:00 UTC; it
+  // never bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // `npm run build` prerenders the page into dist/client, so page views are
+  // static assets and never run the Worker. The Worker (vinext build output)
+  // runs only for /api/* (online rooms in D1, polled every 1.5 s).
+  // Deploy with --config wrangler.jsonc (see README).
+  "name": "little-links",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "no_bundle": true,
+  "find_additional_modules": true,
+  "base_dir": "dist/server",
+  "rules": [{ "type": "ESModule", "globs": ["**/*.js", "**/*.mjs"] }],
+  "assets": {
+    "directory": "dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "little-links",
+      // Set to the new database's id after `wrangler d1 create little-links`.
+      "database_id": "417f549e-1535-47b7-b8b8-56cd23b86de1",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Per-IP limits. Namespace ids are account-wide, so each game has its own
+  // range (little-links: 24xx). ACTION_LIMIT covers shots and polls.
+  "ratelimits": [
+    { "name": "CREATE_LIMIT", "namespace_id": "2401", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LIMIT", "namespace_id": "2402", "simple": { "limit": 30, "period": 60 } },
+    { "name": "ACTION_LIMIT", "namespace_id": "2403", "simple": { "limit": 600, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

@@ -1,0 +1,16 @@
+.env*
+.vercel
+.git
+node_modules
+output
+scripts
+README.md
+CHANGELOG.md
+BACKLOG.md
+source-games/skyline/editable
+source-games/user-hostile/editable
+private-games
+docs
+source-games/epoch/editable
+
+assets/previews/geoatlas.webp

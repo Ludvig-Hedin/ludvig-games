@@ -1,0 +1,76 @@
+.chess-board {
+  --board-light: #eeeee2;
+  --board-dark: #819780;
+  --board-coordinate-light: #f2f1e8;
+  --board-coordinate-dark: #576e58;
+  --board-last: rgba(243, 220, 112, .32);
+  --board-selection: rgba(235, 204, 78, .48);
+  --board-arrow: #df9b38;
+  --board-hint: #0e9b76;
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  isolation: isolate;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px #1820180b, 0 0 0 1px #18201810;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.board-walnut { --board-light: #f0dcc0; --board-dark: #a7805c; --board-coordinate-light: #f4e5cd; --board-coordinate-dark: #815d40; }
+.board-slate { --board-light: #dedee0; --board-dark: #81858e; --board-coordinate-light: #eeedf0; --board-coordinate-dark: #535862; }
+.board-blue { --board-light: #e2e8ec; --board-dark: #7c9daf; --board-coordinate-light: #e9f0f5; --board-coordinate-dark: #41677e; }
+.board-squares { display: grid; grid-template-rows: repeat(8, 1fr); width: 100%; height: 100%; overflow: hidden; border-radius: inherit; }
+.board-row { display: grid; grid-template-columns: repeat(8, 1fr); min-height: 0; }
+.chess-board .board-square {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  outline-offset: -4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.board-square.square-light { background: var(--board-light); color: var(--board-coordinate-dark); }
+.board-square.square-dark { background: var(--board-dark); color: var(--board-coordinate-light); }
+.board-square::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.board-square.square-last::before { background: var(--board-last); }
+.board-square.square-selected::before { background: var(--board-selection); box-shadow: inset 0 0 0 3px #e0bb4270; }
+.board-square.square-premove::before { background: #789dd15c; box-shadow: inset 0 0 0 2px #4c7daf70; }
+.board-square.square-check::before { background: radial-gradient(ellipse at center, #dc443ad9 0%, #cf454980 44%, #d74e4220 72%, transparent 80%); }
+.chess-board .board-square:focus-visible { z-index: 6; outline: 3px solid #315cbe; }
+.board-rank, .board-file { position: absolute; z-index: 7; font-family: inherit; font-size: clamp(9px, 1.35vw, 12px); font-weight: 650; line-height: 1; pointer-events: none; opacity: .9; }
+.board-rank { top: 5px; left: 5px; }
+.board-file { bottom: 4px; right: 5px; }
+.board-pieces { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.board-piece { position: absolute; left: 0; top: 0; width: 12.5%; height: 12.5%; pointer-events: none; will-change: transform; }
+.board-piece img, .board-drag-ghost img { display: block; width: 100%; height: 100%; object-fit: contain; padding: 4.5%; box-sizing: border-box; filter: drop-shadow(0 2px 1px #15201820); pointer-events: none; }
+.board-animated .board-piece { transition: transform 150ms cubic-bezier(.2,.65,.25,1); }
+.board-piece.board-piece-hidden { opacity: 0; transition: none; }
+.board-animated .board-piece.board-piece-dropped { transition: none; }
+.board-move-indicator { position: absolute; z-index: 5; width: 24%; height: 24%; border-radius: 50%; background: #14251c2d; top: 38%; left: 38%; pointer-events: none; }
+.board-capture-indicator { position: absolute; inset: 4%; z-index: 5; border-radius: 50%; border: clamp(3px, .65vw, 6px) solid #14251c40; pointer-events: none; }
+.board-mark { position: absolute; inset: 7%; border: clamp(3px, .6vw, 5px) solid #df9b38c7; z-index: 5; border-radius: 50%; pointer-events: none; }
+.board-arrows { position: absolute; width: 100%; height: 100%; inset: 0; z-index: 8; pointer-events: none; opacity: .82; overflow: visible; }
+.board-drag-ghost { position: absolute; top: 0; left: 0; width: 12.5%; height: 12.5%; display: none; z-index: 30; pointer-events: none; will-change: transform; }
+.board-drag-ghost img { transform: scale(1.09); filter: drop-shadow(0 8px 6px #111a1938); }
+.board-readonly .board-square { cursor: default; }
+.board-dragging, .board-dragging .board-square { cursor: grabbing !important; }
+.board-annotating, .board-annotating .board-square { cursor: crosshair; }
+.board-promotion-mask { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; background: #1220184d; border-radius: inherit; }
+.board-promotion { width: min(88%, 360px); border-radius: 14px; padding: 22px 16px 14px; background: var(--surface, #fbfaf7); color: var(--text, #252b27); box-shadow: 0 18px 70px #10181040; animation: board-dialog-in 140ms ease-out; }
+.board-promotion-title { text-align: center; font-size: 16px; font-weight: 650; letter-spacing: -.025em; margin-bottom: 18px; }
+.board-promotion-choices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.board-promotion-choices button { all: unset; cursor: pointer; padding: 5px 3px 9px; border-radius: 8px; text-align: center; box-sizing: border-box; }
+.board-promotion-choices button:hover, .board-promotion-choices button:focus-visible { background: #81978025; outline: 2px solid #819780; outline-offset: 0; }
+.board-promotion-choices img { display: block; width: 100%; aspect-ratio: 1; }
+.board-promotion-choices span { font-size: 11px; text-transform: capitalize; opacity: .75; }
+.board-promotion-cancel { display: block; margin: 16px auto 0; background: transparent; border: 0; color: inherit; cursor: pointer; padding: 8px 20px; font: inherit; font-size: 12px; opacity: .65; border-radius: 6px; }
+.board-promotion-cancel:hover { opacity: 1; background: #81978015; }
+@keyframes board-dialog-in { from { opacity: 0; transform: translateY(5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .board-animated .board-piece { transition: none; } .board-promotion { animation: none; } }
+@media (max-width: 600px) { .board-rank, .board-file { font-size: 10px; } .board-rank { top: 4px; left: 4px; } .board-file { bottom: 3px; right: 4px; } .chess-board { border-radius: 3px; } }

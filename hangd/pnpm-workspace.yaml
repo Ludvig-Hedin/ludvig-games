@@ -1,0 +1,10 @@
+minimumReleaseAge: 10080
+strictDepBuilds: true
+onlyBuiltDependencies:
+  - esbuild
+  - fsevents
+  - sharp
+  - unrs-resolver
+  - workerd
+overrides:
+  miniflare>sharp: 0.35.4

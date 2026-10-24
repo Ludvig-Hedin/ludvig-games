@@ -1,0 +1,86 @@
+# Allowlist: this repo holds the published games, the hub and the Mac app. Everything else in this folder
+# (downloads, backups, drafts, videos, private games) stays out.
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/NOTICE.md
+!/ludvig-games/
+!/air-hockey/
+!/chess/
+!/color-clash/
+!/gravity-arena/
+!/hangd/
+!/hoop-rush/
+!/little-links/
+!/ludo/
+!/mind-games/
+!/ox/
+!/ritkaos/
+!/salvo/
+!/table-tennis/
+!/desktop/
+
+# Generated, local or private, in any project
+node_modules/
+dist/
+.wrangler/
+.vinext/
+.next/
+.claude/
+.playwright-mcp/
+__pycache__/
+*.tsbuildinfo
+.DS_Store
+.env*
+.dev.vars*
+*.pem
+*.p8
+*.key
+
+# Hub: generated site, local output and unpublished games
+/ludvig-games/public/
+/ludvig-games/output/
+/ludvig-games/private-games/
+# Unpublished game kept privately (owner, 21 Oct 2026)
+/ludvig-games/source-games/anything-vs-anything/
+
+# Mac app: build output
+/desktop/bundle/
+/desktop/release/
+/desktop/.stage/
+
+# Games hidden from the site (older editions, prototypes, parked games): not published here either.
+.unlock-secret
+/ludvig-games/source-games/geoatlas/
+/ludvig-games/source-games/anything-vs-anything/
+/ludvig-games/source-games/heatwave/
+/ludvig-games/source-games/cage-v1/
+/ludvig-games/source-games/glantan/
+/ludvig-games/source-games/goldwake-v2/
+/ludvig-games/source-games/goldwake-v1/
+/ludvig-games/source-games/human-probably-v1/
+/ludvig-games/source-games/higher-or-lower-v2/
+/ludvig-games/source-games/higher-or-lower-v1/
+/ludvig-games/source-games/kiln-v1-1/
+/ludvig-games/source-games/kiln-v1/
+/ludvig-games/source-games/origin-v1/
+/ludvig-games/source-games/pigeon-fixed/
+/ludvig-games/source-games/pigeon-v1/
+/ludvig-games/source-games/citrus-circuit-3d-tangerine-bay/
+/ludvig-games/source-games/citrus-circuit-tangerine-island-gp/
+/ludvig-games/source-games/citrus-circuit-tangerine-bay/
+/ludvig-games/source-games/jailbreak-v1/
+/ludvig-games/source-games/paper-after-hours-v1/
+/ludvig-games/source-games/paper-after-hours-v2/
+/ludvig-games/source-games/paper-after-hours-v3/
+/ludvig-games/source-games/powder-v1/
+/ludvig-games/source-games/pigeon-prototype/
+/ludvig-games/source-games/pigeon-prototype-polished/
+/ludvig-games/source-games/skyline-prototype/
+/ludvig-games/source-games/skyline-prototype-v2/
+/ludvig-games/source-games/user-hostile-v1/
+/ludvig-games/source-games/vice-run-coastal-getaway/
+/ludvig-games/source-games/vice-run-after-hours/
+/ludvig-games/source-games/trumped/
+/ludvig-games/docs/anything-vs-anything-launch.md

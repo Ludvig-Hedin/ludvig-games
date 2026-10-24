@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f5ed">
+  <meta name="description" content="Find your mane squeeze. Swipe on charmingly unhinged horses, flirt, and gallop into the sunset in Hay, You.">
+  <title>Hay, You — Find your mane squeeze</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><div class="sun-glow"></div><svg class="pasture" viewBox="0 0 1600 360" preserveAspectRatio="none"><path fill="#e8ecdd" d="M0 170Q220 85 460 215T920 180T1600 155V360H0Z"/><path fill="#dce4cd" opacity=".5" d="M0 290Q340 170 740 270T1600 230V360H0Z"/><path stroke="#bac6a7" stroke-width="3" opacity=".36" fill="none" d="M0 287Q310 180 560 260M35 280v55m60-72v55m60-69v55m60-65v55m60-57v55m60-49v55m60-44v55m60-41v55"/></svg></div>
+  <header class="topbar">
+    <a href="#discover" class="brand" data-action="discover" aria-label="Hay, You home"><span class="brand-mark" data-icon="horse"></span><span>hay,<span class="brand-coral"> you</span></span></a>
+    <nav class="main-nav" aria-label="Main navigation"><button class="nav-link active" data-action="discover"><span data-icon="spark"></span>Discover</button><button class="nav-link" data-action="stable"><span data-icon="heart"></span>Your dates<span class="count-bubble" id="stableCount">0</span></button></nav>
+    <div class="header-tools"><button class="icon-button" id="soundButton" data-action="sound" title="Toggle sound" aria-label="Toggle sound" aria-pressed="false"><span data-icon="sound"></span></button><button class="icon-button" data-action="help" title="How to play" aria-label="How to play"><span data-icon="help"></span></button></div>
+  </header>
+  <main id="discoverView" class="discover-layout">
+    <section class="intro-column">
+      <h1>Find your<br><em>mane</em><br>squeeze<span class="title-dot">.</span></h1>
+      <div class="vibe-picker"><div class="vibe-head"><span class="field-label" id="vibeLabel">Your mood</span><p id="vibeHint" class="vibe-hint">Same-mood horses always match.<span class="vibe-when"> Pick before your first swipe.</span></p></div><div class="vibe-options" id="vibeOptions" role="group" aria-labelledby="vibeLabel" aria-describedby="vibeHint"></div></div>
+    </section>
+    <section class="swipe-column" aria-label="Discover horses">
+      <div class="card-stage" id="cardStage">
+        <div class="horse-card next-card" id="nextCard" aria-hidden="true"></div>
+        <article class="horse-card" id="horseCard" tabindex="0" aria-label="Horse profile. Swipe right to like, left to pass.">
+          <div class="horse-art" id="horseArt"></div><div class="card-shade"></div>
+          <div class="profile-top"><span class="deck-counter" id="deckCounter">Horse 1 of 8</span><button class="profile-info" data-action="profile" aria-label="Read full profile"><span data-icon="info"></span></button></div>
+          <div class="swipe-stamp stamp-yes" id="stampYes">LIKE</div><div class="swipe-stamp stamp-no" id="stampNo">PASS</div>
+          <div class="profile-content"><div class="profile-title"><h2 id="horseName"></h2><span class="verified" title="Verified horse" data-icon="check"></span></div><p class="profile-meta" id="horseMeta"></p><p class="profile-bio" id="horseBio"></p><div class="profile-tags" id="horseTags"></div></div>
+        </article>
+        <div class="deck-message" id="deckMessage" hidden></div>
+      </div>
+      <div class="swipe-actions"><div><button class="swipe-button pass-button" data-action="pass" aria-label="Pass on this horse"><span data-icon="x"></span></button><span class="action-label">Pass</span></div><div><button class="swipe-button like-button" data-action="like" aria-label="Like this horse"><span data-icon="heart"></span></button><span class="action-label">Like</span></div><div><button class="swipe-button carrot-button" data-action="carrot" aria-label="Give a carrot: a sure match and extra chemistry"><span data-icon="carrot"></span><span class="carrot-count" id="carrotCount">2</span></button><span class="action-label">Carrot<small>sure match</small></span></div></div>
+    </section>
+    <aside class="goal-column">
+      <h3>Goal: 3 great dates</h3>
+      <p class="goal-copy">A great date has 70% chemistry or more. You meet 8 horses per evening.</p>
+      <div class="goal-hearts" id="goalHearts" aria-label="0 of 3 great dates"><span data-icon="heart"></span><span data-icon="heart"></span><span data-icon="heart"></span></div>
+      <div class="goal-status"><span id="goalStatus">0 of 3 great dates</span><span id="eveningScore">Score 0</span></div>
+      <div class="goal-rule"></div>
+      <div class="date-tip"><span class="tip-number">1</span><p>Read the bio. It hints at the best reply.</p></div><div class="date-tip"><span class="tip-number">2</span><p>On the date, catch hearts and jump logs.</p></div>
+    </aside>
+  </main>
+  <section id="stableView" class="stable-view" hidden><div class="stable-heading"><h1>Your dates</h1><button class="text-button" data-action="discover">Back to horses <span data-icon="arrow"></span></button></div><div id="stableGrid" class="stable-grid"></div></section>
+  <footer class="page-footer"><button class="footer-link" data-action="restart">Start over <span data-icon="refresh"></span></button></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="modalLayer" class="modal-layer" hidden><div class="modal-backdrop"></div><section id="modal" class="modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></section></div>
+  <div id="dateLayer" class="date-layer" hidden>
+    <div class="date-topbar">
+      <div class="date-identity"><span data-icon="heart"></span><div><strong id="dateWith">You &amp; your match</strong></div></div>
+      <div class="date-hud-stats">
+        <div class="date-time" aria-label="Time remaining"><strong id="dateTime">30</strong><span>TIME LEFT</span></div>
+        <div class="date-live-score"><span data-icon="heart"></span><strong id="dateHearts">0</strong><span class="date-combo" id="dateCombo"></span></div>
+        <div class="date-chemistry"><span>CHEMISTRY</span><div><strong id="dateChemistry">0%</strong><span class="date-target"> / 70%</span></div></div>
+      </div>
+      <div class="date-hud-tools">
+        <button class="icon-button" id="dateSoundButton" data-action="sound" title="Toggle sound" aria-label="Toggle sound" aria-pressed="false"><span data-icon="sound"></span></button>
+        <button class="icon-button" id="pauseButton" data-action="pause" aria-label="Pause date"><span data-icon="pause"></span></button>
+      </div>
+    </div>
+    <div class="date-progress"><div id="dateProgress"></div></div>
+    <div class="date-canvas-wrap" id="dateCanvasWrap">
+      <canvas id="dateCanvas" tabindex="0" aria-label="Sunset gallop. Your horse wears the coral saddle. Move left or right to collect hearts and jump over logs."></canvas>
+      <div class="date-feedback" id="dateFeedback" role="status" aria-live="polite"></div>
+      <div class="date-countdown" id="dateCountdown" aria-live="assertive" aria-atomic="true" hidden></div>
+      <div class="date-intro" id="dateIntro">
+        <h2>A sunset.<br>Two horses.<br><em>Zero chill.</em></h2>
+        <p class="date-mission">30 seconds. Catch hearts, jump logs.<br>Reach <strong>70% chemistry</strong> for a great date.</p>
+        <div class="date-instructions"><span><kbd>←</kbd><kbd>→</kbd> Move</span><span><kbd>SPACE</kbd> Jump</span></div>
+        <button class="primary-button" data-action="start-date">Start date <span data-icon="arrow"></span></button>
+        <button class="text-button date-skip" data-action="abandon-date">Skip this date</button>
+        <p class="date-mobile-hint">Use the on-screen arrows and Jump.</p>
+      </div>
+      <div class="pause-panel" id="pausePanel" hidden>
+        <span class="eyebrow pause-reason"></span><h2>Paused</h2>
+        <button class="primary-button" data-action="resume">Resume <span data-icon="play"></span></button>
+        <button class="text-button" data-action="abandon-date">End this date</button>
+      </div>
+    </div>
+    <div class="date-bottom">
+      <span class="desktop-controls"><kbd>←</kbd><kbd>→</kbd> Move <span>·</span><kbd>SPACE</kbd> Jump <span>·</span><kbd>ESC</kbd> Pause</span>
+      <p id="dateHint">Your horse wears the coral saddle.</p>
+      <div class="touch-controls">
+        <button data-action="move-left" aria-label="Move left"><span data-icon="left"></span></button>
+        <button data-action="move-right" aria-label="Move right"><span data-icon="arrow"></span></button>
+        <button class="jump-button" data-action="jump">Jump <span data-icon="up"></span></button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

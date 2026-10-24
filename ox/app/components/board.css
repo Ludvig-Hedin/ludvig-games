@@ -1,0 +1,104 @@
+.mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.mark--small { width: 24px; height: 24px; }
+.mark--animated { animation: piece-settle 260ms cubic-bezier(.19, 1, .22, 1) both; }
+.mark--animated .mark-stroke { stroke-dasharray: 100; stroke-dashoffset: 0; animation: piece-draw 240ms cubic-bezier(.32, 0, .25, 1) both; }
+.mark--animated .mark-part--1 .mark-stroke { animation-delay: 34ms; }
+.mark-shadow { opacity: .65; }
+
+.board-frame {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  padding: clamp(15px, 4vw, 24px);
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border-radius: 32px;
+  background: var(--surface, #fffefa);
+  box-shadow: var(--board-shadow, 0 2px 4px #29291d03, 0 14px 32px -18px #29291d26, 0 36px 70px -30px #29291d18), inset 0 1px 0 var(--surface-edge, #ffffffbf);
+  isolation: isolate;
+  touch-action: manipulation;
+  transition: background-color 220ms, box-shadow 220ms;
+}
+
+.board-grid {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  animation: board-arrive 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.board-row { display: contents; }
+.board-gridcell { min-width: 0; min-height: 0; aspect-ratio: 1; }
+.board-cell {
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  border-radius: 17px;
+  color: inherit;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+  touch-action: manipulation;
+  transition: background-color 140ms, transform 130ms;
+}
+.board-cell--playable { cursor: pointer; }
+.board-cell:focus-visible { outline: 2px solid var(--accent, #bc7356); outline-offset: -7px; background: var(--hover, #f4f2ec); }
+.board-cell--playable:active { transform: scale(.955); background: var(--hover, #f4f2ec); }
+.board-piece, .board-ghost { display: block; width: 94%; height: 94%; pointer-events: none; }
+.board-piece { position: relative; z-index: 1; }
+.board-ghost { opacity: 0; transform: scale(.94); transition: opacity 140ms, transform 180ms; }
+.board-ghost .mark-shadow, .board-ghost .mark-edge { display: none; }
+.board-cell--winner .board-piece { animation: piece-celebrate 580ms 150ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.board-frame--won .board-cell--occupied:not(.board-cell--winner) .board-piece { opacity: .4; transition: opacity 250ms; }
+.board-lines, .board-win-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.board-lines { z-index: 0; }
+.board-lines line { stroke: var(--line, #e7e5de); stroke-width: 1.35px; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.board-win-line { z-index: 2; color: var(--accent, #bc7356); }
+.board-win-line--x { color: var(--x-bottom, #242822); }
+.board-win-line line {
+  stroke: currentColor;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: .8;
+  animation: winning-stroke 440ms 170ms cubic-bezier(.5, 0, .2, 1) both;
+}
+.board-corner-sheen { position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none; border: 1px solid var(--surface-edge, #ffffffa6); }
+.board-frame--waiting .board-grid { opacity: .45; }
+
+@media (hover: hover) and (pointer: fine) {
+  .board-cell--playable:hover { background: var(--hover, #f4f2ec); }
+  .board-cell--playable:hover .board-ghost { opacity: .18; transform: scale(1); }
+}
+
+@media (max-width: 430px) {
+  .board-frame { border-radius: 25px; }
+  .board-cell { border-radius: 12px; }
+}
+
+@keyframes piece-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes piece-settle { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes board-arrive { from { opacity: 0; transform: scale(.975); } to { opacity: 1; transform: scale(1); } }
+@keyframes piece-celebrate { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.065); } }
+@keyframes winning-stroke { from { stroke-dashoffset: 1; opacity: 0; } to { stroke-dashoffset: 0; opacity: .8; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-grid, .mark--animated, .mark--animated .mark-stroke, .board-cell--winner .board-piece, .board-win-line line { animation: none; }
+  .board-cell, .board-ghost, .board-frame, .board-frame--won .board-cell--occupied:not(.board-cell--winner) .board-piece { transition: none; }
+}

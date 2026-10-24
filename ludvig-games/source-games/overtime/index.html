@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111820">
+  <title>Overtime</title>
+  <meta name="description" content="Rocket car football against bots.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="3D rocket football arena" tabindex="0"></canvas>
+  <div id="vignette"></div>
+  <div id="loading" class="loading"><div class="brand"><span class="brand-mark">///</span> Overtime</div><div class="load-track"><i></i></div><p id="load-status">LOADING</p></div>
+  <main id="menu" class="screen menu hidden">
+    <button id="menu-trophy" class="trophy-button lb-only hidden" aria-label="Leaderboard" title="Leaderboard"></button>
+    <div class="menu-content">
+      <h1 class="title"><span class="brand-mark">///</span> Overtime</h1>
+      <div class="match-tag"><span>EXHIBITION</span><b id="quick-summary">1V1 · PRO · 5 MIN</b></div>
+      <button id="play-now" class="button play-button" disabled><span>PLAY NOW</span><span class="arrow"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button>
+      <div class="menu-links"><button data-open="setup">MATCH SETUP <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="online-open" class="hidden">ONLINE <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="free-play">FREE PLAY <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="training">TRAINING <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button data-open="garage">GARAGE <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button data-open="settings">SETTINGS <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button></div>
+    </div>
+  </main>
+
+  <section id="hud" class="hud hidden" aria-label="Match information">
+    <div class="scoreboard"><div class="team-score blue" id="score-blue">0</div><div class="clock-wrap"><span id="overtime-label" class="hidden">OVERTIME</span><span id="match-clock">5:00</span></div><div class="team-score orange" id="score-orange">0</div></div>
+    <div class="hud-top-left"><span id="match-type">1V1 · PRO</span></div>
+    <button id="pause-button" class="icon-button" aria-label="Pause match"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button><button id="touch-reset" class="icon-button touch-only hidden" aria-label="Reset ball"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/></svg></button>
+    <div id="announcement" class="announcement hidden"><span id="announcement-label"></span><strong id="announcement-text">3</strong><span id="announcement-sub"></span></div>
+    <div id="goal-banner" class="goal-banner hidden"></div>
+    <div id="replay-label" class="replay-label hidden"><i></i> REPLAY <span class="key-hint">SPACE TO SKIP</span></div>
+    <div id="training-panel" class="training-panel hidden"><div class="eyebrow"><span id="training-index">01 / 04</span></div><h3 id="training-title">First touch</h3><p id="training-help"></p><div class="training-actions"><button id="training-reset">RESET <kbd>R</kbd></button><button id="training-next">NEXT <kbd>N</kbd></button></div></div>
+    <div class="hud-bottom-left"><button id="camera-button"><span id="cam-dot" class="cam-dot"></span><b id="camera-mode">BALL CAM</b><kbd id="camera-key">C</kbd></button><span id="speed-label">0 KM/H</span><div id="controls-hint"><kbd>WASD</kbd> DRIVE <kbd>SPACE</kbd> JUMP <kbd>SHIFT</kbd> BOOST</div></div>
+    <div class="boost-gauge" id="boost-gauge"><svg viewBox="0 0 160 160"><circle class="boost-track" cx="80" cy="80" r="66"/><circle id="boost-arc" cx="80" cy="80" r="66"/></svg><div><strong id="boost-value">33</strong><span>BOOST</span></div><small id="supersonic" class="hidden">SUPERSONIC</small></div>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <div id="freeplay-tip" class="freeplay-tip hidden"><kbd>R</kbd> RESET BALL <kbd>T</kbd> BALL ON CAR <kbd>ESC</kbd> MENU</div>
+    <div id="fps" class="fps hidden"></div>
+  </section>
+
+  <div id="touch" class="touch-controls" aria-hidden="true">
+    <div id="touch-stick-zone" class="stick-zone"><div id="touch-stick" class="stick"><i id="touch-knob"></i></div></div>
+    <button id="touch-slide" class="touch-btn small" tabindex="-1" aria-label="Powerslide"><svg class="ic" viewBox="0 0 24 24"><path d="M4 16c4 0 6-8 10-8h6M16 4l4 4-4 4"/></svg></button>
+    <button id="touch-boost" class="touch-btn boost" tabindex="-1" aria-label="Boost"><svg class="ic" viewBox="0 0 24 24"><path d="m13 3-8 11h6l-1 7 8-11h-6z"/></svg></button>
+    <button id="touch-jump" class="touch-btn jump" tabindex="-1" aria-label="Jump"><svg class="ic" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+  </div>
+  <div id="modal-layer" class="modal-layer hidden">
+    <section id="setup-panel" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title"><button class="close-button" data-close aria-label="Close"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><h2 id="setup-title">MATCH SETUP</h2><div class="field-label">TEAM SIZE</div><div id="mode-options" class="segmented"><button data-value="1" class="active"><b>1v1</b><span>DUEL</span></button><button data-value="2"><b>2v2</b><span>DOUBLES</span></button><button data-value="3"><b>3v3</b><span>STANDARD</span></button></div><div class="field-label">BOT DIFFICULTY</div><div id="difficulty-options" class="segmented compact"><button data-value="rookie">ROOKIE</button><button data-value="pro" class="active">PRO</button><button data-value="allstar">ALL-STAR</button></div><div class="form-row"><label>YOUR TEAM<select id="team-select"><option value="0">BLUE</option><option value="1">ORANGE</option></select></label><label>MATCH LENGTH<select id="length-select"><option value="60">1 MINUTE</option><option value="180">3 MINUTES</option><option value="300" selected>5 MINUTES</option><option value="600">10 MINUTES</option></select></label></div><button id="start-match" class="button primary">START MATCH <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button></section>
+
+    <section id="online-panel" class="panel online-panel hidden" role="dialog" aria-modal="true" aria-labelledby="online-title"><button class="close-button" data-close aria-label="Close"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><h2 id="online-title">ONLINE</h2><div id="online-entry"><button id="online-quick" class="button primary">QUICK MATCH <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="online-create" class="button secondary">PRIVATE ROOM</button><form id="online-join-form" class="code-row"><label for="online-code" class="field-label">ROOM CODE</label><div><input id="online-code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" aria-label="Room code"><button id="online-join" class="button secondary" type="submit">JOIN</button></div></form></div><div id="online-room" class="hidden"><div class="room-code"><span>ROOM</span><b id="room-code"></b><button id="room-copy" class="text-button">COPY LINK</button></div><ul id="room-players" class="room-players"></ul><button id="room-start" class="button primary">START MATCH <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="room-leave" class="text-button danger">LEAVE ROOM</button></div><p id="online-status" class="room-status" role="status"></p></section>
+
+    <section id="settings-panel" class="panel wide hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title"><button class="close-button" data-close aria-label="Close"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><h2 id="settings-title">SETTINGS</h2><div class="settings-tabs" role="tablist"><button class="active" data-settings-tab="camera">CAMERA</button><button data-settings-tab="audio">AUDIO</button><button data-settings-tab="controls">CONTROLS</button><button data-settings-tab="video">VIDEO</button></div><div id="settings-content"></div><div class="panel-footer"><span></span><button id="restore-settings" class="text-button">RESTORE DEFAULTS</button></div></section>
+
+    <section id="garage-panel" class="panel garage-panel hidden" role="dialog" aria-modal="true" aria-labelledby="garage-title"><button class="close-button" data-close aria-label="Close"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><h2 id="garage-title">GARAGE</h2><div id="garage-team-options" class="segmented compact"><button data-value="0" class="active">BLUE TEAM</button><button data-value="1">ORANGE TEAM</button></div><label class="color-row">BLUE TEAM PAINT<input id="paint-blue" type="color" value="#29b8e9"></label><label class="color-row">ORANGE TEAM PAINT<input id="paint-orange" type="color" value="#f58a30"></label><label class="color-row">BOOST TRAIL<input id="paint-trail" type="color" value="#64ddff"></label><div class="field-label">WHEELS</div><div id="wheel-options" class="segmented compact"><button data-value="sport" class="active">SPORT</button><button data-value="turbine">TURBINE</button><button data-value="classic">CLASSIC</button></div></section>
+
+    <section id="pause-panel" class="panel pause-panel hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title"><button id="pause-trophy" class="trophy-button panel-trophy lb-only hidden" aria-label="Leaderboard" title="Leaderboard"></button><h2 id="pause-title">PAUSED.</h2><button id="resume" class="button primary">BACK TO IT <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="pause-settings" class="button secondary">SETTINGS</button><button id="restart" class="button secondary">RESTART MATCH</button><button id="quit" class="text-button danger">RETURN TO MENU</button></section>
+
+    <section id="results-panel" class="panel results-panel hidden" role="dialog" aria-modal="true" aria-labelledby="results-title"><h2 id="results-title">VICTORY.</h2><div class="final-score"><span id="final-blue">0</span><i>—</i><span id="final-orange">0</span></div><div id="mvp" class="mvp"></div><div id="results-board" class="results-board lb-only hidden"></div><div class="table-scroll"><table class="results-table"><thead><tr><th>PLAYER</th><th>PTS</th><th>GOALS</th><th>ASSISTS</th><th>SAVES</th><th>SHOTS</th></tr></thead><tbody id="results-body"></tbody></table></div><div class="results-actions"><button id="rematch" class="button primary">REMATCH <span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button><button id="results-menu" class="button secondary">MAIN MENU</button></div></section>
+  </div>
+  <div id="fatal" class="fatal hidden" role="alert"><h2>The arena couldn’t start</h2><p id="fatal-message"></p><button class="button primary" onclick="location.reload()"><span>RELOAD ARENA</span><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button></div>
+  <noscript>This game needs JavaScript and WebGL 2. Enable JavaScript to play.</noscript>
+  <script type="module" src="./src/bootstrap.js"></script>
+</body>
+</html>

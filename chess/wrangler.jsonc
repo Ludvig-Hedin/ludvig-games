@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Chess on the games' Workers Free account (24 Oct 2026). On Workers Free,
+  // going over a daily limit makes requests fail until 00:00 UTC; it never
+  // bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // The page and Stockfish (public/engine) are static assets in dist/client and
+  // never run the Worker. The Worker runs only for /api/*: online rooms in D1,
+  // polled over plain HTTP.
+  "name": "chess",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist/client", "not_found_handling": "404-page", "run_worker_first": ["/api/*"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chess",
+      // Create the database on the Free account, then put its id here.
+      "database_id": "7df10bdf-2feb-475d-ba67-404079db3df8",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Per-IP limits. Namespace ids are account-wide, so each game has its own.
+  "ratelimits": [
+    { "name": "CREATE_LIMIT", "namespace_id": "1401", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LIMIT", "namespace_id": "1402", "simple": { "limit": 60, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

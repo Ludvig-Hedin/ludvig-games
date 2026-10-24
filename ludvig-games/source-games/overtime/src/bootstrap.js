@@ -1,0 +1,3 @@
+const fail=error=>{document.getElementById('loading').classList.add('hidden');document.getElementById('fatal').classList.remove('hidden');document.getElementById('fatal-message').textContent=/WebGL/i.test(error?.message||'')?'WebGL 2 is unavailable in this browser. Use a desktop browser with graphics acceleration enabled, then reload the arena.':error?.message||'Your browser could not initialize the game. Use a current desktop browser with hardware acceleration enabled.';};
+window.addEventListener('unhandledrejection',event=>{console.error(event.reason);fail(event.reason);});
+import('./main.js').catch(fail);

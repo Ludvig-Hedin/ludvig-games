@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<script>window.__ludvigMissing = false;</script>
+<script src="/assets/ludvig.js" onerror="window.__ludvigMissing = true"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#eeece6"><meta name="description" content="Pick fighters from a big roster. Watch the battle. Fight friends online."><title>Anything Arena</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="local-result">
+<div class="shell">
+ <header class="nav"><a href="#" id="home" class="wordmark" aria-label="Anything Arena home">ANYTHING <em>arena</em><span class="brand-dot"></span></a><div class="nav-actions"><button id="surprise" class="text-button" title="Random fighters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 4-2 5-4m2-4c2-3 3-4 5-4h3m-4-4 4 4-4 4"/></svg><span>Random</span></button><button class="icon-button" id="sound" aria-label="Mute sound" aria-pressed="true" title="Sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m11 4-6 5H2v6h3l6 5V4Z"/><path class="soundwaves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="soundx" d="M16 9l5 6m0-6-5 6"/></svg></button><button id="settings" class="icon-button" aria-label="Options" title="Options"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button></div></header>
+ <main>
+  <section class="arena" id="arena" aria-label="3D fight arena">
+   <canvas id="scene" aria-label="Fighters in a sunlit stone arena"></canvas>
+   <div class="arena-shade" aria-hidden="true"></div>
+   <div class="arena-top"><span class="arena-label"><i></i><span id="arena-state">READY</span></span><span class="seed" id="seed"></span></div>
+   <div class="scoreboard" id="scoreboard"><div class="corner corner-a"><div class="corner-heading"><h2 id="name-a"></h2><span id="count-a">1</span></div><div class="health-track"><div id="health-a"></div></div></div><div class="versus"><span id="timer">VS</span></div><div class="corner corner-b"><div class="corner-heading"><h2 id="name-b"></h2><span id="count-b">1</span></div><div class="health-track"><div id="health-b"></div></div></div></div>
+   <div class="countdown hidden" id="countdown" role="status" aria-live="polite">3</div>
+   <div class="commentary hidden" id="commentary"><span id="commentary-text"></span></div>
+   <div class="fight-toolbar hidden" id="fight-toolbar"><span class="camera-label"><b class="hidden" id="slow-label">SLOW MOTION</b></span><div><button id="pause" class="small-button">Pause</button><button id="link-live" class="small-button" aria-label="Share fight">Share</button><button id="exit" class="small-button">Exit</button></div></div>
+   <div id="result" class="result hidden" aria-live="polite"><span class="result-kicker" id="result-kicker">WINNER</span><h2 id="winner-name"></h2><p id="result-line"></p><span class="verify" id="verify"></span></div>
+   <div id="error" class="error hidden" role="alert"></div>
+   <div id="recording" class="recording hidden"><span></span> RECORDING <b id="record-time">0:00</b></div>
+  </section>
+
+  <section id="setup" class="panel" aria-label="Pick fighters">
+   <div class="bar">
+    <div class="seg" id="mode-seg" aria-label="Battle size"><button type="button" data-mode="1v1" aria-pressed="true">1 v 1</button><button type="button" data-mode="2v2" aria-pressed="false">2 v 2</button><button type="button" data-mode="team" aria-pressed="false">Team</button></div>
+    <div class="seg hidden" id="where-seg" aria-label="Where to play"><button type="button" data-where="local" aria-pressed="true">This device</button><button type="button" data-where="online" aria-pressed="false">Online</button></div>
+   </div>
+   <div class="teams">
+    <div class="side side-a"><div class="side-head"><h3>Team A</h3><button type="button" class="mini" data-random="0">Random</button></div><div class="slots" id="slots-a"></div></div>
+    <div class="vs">vs</div>
+    <div class="side side-b"><div class="side-head"><h3>Team B</h3><button type="button" class="mini" data-random="1">Random</button></div><div class="slots" id="slots-b"></div></div>
+   </div>
+   <button class="fight-button" id="fight" type="button"><span>FIGHT</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+  </section>
+
+  <section id="online" class="panel hidden" aria-label="Online battles">
+   <div class="bar"><div class="seg" aria-label="Where to play"><button type="button" data-where="local" aria-pressed="false">This device</button><button type="button" data-where="online" aria-pressed="true">Online</button></div></div>
+   <div id="online-connect">
+        <div class="row"><button class="primary" id="quick" type="button">Quick match</button><button class="secondary" id="create" type="button">Private room</button><button class="secondary lg-trophy" id="board-open" type="button" aria-label="Leaderboard" title="Leaderboard" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button></div>
+    <div class="row join"><input id="join-code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code"><button class="secondary" id="join" type="button">Join room</button></div>
+    <label class="name-row">Your name <input id="my-name" maxlength="16" autocomplete="nickname"></label>
+    <div id="board" class="board"></div>
+   </div>
+   <div id="online-room" class="hidden">
+    <div class="room-head"><div><small>ROOM</small><b id="room-code">----</b></div><span class="grow"></span><button class="secondary" id="invite" type="button">Copy invite link</button><button class="secondary" id="leave" type="button">Leave</button></div>
+    <div class="room-status" id="room-status" role="status" aria-live="polite"></div>
+    <div class="timer hidden" id="pick-timer"><div id="pick-bar"></div></div>
+    <div class="host-row hidden" id="host-row"><div class="seg" id="size-seg" aria-label="Battle size"><button type="button" data-size="1">1v1</button><button type="button" data-size="2">2v2</button><button type="button" data-size="3">3v3</button><button type="button" data-size="4">4v4</button></div><button class="fight-button small" id="start-pick" type="button"><span>Start picking</span></button></div>
+    <div class="teams">
+     <div class="side side-a"><div class="side-head"><h3>Team A</h3><button type="button" class="mini" data-join="A">Join A</button></div><div class="slots" id="room-a"></div></div>
+     <div class="vs">vs</div>
+     <div class="side side-b"><div class="side-head"><h3>Team B</h3><button type="button" class="mini" data-join="B">Join B</button></div><div class="slots" id="room-b"></div></div>
+    </div>
+    <div class="lock-row hidden" id="lock-row"><button class="primary" id="lock" type="button">Lock in</button><span class="timer-text" id="pick-left"></span></div>
+    <div class="spectators"><div class="side-head"><h3 style="--a:#9a9c92">Watching</h3><button type="button" class="mini" data-join="S">Watch</button></div><div class="people" id="room-s"></div></div>
+    <div class="bet hidden" id="bet"><span>Who wins?</span><button type="button" class="secondary" data-bet="A">Team A</button><button type="button" class="secondary" data-bet="B">Team B</button><small id="points"></small></div>
+   </div>
+  </section>
+
+  <div class="result-actions hidden" id="result-actions">
+   <button class="primary local-only" id="rematch" type="button">Rematch <svg class="ui-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+   <button class="secondary local-only" id="new-fight" type="button">Change fighters</button>
+   <button class="primary online-only" id="again" type="button">Pick again <svg class="ui-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+   <button class="secondary online-only" id="to-room" type="button">Back to room</button>
+   <button class="secondary" id="replay" type="button">Replay</button>
+   <button class="secondary" id="copy" type="button">Share</button>
+   <button class="secondary clip-button" id="clip" type="button">Record clip <svg class="ui-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
+   <a class="secondary clip-button hidden" id="save-clip" download="anything-arena.webm">Save clip <svg class="ui-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg></a>
+  </div>
+  <div class="lg-board hidden" id="result-board"></div>
+ </main>
+</div>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="picker" class="picker" aria-labelledby="picker-title">
+ <div class="picker-head">
+  <button class="dialog-close" data-close aria-label="Close"><svg class="ui-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2 id="picker-title">Pick a fighter</h2>
+  <div class="picker-tools"><input id="search" type="search" placeholder="Search 100+ fighters" autocomplete="off" spellcheck="false" aria-label="Search fighters"><button class="secondary" id="pick-random" type="button">Random</button></div>
+  <div class="chips" id="chips" role="toolbar" aria-label="Categories"></div>
+ </div>
+ <div class="picker-grid" id="picker-grid"></div>
+</dialog>
+
+<dialog id="info-dialog"><button class="dialog-close" data-close aria-label="Close dialog"><svg class="ui-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h2>Options</h2><label class="toggle-setting"><input type="checkbox" id="motion-effects" checked><span>Camera effects<small>Impact shake and slow motion.</small></span></label><div class="option-actions"><button id="load-code" class="secondary" type="button">Load fight code</button><button class="secondary" id="how" type="button">How fights work</button></div><div id="about-content" class="hidden"><p>Every fighter has an element. Each element beats two others: fire melts ice, water puts out fire, earth grounds electricity, wind clears the stink. Some fighters also hate swarms, giants, fast or heavy opponents.</p><p>Every few seconds each fighter uses its special move. A fight ends by knockout or remaining health after 27 seconds.</p><p>Battles are deterministic. The same fighters and seed always give the same fight, so shared links replay exactly and online players all see the same result.</p><p>Space pauses. Replay keeps the seed; Rematch changes it.</p></div></dialog>
+<dialog id="share-dialog"><button class="dialog-close" data-close aria-label="Close dialog"><svg class="ui-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h2>Share a fight</h2><p id="share-explanation"></p><textarea id="share-value" readonly rows="3" aria-label="Fight link or code"></textarea><button class="primary" id="share-copy" type="button">Copy</button><hr><label for="import-code">Load a fight</label><textarea id="import-code" rows="2" placeholder="Paste a fight code or link"></textarea><button class="secondary" id="import-fight" type="button">Load fight</button></dialog>
+
+<script src="roster.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="/assets/ludvig.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#f5f1ea">
+<title>Six Clues</title>
+<meta name="description" content="One secret country a day. Six clues, from hard to easy. How few do you need?">
+<style>
+  :root {
+    --bg: #f5f1ea; --card: #fffdf8; --ink: #1e2227; --muted: #6c6f74; --faint: #a9a49b;
+    --line: #e5ded1; --soft: #ece5d8; --accent: #2c6b5e; --accent-ink: #fff;
+    --good: #2f8a5f; --good-soft: #dcefe3; --bad: #c4543c; --bad-soft: #f6e0d9;
+    --serif: ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --radius: 16px; --shadow: 0 1px 0 rgba(30, 34, 39, .04), 0 6px 20px -12px rgba(30, 34, 39, .25);
+    --dock: 168px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171a; --card: #1e2125; --ink: #ecebe6; --muted: #9c9fa4; --faint: #61656b;
+      --line: #2c3035; --soft: #262a2f; --accent: #6cc3ad; --accent-ink: #0f1a17;
+      --good: #5cc28f; --good-soft: #1e3329; --bad: #e98066; --bad-soft: #3a2420;
+      --shadow: 0 1px 0 rgba(0, 0, 0, .2), 0 8px 24px -14px rgba(0, 0, 0, .7);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; max-width: 100%; overflow-x: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-text-size-adjust: 100%; }
+  body { min-height: 100dvh; }
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header */
+  header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar { display: flex; align-items: center; gap: 8px; height: 56px; }
+  .brand { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: .14em; margin-right: auto; white-space: nowrap; }
+  .brand span { color: var(--accent); }
+  .icon { width: 44px; height: 44px; border: 0; border-radius: 12px; background: transparent; display: grid; place-items: center; color: var(--ink); }
+  .icon:hover { background: var(--soft); }
+  .icon svg { width: 22px; height: 22px; }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; margin-left: 4px; }
+  .lang button { border: 0; background: transparent; font-size: 12px; font-weight: 700; letter-spacing: .06em; padding: 7px 10px; border-radius: 999px; color: var(--muted); min-width: 38px; }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+  /* Mode tabs and meta */
+  .modes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; background: var(--soft); padding: 4px; border-radius: 14px; margin: 16px 0 12px; }
+  .modes button { border: 0; background: transparent; padding: 10px; border-radius: 10px; font-weight: 600; color: var(--muted); min-height: 44px; transition: background .2s, color .2s; }
+  .modes button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+  .meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 2px 14px; color: var(--muted); font-size: 14px; }
+  .pips { display: flex; gap: 5px; }
+  .pip { width: 22px; height: 6px; border-radius: 3px; background: var(--line); transition: background .35s, transform .35s; }
+  .pip.used { background: var(--bad); }
+  .pip.win { background: var(--good); transform: scaleY(1.4); }
+  .pip.now { background: var(--ink); }
+
+  /* Clues */
+  main { padding-bottom: calc(var(--dock) + env(safe-area-inset-bottom) + 24px); }
+  main.done { padding-bottom: 48px; }
+  ol.clues { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; perspective: 900px; }
+  .clue { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 14px 16px 15px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); transform-origin: 50% 0; }
+  .clue-num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--soft); color: var(--ink); }
+  .clue-label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 6px 0 4px; }
+  .clue-text { margin: 0; font-family: var(--serif); font-size: 18px; line-height: 1.42; text-wrap: pretty; }
+  .clue-guess { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); }
+  .clue-guess.bad { background: var(--bad-soft); color: var(--bad); }
+  .clue-guess.good { background: var(--good-soft); color: var(--good); }
+  .clue.locked { background: transparent; box-shadow: none; border-style: dashed; padding-top: 12px; padding-bottom: 12px; }
+  .clue.locked .clue-num { background: transparent; border: 1px dashed var(--faint); color: var(--faint); }
+  .clue.locked .clue-label { color: var(--faint); margin: 7px 0 0; }
+  .clue.extra { opacity: .62; box-shadow: none; }
+  .clue.current .clue-num { background: var(--ink); color: var(--bg); }
+  .clue.reveal { animation: reveal .62s cubic-bezier(.2, .85, .25, 1) both; }
+  .clue.reveal .clue-text { animation: ink .9s .12s ease both; }
+  @keyframes reveal { from { opacity: 0; transform: rotateX(-68deg) translateY(-6px); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+  @keyframes ink { from { opacity: 0; filter: blur(6px); letter-spacing: .02em; } to { opacity: 1; filter: none; letter-spacing: normal; } }
+
+  /* Dock */
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); background: linear-gradient(to top, var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); padding: 18px 0 calc(12px + env(safe-area-inset-bottom)); }
+  .dock[hidden] { display: none; }
+  .field { position: relative; display: flex; gap: 8px; }
+  .field input { flex: 1; min-width: 0; height: 54px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); padding: 0 16px; font-size: 17px; font-family: var(--sans); box-shadow: var(--shadow); -webkit-appearance: none; appearance: none; }
+  .field input:focus { border-color: var(--accent); outline: none; }
+  .btn { height: 54px; border-radius: 14px; border: 0; padding: 0 20px; font-weight: 700; font-size: 16px; background: var(--accent); color: var(--accent-ink); transition: transform .12s, opacity .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn[disabled] { opacity: .45; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn.wide { width: 100%; }
+  .skip { margin-top: 8px; width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); background: transparent; font-weight: 600; color: var(--ink); display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .skip small { color: var(--muted); font-weight: 500; }
+  .skip.warn { border-color: var(--bad); color: var(--bad); }
+  .shake { animation: shake .42s cubic-bezier(.36, .07, .19, .97); }
+  @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+  .sugg { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); margin: 0; padding: 6px; list-style: none; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 40px -12px rgba(0, 0, 0, .35); max-height: 46vh; overflow: auto; }
+  .sugg[hidden] { display: none; }
+  .sugg li { display: flex; align-items: baseline; gap: 8px; padding: 12px 12px; border-radius: 10px; cursor: pointer; min-height: 46px; font-size: 16px; }
+  .sugg li small { color: var(--muted); font-size: 13px; }
+  .sugg li.active, .sugg li:hover { background: var(--soft); }
+  .sugg li.used { color: var(--faint); text-decoration: line-through; }
+
+  /* Result */
+  .result { margin-top: 18px; padding: 26px 20px 22px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); text-align: center; animation: pop .6s cubic-bezier(.2, 1.3, .4, 1) both; }
+  .result[hidden] { display: none; }
+  @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+  .flag { font-size: 64px; line-height: 1; display: inline-block; animation: wave 1.2s .25s ease both; }
+  @keyframes wave { 0% { transform: scale(.4) rotate(-12deg); opacity: 0; } 55% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: none; } }
+  .kicker { margin: 14px 0 2px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .kicker.win { color: var(--good); }
+  .result h2 { font-family: var(--serif); font-size: 32px; margin: 2px 0 2px; }
+  .cap { margin: 0 0 14px; color: var(--muted); }
+  .grid { font-size: 22px; letter-spacing: 3px; margin: 6px 0 18px; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .next { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
+  .next b { font-variant-numeric: tabular-nums; color: var(--ink); font-size: 16px; }
+
+  /* Dialogs */
+  dialog { border: 0; padding: 0; border-radius: 22px; background: var(--card); color: var(--ink); width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); box-shadow: 0 24px 80px -20px rgba(0, 0, 0, .5); }
+  dialog::backdrop { background: rgba(20, 22, 25, .45); backdrop-filter: blur(3px); }
+  dialog[open] { animation: pop .35s cubic-bezier(.2, 1.1, .4, 1) both; }
+  .dlg { padding: 22px 22px 20px; }
+  .dlg-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .dlg-head h2 { margin: 0; font-family: var(--serif); font-size: 24px; }
+  .dlg p { line-height: 1.5; margin: 0 0 12px; }
+  .dlg ol.rules { margin: 0 0 14px; padding-left: 20px; line-height: 1.5; }
+  .dlg ol.rules li { margin-bottom: 6px; }
+  .example { font-size: 20px; letter-spacing: 2px; background: var(--soft); border-radius: 12px; padding: 10px 12px; margin: 4px 0 14px; }
+  .example small { display: block; font-size: 13px; letter-spacing: 0; color: var(--muted); margin-top: 2px; }
+  .nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; margin: 8px 0 18px; }
+  .nums b { display: block; font-size: 28px; font-family: var(--serif); }
+  .nums span { font-size: 12px; color: var(--muted); }
+  .hist h3, .dlg h3 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .row { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+  .bar-fill { height: 24px; min-width: 26px; border-radius: 6px; background: var(--soft); color: var(--ink); display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; font-size: 13px; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
+  .bar-fill.hot { background: var(--good); color: #fff; }
+  .archive { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; margin: 6px 0 14px; max-height: 50vh; overflow: auto; }
+  .day { border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; background: transparent; min-height: 64px; }
+  .day b { display: block; font-size: 16px; }
+  .day span { font-size: 12px; color: var(--muted); }
+  .day.today { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .day[disabled] { cursor: default; opacity: .55; }
+  .note { font-size: 14px; color: var(--muted); }
+
+  .toast { position: fixed; left: 50%; top: 72px; transform: translate(-50%, -12px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s; z-index: 50; max-width: calc(100vw - 32px); text-align: center; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  canvas.fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .error { margin: 40px 0; text-align: center; color: var(--muted); }
+
+  .ui-i { width: 14px; height: 14px; flex: none; vertical-align: -2px; }
+  .day .ui-i { width: 12px; height: 12px; margin-right: 3px; }
+  .row > span { display: flex; align-items: center; }
+  .lg-board { margin: 0 auto 16px; max-width: 100%; text-align: left; font-size: 14px; }
+  .lg-board:empty { display: none; }
+  .dlg-head .icon + .icon { margin-left: -4px; }
+  .dlg-head .tools { display: flex; align-items: center; }
+  @media (max-width: 480px) { .modes { margin: 10px 0 8px; } .meta { margin-bottom: 10px; } }
+  @media (max-width: 380px) {
+    .bar { gap: 2px; }
+    .brand { font-size: 16px; letter-spacing: .06em; }
+    .icon { width: 40px; flex-shrink: 0; }
+    .lang { margin-left: 2px; }
+    .lang button { min-width: 30px; padding: 7px 6px; }
+  }
+  @media (min-width: 600px) { .clue-text { font-size: 19px; } .brand { font-size: 22px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <div class="brand" aria-label="Six Clues">Six <span>Clues</span></div>
+    <button class="icon" id="btnHelp" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg></button>
+    <button class="icon" id="btnArchive" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+    <button class="icon" id="btnStats" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-5"/></svg></button>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="sv" aria-pressed="false">SV</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="modes" role="tablist">
+    <button type="button" role="tab" id="tabDaily" aria-selected="true"></button>
+    <button type="button" role="tab" id="tabPractice" aria-selected="false"></button>
+    <button type="button" role="tab" id="tabFriends" aria-selected="false" hidden></button>
+  </div>
+  <div class="meta" id="metaRow"><span id="metaText"></span><div class="pips" id="pips" aria-hidden="true"></div></div>
+  <ol class="clues" id="clues" aria-live="polite"></ol>
+  <section class="result" id="result" hidden aria-live="polite"></section>
+  <section id="friends" hidden></section>
+</main>
+
+<div class="dock" id="dock">
+  <div class="wrap">
+    <form class="field" id="form" autocomplete="off">
+      <ul class="sugg" id="sugg" role="listbox" hidden></ul>
+      <label class="sr" for="guess" id="guessLabel"></label>
+      <input id="guess" type="text" role="combobox" aria-autocomplete="list" aria-controls="sugg" aria-expanded="false" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go">
+      <button class="btn" id="btnGuess" type="submit"></button>
+    </form>
+    <button class="skip" id="btnSkip" type="button"></button>
+  </div>
+</div>
+
+<dialog id="dlgHelp"><div class="dlg" id="helpBody"></div></dialog>
+<dialog id="dlgStats"><div class="dlg" id="statsBody"></div></dialog>
+<dialog id="dlgArchive"><div class="dlg" id="archiveBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="countries.js"></script>
+<script src="friends.js"></script>
+<script>
+(function () {
+  'use strict';
+  var S = window.SixClues;
+  if (!S) {
+    document.getElementById('main').innerHTML = '<p class="error">The puzzle could not load. Please refresh the page.</p>';
+    document.getElementById('dock').hidden = true;
+    return;
+  }
+
+  // UI icons: simple 2 px stroke SVGs that follow the text colour.
+  var SVG = '<svg class="ui-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var ICON = { check: SVG + '<path d="M5 12.5l4.5 4.5L19 7"/></svg>', cross: SVG + '<path d="M6 6l12 12M18 6L6 18"/></svg>', lock: SVG + '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>' };
+
+  // ---------- text ----------
+  var T = {
+    en: {
+      today: 'Today', practice: 'Practice', friends: 'Friends', labels: ['A curious fact', 'Where and how many', 'On the table', 'A famous sight', 'The flag', 'Neighbours and capital'],
+      meta: function (n, d) { return '#' + n + ' · ' + d; }, practiceMeta: 'Practice · stats not affected',
+      placeholder: 'Type a country…', guessLabel: 'Your guess', guess: 'Guess', next: 'Next clue', nextSmall: '+1 clue',
+      giveUp: 'Give up', confirm: 'Tap again to give up', skipped: 'Skipped', pick: 'Pick a country from the list',
+      already: 'You already guessed that', notIt: function (n) { return 'Not ' + n; },
+      solved: function (k) { return k === 1 ? 'Solved with 1 clue' : 'Solved with ' + k + ' clues'; }, lost: 'Out of clues · the answer was',
+      capital: function (c) { return 'Capital: ' + c; }, noCap: 'A city-state',
+      share: 'Share', copied: 'Result copied', copyFail: 'Could not copy the result', stats: 'Statistics', another: 'Another country',
+      nextIn: 'Next country in', played: 'Played', win: 'Win %', streak: 'Streak', best: 'Best streak', dist: 'Clues needed',
+      help: 'How to play', archive: 'Archive', close: 'Close', play: 'Play', locked: 'Locked', todayShort: 'Today',
+      archiveNote: 'Earlier days are locked for now. The daily country is only playable on its own day.',
+      helpBody: '<p>There is one secret country each day, the same for everyone.</p><ol class="rules"><li>You start with one clue. Clues go from hard to easy.</li><li>Type a country and pick it from the list to guess.</li><li>A wrong guess, or <b>Next clue</b>, reveals the next clue.</li><li>Find it with as few clues as you can. Six is the limit.</li></ol><div class="example">🟥🟥🟩⬜⬜⬜<small>Solved on the third clue</small></div><p>A new country arrives at midnight, Swedish time. <b>Practice</b> gives you random countries any time, without touching your streak.</p>',
+      gotIt: 'Let’s play', notNeeded: 'Not needed'
+    },
+    sv: {
+      today: 'Idag', practice: 'Träna', friends: 'Vänner', labels: ['Kuriosa', 'Var och hur många', 'På bordet', 'Känd plats', 'Flaggan', 'Grannar och huvudstad'],
+      meta: function (n, d) { return '#' + n + ' · ' + d; }, practiceMeta: 'Träning · påverkar inte statistiken',
+      placeholder: 'Skriv ett land…', guessLabel: 'Din gissning', guess: 'Gissa', next: 'Nästa ledtråd', nextSmall: '+1 ledtråd',
+      giveUp: 'Ge upp', confirm: 'Tryck igen för att ge upp', skipped: 'Hoppade över', pick: 'Välj ett land i listan',
+      already: 'Det landet har du redan gissat på', notIt: function (n) { return 'Inte ' + n; },
+      solved: function (k) { return k === 1 ? 'Löst med 1 ledtråd' : 'Löst med ' + k + ' ledtrådar'; }, lost: 'Slut på ledtrådar · svaret var',
+      capital: function (c) { return 'Huvudstad: ' + c; }, noCap: 'En stadsstat',
+      share: 'Dela', copied: 'Resultatet är kopierat', copyFail: 'Kunde inte kopiera resultatet', stats: 'Statistik', another: 'Ett nytt land',
+      nextIn: 'Nästa land om', played: 'Spelade', win: 'Vinst %', streak: 'Svit', best: 'Bästa svit', dist: 'Ledtrådar som behövdes',
+      help: 'Så spelar du', archive: 'Arkiv', close: 'Stäng', play: 'Spela', locked: 'Låst', todayShort: 'Idag',
+      archiveNote: 'Tidigare dagar är låsta än så länge. Dagens land går bara att spela på sin egen dag.',
+      helpBody: '<p>Varje dag finns ett hemligt land, samma för alla.</p><ol class="rules"><li>Du börjar med en ledtråd. Ledtrådarna går från svåra till lätta.</li><li>Skriv ett land och välj det i listan för att gissa.</li><li>En felgissning, eller <b>Nästa ledtråd</b>, visar nästa ledtråd.</li><li>Hitta landet med så få ledtrådar som möjligt. Sex är max.</li></ol><div class="example">🟥🟥🟩⬜⬜⬜<small>Löst på tredje ledtråden</small></div><p>Ett nytt land kommer vid midnatt, svensk tid. <b>Träna</b> ger dig slumpade länder när du vill, utan att påverka din svit.</p>',
+      gotIt: 'Nu kör vi', notNeeded: 'Behövdes inte'
+    }
+  };
+  var CITY_STATES = { mc: 1, sm: 1, va: 1, sg: 1 };
+  var F = window.SixFriends || null;
+  function friendsOn() { try { return !!(F && F.available()); } catch (e) { return false; } }
+
+  // ---------- storage ----------
+  var KEY = 'six-clues.v1', memory = null;
+  function load() {
+    try { var raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) { /* storage blocked */ }
+    return memory || {};
+  }
+  var store = load();
+  store.stats = store.stats || S.emptyStats();
+  store.days = store.days || {};
+  function save() {
+    var keys = Object.keys(store.days).map(Number).sort(function (a, b) { return b - a; });
+    keys.slice(60).forEach(function (k) { delete store.days[k]; });
+    memory = store;
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* keep in memory */ }
+  }
+
+  var lang = store.lang || ((navigator.language || '').toLowerCase().indexOf('sv') === 0 ? 'sv' : 'en');
+  var mode = 'daily';
+  var n = S.puzzleNumber();
+  var t = function () { return T[lang]; };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function dailyRound() {
+    var answer = S.countryForPuzzle(n).iso;
+    var d = store.days[n];
+    if (!d || d.answer !== answer) { d = store.days[n] = S.newRound(answer); save(); }
+    return d;
+  }
+  function practiceRound(fresh) {
+    if (!fresh && store.practice && S.byIso[store.practice.answer]) return store.practice;
+    var avoid = [S.countryForPuzzle(n).iso].concat(store.recent || []);
+    var pool = S.countries.filter(function (c) { return avoid.indexOf(c.iso) < 0; });
+    var pick = pool[Math.floor(Math.random() * pool.length)].iso;
+    store.recent = [pick].concat(store.recent || []).slice(0, 40);
+    store.practice = S.newRound(pick);
+    save();
+    return store.practice;
+  }
+  function round() { return mode === 'daily' ? dailyRound() : practiceRound(false); }
+  function setRound(r) { if (mode === 'daily') store.days[n] = Object.assign(store.days[n] || {}, r); else store.practice = r; save(); }
+
+  // ---------- rendering ----------
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function dateLabel(num) {
+    return new Intl.DateTimeFormat(lang === 'sv' ? 'sv-SE' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Stockholm' }).format(S.dateForPuzzle(num));
+  }
+
+  function renderChrome() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+    $('tabDaily').textContent = t().today + ' #' + n;
+    $('tabPractice').textContent = t().practice;
+    $('tabDaily').setAttribute('aria-selected', String(mode === 'daily'));
+    $('tabPractice').setAttribute('aria-selected', String(mode === 'practice'));
+    $('tabFriends').textContent = t().friends;
+    $('tabFriends').hidden = !friendsOn();
+    $('tabFriends').setAttribute('aria-selected', String(mode === 'friends'));
+    if (mode === 'friends' && !friendsOn()) mode = 'daily';
+    $('btnHelp').setAttribute('aria-label', t().help);
+    $('btnStats').setAttribute('aria-label', t().stats);
+    $('btnArchive').setAttribute('aria-label', t().archive);
+    $('guess').placeholder = t().placeholder;
+    $('guessLabel').textContent = t().guessLabel;
+    $('btnGuess').textContent = t().guess;
+  }
+
+  var lastShown = { key: '', count: 0 };
+  function render(opts) {
+    opts = opts || {};
+    renderChrome();
+    var fr = mode === 'friends';
+    $('friends').hidden = !fr; $('clues').hidden = fr; $('metaRow').hidden = fr;
+    if (fr) { $('result').hidden = true; $('dock').hidden = true; $('main').classList.add('done'); F.render(); return; }
+    var r = round(), c = S.byIso[r.answer], texts = S.clues(c, lang), done = r.status !== 'playing';
+    var key = mode + ':' + (mode === 'daily' ? n : r.answer);
+    var animateFrom = (lastShown.key === key && !opts.instant) ? lastShown.count : Infinity;
+    if (opts.instant) animateFrom = Infinity;
+    $('metaText').textContent = mode === 'daily' ? t().meta(n, dateLabel(n)) : t().practiceMeta;
+
+    var pips = '';
+    for (var i = 0; i < 6; i++) {
+      var cls = 'pip';
+      if (i < r.guesses.length) cls += r.guesses[i] === r.answer ? ' win' : ' used';
+      else if (!done && i === r.revealed - 1) cls += ' now';
+      pips += '<span class="' + cls + '"></span>';
+    }
+    $('pips').innerHTML = pips;
+
+    var html = '';
+    for (var k = 0; k < 6; k++) {
+      var open = k < r.revealed, extra = done && !open;
+      var g = k < r.guesses.length ? r.guesses[k] : undefined;
+      var cls2 = 'clue' + (open ? '' : extra ? ' extra' : ' locked') + (!done && k === r.revealed - 1 ? ' current' : '') + ((open && k >= animateFrom) ? ' reveal' : '');
+      html += '<li class="' + cls2 + '"><div class="clue-num">' + (k + 1) + '</div><div class="clue-body"><div class="clue-label">' + esc(t().labels[k]) + (extra ? ' · ' + esc(t().notNeeded) : '') + '</div>';
+      if (open || extra) html += '<p class="clue-text">' + esc(texts[k]) + '</p>';
+      if (g !== undefined) {
+        if (g === null) html += '<span class="clue-guess">' + esc(t().skipped) + '</span>';
+        else if (g === r.answer) html += '<span class="clue-guess good">' + ICON.check + esc(S.name(S.byIso[g], lang)) + '</span>';
+        else html += '<span class="clue-guess bad">' + ICON.cross + esc(S.name(S.byIso[g], lang)) + '</span>';
+      }
+      html += '</div></li>';
+    }
+    $('clues').innerHTML = html;
+    lastShown = { key: key, count: r.revealed };
+
+    $('dock').hidden = done;
+    $('main').classList.toggle('done', done);
+    renderSkip(r);
+    renderResult(r, c);
+    if (!done && isFinite(animateFrom) && r.revealed > animateFrom) {
+      var cur = $('clues').children[r.revealed - 1];
+      if (cur) setTimeout(function () { cur.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 60);
+    }
+  }
+
+  var confirmTimer = null, confirming = false;
+  function renderSkip(r) {
+    var b = $('btnSkip');
+    b.classList.remove('warn');
+    if (r.revealed >= 6) b.innerHTML = esc(t().giveUp);
+    else b.innerHTML = esc(t().next) + ' <small>' + esc(t().nextSmall) + '</small>';
+    clearTimeout(confirmTimer); confirmTimer = null; confirming = false;
+  }
+
+  function renderResult(r, c) {
+    var box = $('result');
+    if (r.status === 'playing') { box.hidden = true; box.innerHTML = ''; return; }
+    var won = r.status === 'won';
+    var cap = c.capEn ? t().capital(lang === 'sv' ? c.capSv : c.capEn) : (CITY_STATES[c.iso] ? t().noCap : '');
+    var html = '<div class="flag" aria-hidden="true">' + S.flagEmoji(c.iso) + '</div>' +
+      '<p class="kicker' + (won ? ' win' : '') + '">' + esc(won ? t().solved(r.guesses.length) : t().lost) + '</p>' +
+      '<h2>' + esc(S.name(c, lang)) + '</h2>' + (cap ? '<p class="cap">' + esc(cap) + '</p>' : '<p class="cap"></p>') +
+      '<div class="grid" aria-hidden="true">' + S.grid(r) + '</div>';
+    if (mode === 'daily') {
+      html += '<div class="lg-board" id="resultBoard"></div><div class="actions"><button class="btn" type="button" id="btnShare">' + esc(t().share) + '</button><button class="btn ghost" type="button" id="btnStats2">' + esc(t().stats) + '</button></div>' +
+        '<p class="next">' + esc(t().nextIn) + ' <b id="countdown">' + countdown() + '</b></p>';
+    } else {
+      html += '<button class="btn wide" type="button" id="btnAnother">' + esc(t().another) + '</button>';
+    }
+    box.innerHTML = html;
+    box.hidden = false;
+    var s = $('btnShare'); if (s) s.onclick = share;
+    var s2 = $('btnStats2'); if (s2) s2.onclick = openStats;
+    ludvigBoard($('resultBoard'), 'six-clues');
+    var a = $('btnAnother'); if (a) a.onclick = function () { practiceRound(true); lastShown.key = ''; render({ instant: true }); window.scrollTo({ top: 0, behavior: 'smooth' }); focusInput(); };
+  }
+
+  function countdown() {
+    var ms = S.msUntilNextPuzzle(), s = Math.ceil(ms / 1000);
+    var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    return [h, m, sec].map(function (x) { return String(x).padStart(2, '0'); }).join(':');
+  }
+
+  // ---------- guessing ----------
+  var sugg = [], active = 0;
+  function updateSuggestions() {
+    var q = $('guess').value, list = $('sugg');
+    sugg = q.trim() ? S.suggest(q, lang, 6) : [];
+    active = 0;
+    if (!sugg.length) { list.hidden = true; $('guess').setAttribute('aria-expanded', 'false'); return; }
+    var used = round().guesses;
+    list.innerHTML = sugg.map(function (s, i) {
+      return '<li role="option" id="opt' + i + '" data-i="' + i + '" class="' + (i === active ? 'active' : '') + (used.indexOf(s.country.iso) >= 0 ? ' used' : '') + '">' +
+        esc(s.label) + (s.hint ? ' <small>' + esc(s.hint) + '</small>' : '') + '</li>';
+    }).reverse().join('');
+    list.hidden = false;
+    $('guess').setAttribute('aria-expanded', 'true');
+    $('guess').setAttribute('aria-activedescendant', 'opt0');
+  }
+  function highlight() {
+    Array.prototype.forEach.call($('sugg').children, function (li) { li.classList.toggle('active', Number(li.dataset.i) === active); });
+    $('guess').setAttribute('aria-activedescendant', 'opt' + active);
+  }
+  function hideSuggestions() { $('sugg').hidden = true; $('guess').setAttribute('aria-expanded', 'false'); }
+  function choose(i) {
+    var s = sugg[i]; if (!s) return;
+    $('guess').value = s.label;
+    hideSuggestions();
+    submitGuess(s.country);
+  }
+  function focusInput() { if (window.matchMedia('(hover: hover)').matches) setTimeout(function () { $('guess').focus(); }, 50); }
+
+  function submitGuess(country) {
+    var r = round();
+    if (r.status !== 'playing') return;
+    if (!country) { shake(); toast(t().pick); return; }
+    var out = S.applyGuess(r, country.iso);
+    if (out.result === 'repeat') { shake(); toast(t().already); return; }
+    $('guess').value = '';
+    hideSuggestions();
+    setRound(out.round);
+    if (out.result === 'wrong') { shake(); toast(t().notIt(S.name(country, lang))); }
+    afterMove(out);
+  }
+  function skip() {
+    var r = round();
+    if (r.status !== 'playing') return;
+    if (r.revealed >= 6 && !confirming) {
+      var b = $('btnSkip'); b.textContent = t().confirm; b.classList.add('warn'); confirming = true;
+      confirmTimer = setTimeout(function () { renderSkip(round()); }, 3500);
+      return;
+    }
+    var out = S.applyGuess(r, null);
+    setRound(out.round);
+    afterMove(out);
+  }
+  function afterMove(out) {
+    if (out.result === 'won' || out.result === 'lost') finish(out.round);
+    render();
+    if (out.round.status === 'playing') focusInput();
+  }
+
+  function finish(r) {
+    if (mode === 'daily') {
+      var before = S.currentStreak(store.stats, n);
+      store.stats = S.recordResult(store.stats, n, r);
+      var d = store.days[n];
+      if (r.status === 'won' && !d.submitted) {
+        d.submitted = true;
+        submitScores(r.guesses.length, store.stats.streak > before ? store.stats.streak : 0);
+      }
+      save();
+    }
+    if (mode === 'daily' && F) { try { F.dailyDone(); } catch (e) { /* friends are optional */ } }
+    if (r.status === 'won') { try { confetti(); } catch (e) { /* decoration only */ } }
+    setTimeout(function () { var res = $('result'); if (res && !res.hidden) res.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+    if (mode === 'daily') setTimeout(openStats, 1700);
+  }
+
+  // Leaderboards are optional: the game works fully without ludvig.js.
+  function ludvigBoard(el, board) { try { var ui = window.Ludvig && window.Ludvig.ui; if (!ui || !el) return; el.textContent = ''; ui.board(el, { board: board, limit: 5 }); } catch (e) {} }
+  function ludvigOpen(board) { try { var ui = window.Ludvig && window.Ludvig.ui; if (ui) ui.open({ board: board }); } catch (e) {} }
+  function submitScores(clues, streak) {
+    try {
+      if (!window.Ludvig || typeof window.Ludvig.score !== 'function') return;
+      Promise.resolve(window.Ludvig.score('six-clues', clues)).then(function () { var rb = $('resultBoard'); if (rb) ludvigBoard(rb, 'six-clues'); }).catch(function () {});
+      if (streak > 0) Promise.resolve(window.Ludvig.score('six-clues:streak', streak)).catch(function () {});
+    } catch (e) { /* never block the game */ }
+  }
+
+  // ---------- share ----------
+  function share() {
+    var text = S.shareText(n, dailyRound());
+    var touch = window.matchMedia('(pointer: coarse)').matches;
+    if (touch && navigator.share) {
+      navigator.share({ text: text }).catch(function (e) { if (e && e.name !== 'AbortError') copy(text); });
+      return;
+    }
+    copy(text);
+  }
+  function copy(text) {
+    var fallback = function () {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove(); toast(ok ? t().copied : t().copyFail);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(t().copied); }, fallback);
+    else fallback();
+  }
+
+  // ---------- dialogs ----------
+  function head(title, trophy) { return '<div class="dlg-head"><h2>' + esc(title) + '</h2><div class="tools">' + (trophy && window.Ludvig && window.Ludvig.ui ? '<button class="icon" type="button" id="btnBoard" aria-label="Leaderboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/></svg></button>' : '') + '<button class="icon" type="button" data-close aria-label="' + esc(t().close) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'; }
+  function show(id) {
+    var d = $(id);
+    d.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { d.close(); }; });
+    d.onclick = function (e) { if (e.target === d) d.close(); };
+    if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+    var cl = d.querySelectorAll('[data-close]'); if (cl.length) cl[cl.length - 1].focus();
+  }
+  function openHelp() {
+    $('helpBody').innerHTML = head(t().help) + t().helpBody + '<button class="btn wide" type="button" data-close>' + esc(t().gotIt) + '</button>';
+    show('dlgHelp');
+  }
+  function openStats() {
+    var st = store.stats, streak = S.currentStreak(st, n);
+    var win = st.played ? Math.round(st.wins / st.played * 100) : 0;
+    var max = Math.max.apply(null, st.hist.concat([1]));
+    var today = store.days[n], todayIdx = today && today.status === 'won' ? today.guesses.length : today && today.status === 'lost' ? 0 : -1;
+    var rows = '';
+    [1, 2, 3, 4, 5, 6, 0].forEach(function (k) {
+      var v = st.hist[k] || 0;
+      rows += '<div class="row"><span>' + (k || ICON.cross) + '</span><div><div class="bar-fill' + (k === todayIdx ? ' hot' : '') + '" style="width:' + Math.max(8, v / max * 100) + '%">' + v + '</div></div></div>';
+    });
+    var done = today && today.status !== 'playing';
+    $('statsBody').innerHTML = head(t().stats, true) +
+      '<div class="nums"><div><b>' + st.played + '</b><span>' + esc(t().played) + '</span></div><div><b>' + win + '</b><span>' + esc(t().win) + '</span></div><div><b>' + streak + '</b><span>' + esc(t().streak) + '</span></div><div><b>' + st.maxStreak + '</b><span>' + esc(t().best) + '</span></div></div>' +
+      '<div class="hist"><h3>' + esc(t().dist) + '</h3>' + rows + '</div>' +
+      (done ? '<div class="actions" style="margin-top:16px"><button class="btn" type="button" id="dlgShare">' + esc(t().share) + '</button><button class="btn ghost" type="button" data-close>' + esc(t().close) + '</button></div><p class="next" style="text-align:center">' + esc(t().nextIn) + ' <b class="cd">' + countdown() + '</b></p>' : '');
+    var sb = $('dlgShare'); if (sb) sb.onclick = share;
+    var bb = $('btnBoard'); if (bb) bb.onclick = function () { var d = $('dlgStats'); if (d.open && d.close) d.close(); ludvigOpen('six-clues'); };
+    show('dlgStats');
+  }
+  function openArchive() {
+    var cells = '';
+    for (var k = n; k >= Math.max(1, n - 89); k--) {
+      var d = store.days[k], mark = d && d.status === 'won' ? ' · ' + d.guesses.length + '/6' : d && d.status === 'lost' ? ' · X' : '';
+      if (k === n) cells += '<button class="day today" type="button" data-today><b>#' + k + '</b><span>' + esc(t().todayShort + mark) + '</span></button>';
+      else cells += '<button class="day" type="button" disabled aria-label="#' + k + ' ' + esc(t().locked) + '"><b>#' + k + '</b><span>' + ICON.lock + esc(dateLabel(k)) + '</span></button>';
+    }
+    $('archiveBody').innerHTML = head(t().archive) + '<div class="archive">' + cells + '</div><p class="note">' + esc(t().archiveNote) + '</p>';
+    $('archiveBody').querySelector('[data-today]').onclick = function () { $('dlgArchive').close(); setMode('daily'); };
+    show('dlgArchive');
+  }
+
+  // ---------- little effects ----------
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
+  }
+  function shake() { var f = $('form'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
+  function confetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cv = document.createElement('canvas'); cv.className = 'fx'; document.body.appendChild(cv);
+    var dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; var g = cv.getContext && cv.getContext('2d'); if (!g) { cv.remove(); return; } g.scale(dpr, dpr);
+    var cs = getComputedStyle(document.documentElement);
+    var colors = ['--good', '--accent', '--bad', '--ink'].map(function (v) { return cs.getPropertyValue(v).trim(); }).concat(['#e7b94a']);
+    var parts = [];
+    for (var i = 0; i < 90; i++) parts.push({ x: W / 2 + (Math.random() - .5) * 80, y: H * .42, vx: (Math.random() - .5) * 11, vy: -Math.random() * 12 - 4, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 5, h: 3 + Math.random() * 4, c: colors[i % colors.length] });
+    var start = performance.now();
+    (function frame(now) {
+      var tt = now - start; g.clearRect(0, 0, W, H);
+      parts.forEach(function (p) { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; g.save(); g.globalAlpha = Math.max(0, 1 - tt / 1800); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore(); });
+      if (tt < 1800) requestAnimationFrame(frame); else cv.remove();
+    })(start);
+  }
+
+  // ---------- wiring ----------
+  function setMode(m) {
+    if (mode === m) return;
+    mode = m; lastShown.key = ''; $('guess').value = ''; hideSuggestions();
+    if (F) F.show(m === 'friends');
+    render({ instant: true });
+    if (m !== 'friends' && round().status === 'playing') focusInput();
+  }
+  $('tabDaily').onclick = function () { setMode('daily'); };
+  $('tabPractice').onclick = function () { setMode('practice'); };
+  $('tabFriends').onclick = function () { setMode('friends'); };
+  $('btnHelp').onclick = openHelp;
+  $('btnStats').onclick = openStats;
+  $('btnArchive').onclick = openArchive;
+  $('btnSkip').onclick = skip;
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.onclick = function () { lang = b.dataset.lang; store.lang = lang; save(); render({ instant: true }); updateSuggestionsIfOpen(); };
+  });
+  function updateSuggestionsIfOpen() { if (!$('sugg').hidden) updateSuggestions(); }
+
+  $('guess').addEventListener('input', updateSuggestions);
+  $('guess').addEventListener('focus', function () { if ($('guess').value) updateSuggestions(); });
+  $('guess').addEventListener('blur', function () { setTimeout(hideSuggestions, 150); });
+  $('guess').addEventListener('keydown', function (e) {
+    if ($('sugg').hidden) return;
+    if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.min(sugg.length - 1, active + 1); highlight(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.max(0, active - 1); highlight(); }
+    else if (e.key === 'Escape') { hideSuggestions(); }
+  });
+  $('sugg').addEventListener('mousedown', function (e) { e.preventDefault(); });
+  $('sugg').addEventListener('click', function (e) { var li = e.target.closest('li'); if (li) choose(Number(li.dataset.i)); });
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var exact = S.match($('guess').value);
+    if (exact) return submitGuess(exact);
+    if (!$('sugg').hidden && sugg[active]) return choose(active);
+    submitGuess(null);
+  });
+
+  // Daily rollover at midnight, Stockholm time.
+  function tick() {
+    var now = S.puzzleNumber();
+    if (now !== n) {
+      n = now;
+      if (mode === 'daily' || mode === 'friends') { lastShown.key = ''; render({ instant: true }); } else renderChrome();
+      return;
+    }
+    var cd = $('countdown'); if (cd) cd.textContent = countdown();
+    document.querySelectorAll('#statsBody .cd').forEach(function (el) { el.textContent = countdown(); });
+  }
+  setInterval(tick, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+
+  // Friends (league + race) is optional: the tab only shows when the multiplayer relay is there and the device is online.
+  var startMode = F ? F.init({ S: S, lang: function () { return lang; }, t: t, puzzle: function () { return n; }, today: function () { return store.days[n]; },
+    dailyIso: function () { return S.countryForPuzzle(n).iso; }, esc: esc, toast: toast, refresh: function () { render({ instant: true }); } }) : null;
+  if (startMode === 'friends' && friendsOn()) { mode = 'friends'; F.show(true); }
+  render({ instant: true });
+  if (!store.seenHelp) { store.seenHelp = true; save(); openHelp(); }
+  else if (round().status === 'playing') focusInput();
+})();
+</script>
+</body>
+</html>

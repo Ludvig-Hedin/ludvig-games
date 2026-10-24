@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Color Clash on the games' Workers Free account (24 Oct 2026). On Workers
+  // Free, going over a daily limit makes requests fail until 00:00 UTC; it
+  // never bills. No account_id here: wrangler reads CLOUDFLARE_ACCOUNT_ID.
+  // `npm run build` prerenders the page into dist/client, so page views are
+  // static assets and never run the Worker. The Worker runs only for /api/*
+  // (online rooms in D1, polled every 1.5 s).
+  "name": "color-clash",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  // The Cloudflare Vite plugin sets the directory to dist/client.
+  "assets": { "not_found_handling": "404-page", "run_worker_first": ["/api/*"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "color-clash",
+      // Set to the new database's id after `wrangler d1 create color-clash`.
+      "database_id": "b7b3eee9-e0ed-40af-9f2e-e498af59c3e4",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Per-IP limits. Namespace ids are account-wide, so each game has its own
+  // range (color-clash: 25xx). ACTION_LIMIT covers moves and polls.
+  "ratelimits": [
+    { "name": "CREATE_LIMIT", "namespace_id": "2501", "simple": { "limit": 10, "period": 60 } },
+    { "name": "JOIN_LIMIT", "namespace_id": "2502", "simple": { "limit": 30, "period": 60 } },
+    { "name": "ACTION_LIMIT", "namespace_id": "2503", "simple": { "limit": 600, "period": 60 } }
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

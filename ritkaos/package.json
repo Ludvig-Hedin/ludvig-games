@@ -1,0 +1,15 @@
+{
+  "name": "ritkaos",
+  "version": "1.0.0",
+  "description": "Ett riktigt multiplayer-ritspel för 2–12 vänner. Inga npm-beroenden.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "dev:worker": "npx --yes wrangler@4.152.0 dev --ip 127.0.0.1 --port 8793",
+    "online": "node tools/online.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

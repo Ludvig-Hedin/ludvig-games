@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- App icon: the hub favicon (play triangle) on the macOS icon grid (824 px tile, 100 px margin). -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#1d1d1f"/>
+  <path d="M422 332 710 512 422 692Z" fill="#fafaf9"/>
+</svg>
