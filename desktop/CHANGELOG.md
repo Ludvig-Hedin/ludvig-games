@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Shared rooms only pass data answers (JSON or plain text) and plain caching headers from the Mac that holds the rooms.
+
 ## 0.4.0 — 25 October 2026
 
 - Macs on the same Wi‑Fi share their rooms. Before, each Mac had its own, so two Macs pressing Quick match in Horde (or any game) landed in separate empty lobbies. Now the Mac whose app has been open longest holds the rooms, and quick match, room codes and invite links find players on every Mac and on phones connected to any of them. Pages, scores and My records stay on each Mac. If that Mac leaves, rooms are made on this Mac again. Both Macs need this version.

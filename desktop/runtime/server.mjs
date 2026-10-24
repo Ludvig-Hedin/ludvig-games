@@ -312,15 +312,20 @@ function startProxy(entry, target, entries) {
       const up = http.request(
         { host: remote.host, port: remotePort(remote, entry), method: req.method, path: req.url, headers: forwardHeaders(req), agent: false },
         (r) => {
-          // Room answers are data. The other Mac cannot hand this Mac's address a page or set its cookies.
-          if (/html|xml|javascript/i.test(String(r.headers["content-type"] || ""))) {
+          // Room answers are data. The other Mac cannot hand this Mac's address a page, script or cookie: only data
+          // types pass, and only plain caching and length headers are kept.
+          const type = String(r.headers["content-type"] || "");
+          const empty = r.statusCode === 204 || r.statusCode === 304 || r.headers["content-length"] === "0";
+          if (!(empty || /^(application\/json|text\/plain)(;|$)/i.test(type))) {
             r.resume();
             res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
             res.end("Unexpected answer from the Mac with the rooms.");
             return;
           }
-          const headers = { ...r.headers, "x-content-type-options": "nosniff" };
-          delete headers["set-cookie"];
+          const headers = { "x-content-type-options": "nosniff" };
+          for (const k of ["content-type", "content-length", "cache-control", "etag", "last-modified", "vary", "retry-after", "date"]) {
+            if (r.headers[k] !== undefined) headers[k] = r.headers[k];
+          }
           res.writeHead(r.statusCode, headers);
           r.pipe(res);
         },
