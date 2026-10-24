@@ -348,6 +348,16 @@ async function selftest() {
       report.steps.push({ step: "room", answer, loaded, room: state.room, panelOpen: state.panel, share: state.shareUrl });
       await shot("room");
     }
+    if (process.env.LUDVIG_SELFTEST_UPDATE) {
+      // Download and verify an update from LUDVIG_UPDATE_FEED, without installing it.
+      try {
+        const found = await checkForUpdate();
+        const next = found ? await downloadUpdate(found, () => {}) : null;
+        report.steps.push({ step: "update", found: found && found.version, ok: Boolean(next) });
+      } catch (err) {
+        report.steps.push({ step: "update", ok: false, error: err.message });
+      }
+    }
     await setPanel(true);
     await wait(800);
     report.steps.push({ step: "panel", share: state.shareUrl, nearby: state.nearby.length, context: state.context && state.context.id });

@@ -44,7 +44,9 @@ export function bundlePath() {
 }
 
 export async function checkForUpdate() {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+  // LUDVIG_UPDATE_FEED: a local stand-in for the GitHub API, for the updater check in scripts/test-update.sh.
+  const feed = process.env.LUDVIG_UPDATE_FEED || `https://api.github.com/repos/${REPO}/releases/latest`;
+  const res = await fetch(feed, {
     headers: { Accept: "application/vnd.github+json", "User-Agent": "LudvigGames-Updater" },
   });
   if (!res.ok) return null;
@@ -95,6 +97,10 @@ export async function downloadUpdate(update, onProgress) {
   await run("/usr/bin/codesign", ["--verify", "--deep", "--strict", next]);
   const id = execFileSync("/usr/bin/plutil", ["-extract", "CFBundleIdentifier", "raw", path.join(next, "Contents", "Info.plist")], { encoding: "utf8" }).trim();
   if (id !== BUNDLE_ID) throw new Error(`unexpected app ${id}`);
+  // No downgrades: the app inside must be the release's own version and newer than this one, so an old signed
+  // zip republished under a new tag is refused.
+  const version = execFileSync("/usr/bin/plutil", ["-extract", "CFBundleShortVersionString", "raw", path.join(next, "Contents", "Info.plist")], { encoding: "utf8" }).trim();
+  if (version !== update.version || !newer(version, app.getVersion())) throw new Error(`unexpected version ${version}`);
   // Only after those checks: downloaded by the app itself, so macOS adds no quarantine; clear it in case.
   await run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", next]).catch(() => {});
   return next;
