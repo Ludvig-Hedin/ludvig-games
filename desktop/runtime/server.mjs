@@ -107,8 +107,68 @@ function readConfig(id) {
 
 const clientIp = (req) => String(req.socket.remoteAddress || "127.0.0.1").replace(/^::ffff:/, "");
 
-function desktopScript(entries) {
-  const cfg = { sites: entries.map((e) => ({ site: e.site, port: e.port })), lan: lanAddress() };
+// Other devices that opened a game on this Mac recently, so the host can see who joined (Play together panel).
+const devices = new Map(); // ip -> { ip, kind, game, path, seen }
+const DEVICE_TTL = 120e3;
+
+function deviceKind(ua = "") {
+  if (/iPhone/.test(ua)) return "iPhone";
+  if (/iPad/.test(ua)) return "iPad";
+  if (/Android/.test(ua)) return /Mobile/.test(ua) ? "Android phone" : "Android tablet";
+  if (/Electron\//.test(ua)) return "Mac with the app";
+  if (/Macintosh/.test(ua)) return "Mac";
+  if (/Windows/.test(ua)) return "Windows PC";
+  if (/CrOS/.test(ua)) return "Chromebook";
+  return "Device";
+}
+
+function noteDevice(req, entry) {
+  const ip = clientIp(req);
+  if (ip === "127.0.0.1" || ip === "::1" || ip === lanAddress()) return;
+  const accept = String(req.headers.accept || "");
+  const known = devices.get(ip);
+  const page = accept.includes("text/html");
+  devices.set(ip, {
+    ip,
+    kind: deviceKind(String(req.headers["user-agent"] || "")),
+    game: page || !known ? entry.id : known.game,
+    path: page || !known ? new URL(req.url, "http://x").pathname : known.path,
+    seen: Date.now(),
+  });
+}
+
+function activeDevices() {
+  const now = Date.now();
+  for (const [ip, d] of devices) if (now - d.seen > DEVICE_TTL) devices.delete(ip);
+  return [...devices.values()].sort((a, b) => b.seen - a.seen);
+}
+
+export let hostName = os.hostname().replace(/\.local$/, "");
+try {
+  hostName = (await import("node:child_process")).execFileSync("/usr/sbin/scutil", ["--get", "ComputerName"], { encoding: "utf8" }).trim() || hostName;
+} catch {}
+
+// How to play together, per game (runtime/together.json), for the guest notice and the host's panel.
+function loadTogether() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(here, "together.json"), "utf8"));
+  } catch {
+    return {};
+  }
+}
+const TOGETHER = loadTogether();
+const HINTS = Object.fromEntries(Object.entries(TOGETHER).map(([id, t]) => [id, t.hint]).filter(([, h]) => h));
+const INVITES = Object.fromEntries(Object.entries(TOGETHER).map(([id, t]) => [id, t.online && t.online.inviteParam]).filter(([, p]) => p));
+
+function desktopScript(entries, entry) {
+  const cfg = {
+    sites: entries.map((e) => ({ site: e.site, port: e.port })),
+    lan: lanAddress(),
+    host: hostName,
+    game: entry.id,
+    hints: HINTS,
+    invites: INVITES,
+  };
   return `const LUDVIG_DESKTOP = ${JSON.stringify(cfg)};\n${INJECT}`;
 }
 
@@ -142,9 +202,18 @@ function startProxy(entry, target, entries) {
   const injectHtml = entry.id === "hub" || target.kind === "node" ? inject : (html) => html;
 
   const server = http.createServer((req, res) => {
+    if (req.url === "/__ludvig/devices") {
+      // Only the app on this Mac may ask who is connected.
+      const ip = clientIp(req);
+      if (ip !== "127.0.0.1" && ip !== "::1") { res.writeHead(404); res.end(); return; }
+      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+      res.end(JSON.stringify({ devices: activeDevices() }));
+      return;
+    }
+    noteDevice(req, entry);
     if (req.url === "/__ludvig-desktop.js") {
       res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
-      res.end(desktopScript(entries));
+      res.end(desktopScript(entries, entry));
       return;
     }
     const pathname = new URL(req.url, "http://local").pathname;

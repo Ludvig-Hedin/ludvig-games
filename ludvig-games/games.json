@@ -13,7 +13,8 @@
     "formerName": "PIGEON",
     "category": "Sandbox",
     "dims": "3D",
-    "quality": 9
+    "quality": 9,
+    "backButton": "tl"
   },
   {
     "slug": "ritkaos",
@@ -44,7 +45,8 @@
     "formerName": "FLAP — First Person",
     "category": "Arcade",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "bl"
   },
   {
     "slug": "one-small-fake",
@@ -60,7 +62,8 @@
     "formerName": "ONE SMALL FAKE",
     "category": "Arcade",
     "dims": "2D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "tl"
   },
   {
     "slug": "vibe-coder-tycoon",
@@ -76,7 +79,8 @@
     "formerName": "Vibe Coder Tycoon",
     "category": "Idle",
     "dims": "2D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "tl"
   },
   {
     "slug": "anything-arena",
@@ -92,7 +96,8 @@
     "formerName": "Anything Arena",
     "category": "Action",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "bl"
   },
   {
     "slug": "human-probably",
@@ -108,7 +113,8 @@
     "formerName": "HUMAN, probably.",
     "category": "Puzzle",
     "dims": "2D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "bl"
   },
   {
     "slug": "user-hostile",
@@ -125,7 +131,8 @@
     "formerName": "USER HOSTILE",
     "category": "Puzzle",
     "dims": "2D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "br"
   },
   {
     "slug": "powder",
@@ -141,7 +148,8 @@
     "formerName": "Powder",
     "category": "Sports",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "bl"
   },
   {
     "slug": "deadblock",
@@ -157,7 +165,8 @@
     "formerName": "DEADBLOCK",
     "category": "Action",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "tl"
   },
   {
     "slug": "citrus-circuit-coastline",
@@ -175,7 +184,8 @@
     "formerName": "Citrus Circuit · Coastline Grand Tour",
     "category": "Racing",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "tl"
   },
   {
     "slug": "no-brakes",
@@ -193,7 +203,8 @@
     "formerName": "NO BRAKES",
     "category": "Physics",
     "dims": "2D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "bl"
   },
   {
     "slug": "overtime",
@@ -209,7 +220,8 @@
     "formerName": "OVERTIME",
     "category": "Sports",
     "dims": "3D",
-    "quality": 8
+    "quality": 8,
+    "backButton": "tl"
   },
   {
     "slug": "salvo",
@@ -324,7 +336,8 @@
     "formerName": "SIX CLUES",
     "category": "Puzzle",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "jailbreak",
@@ -340,7 +353,8 @@
     "formerName": "JAILBREAK",
     "category": "Stealth",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "paper-after-hours",
@@ -356,7 +370,8 @@
     "formerName": "Paper — After Hours",
     "category": "Arcade",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "higher-or-lower",
@@ -373,7 +388,8 @@
     "formerName": "Higher or Lower",
     "category": "Trivia",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "slither-afterglow",
@@ -390,7 +406,8 @@
     "formerName": "Slither — Afterglow",
     "category": "Arcade",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "block-hop",
@@ -406,7 +423,8 @@
     "formerName": "BLOCK HOP",
     "category": "Platformer",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "stacklight",
@@ -422,7 +440,8 @@
     "formerName": "STACKLIGHT",
     "category": "Puzzle",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "sunset-dash",
@@ -438,7 +457,8 @@
     "formerName": "SUNSET DASH",
     "category": "Runner",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "fresh-tracks",
@@ -456,7 +476,8 @@
     "formerName": "Fresh Tracks",
     "category": "Sports",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "goldwake-gunnery",
@@ -474,7 +495,8 @@
     "formerName": "Goldwake · Gunnery Update",
     "category": "Adventure",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "bloop",
@@ -492,7 +514,8 @@
     "formerName": "bloop.",
     "category": "Music",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "heatwave-san-sol-remastered",
@@ -510,7 +533,8 @@
     "formerName": "HEATWAVE · San Sol Remastered",
     "category": "Open world",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "pop-island",
@@ -528,7 +552,8 @@
     "formerName": "POP ISLAND",
     "category": "Strategy",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "pulse-shift",
@@ -546,7 +571,8 @@
     "formerName": "PULSE//SHIFT",
     "category": "Rhythm",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "slope-overdrive",
@@ -564,7 +590,8 @@
     "formerName": "SLOPE / OVERDRIVE",
     "category": "Runner",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "vice-run",
@@ -582,7 +609,8 @@
     "formerName": "NEON RUN · Download Edition",
     "category": "Open world",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "strandad-antarktis",
@@ -600,7 +628,8 @@
     "formerName": "Strandad · Antarktis",
     "category": "Adventure",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "cold-delivery-rush",
@@ -617,7 +646,8 @@
     "category": "Arcade",
     "dims": "3D",
     "quality": 7,
-    "lbButton": "none"
+    "lbButton": "none",
+    "backButton": "bl"
   },
   {
     "slug": "just-one-more-prompt",
@@ -634,7 +664,8 @@
     "category": "Arcade",
     "dims": "3D",
     "quality": 7,
-    "lbButton": "none"
+    "lbButton": "none",
+    "backButton": "bl"
   },
   {
     "slug": "overrun",
@@ -650,7 +681,8 @@
     "formerName": "OVRRN",
     "category": "Shooter",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "br"
   },
   {
     "slug": "gravity-arena",
@@ -692,7 +724,8 @@
     "hidden": false,
     "category": "Sports",
     "dims": "2D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "tl"
   },
   {
     "slug": "hay-you",
@@ -706,7 +739,8 @@
     "hidden": false,
     "category": "Party",
     "dims": "3D",
-    "quality": 7
+    "quality": 7,
+    "backButton": "bl"
   },
   {
     "slug": "skyline",
@@ -722,7 +756,8 @@
     "formerName": "SKYLINE",
     "category": "Flight",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "afterglow",
@@ -738,7 +773,8 @@
     "formerName": "AFTERGLOW",
     "category": "Racing",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "cage",
@@ -754,7 +790,8 @@
     "formerName": "CAGE.",
     "category": "Fighting",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "kiln",
@@ -770,7 +807,8 @@
     "formerName": "KILN",
     "category": "Action",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "origin",
@@ -788,7 +826,8 @@
     "formerName": "Origin",
     "category": "Puzzle",
     "dims": "2D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "bl"
   },
   {
     "slug": "epoch",
@@ -804,7 +843,8 @@
     "formerName": "EPOCH — Endless War",
     "category": "Strategy",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "lastlight",
@@ -820,7 +860,8 @@
     "formerName": "LASTLIGHT",
     "category": "Action",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "sunbound",
@@ -836,7 +877,8 @@
     "formerName": "Sunbound — The Lighthouse Run",
     "category": "Platformer",
     "dims": "2D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "mosslight",
@@ -852,7 +894,8 @@
     "formerName": "Mosslight",
     "category": "Sandbox",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "glantan-v2",
@@ -870,7 +913,8 @@
     "formerName": "Gläntan · Version 2",
     "category": "Chill",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "cubeville",
@@ -888,7 +932,8 @@
     "formerName": "CUBEVILLE · Prototype",
     "category": "Platformer",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "bl"
   },
   {
     "slug": "last-drop",
@@ -906,7 +951,8 @@
     "formerName": "LAST DROP",
     "category": "Action",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "still-house",
@@ -924,7 +970,8 @@
     "formerName": "STILL HOUSE",
     "category": "Horror",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "the-eighth-signal",
@@ -942,7 +989,8 @@
     "formerName": "The Eighth Signal",
     "category": "Horror",
     "dims": "3D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "draw-your-horse",
@@ -958,7 +1006,8 @@
     "formerName": "Draw Your Horse",
     "category": "Party",
     "dims": "2D",
-    "quality": 6
+    "quality": 6,
+    "backButton": "tl"
   },
   {
     "slug": "under-sail",
@@ -974,7 +1023,8 @@
     "formerName": "Under Sail",
     "category": "Chill",
     "dims": "3D",
-    "quality": 5
+    "quality": 5,
+    "backButton": "tl"
   },
   {
     "slug": "frontier-blood-and-dust",
@@ -992,7 +1042,8 @@
     "formerName": "Frontier: Blood & Dust",
     "category": "Adventure",
     "dims": "2D",
-    "quality": 5
+    "quality": 5,
+    "backButton": "tl"
   },
   {
     "slug": "ashfall-84-wasteland",
@@ -1010,7 +1061,8 @@
     "formerName": "ASHFALL ’84",
     "category": "Action",
     "dims": "3D",
-    "quality": 5
+    "quality": 5,
+    "backButton": "tl"
   },
   {
     "slug": "geoatlas",

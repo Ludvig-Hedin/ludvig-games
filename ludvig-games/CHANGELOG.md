@@ -1,3 +1,9 @@
+# 2026-10-24: search pages, Play together and an All games button in every game
+
+- Every game has an info page at /<slug>/about/ (what it is, how to play, controls, more games like it), and there is a page per category at /category/<name>/. Titles and descriptions come from seo.json, written from each game's own code around the phrases people search for (for example "fake moon landing game" for One Small Fake). The sitemap lists them all. The footer links to the categories, and the start page ends with a short description.
+- A "Play together" button in the header explains the two ways to play with someone: on one device, or nearby with the Mac app.
+- Every game has a small round "All games" button in a corner that is free in that game (games.json backButton, picked automatically on desktop and phone sizes). Hidden inside the Mac app, which has its own.
+
 # 2026-10-24: calmer catalog and a Mac app download
 
 - The top of the start page is calmer. The 25 category buttons are now 8 broader categories (Action, Arcade, Sports & racing, Puzzle, Board & cards, Party, Adventure, Chill). Every filter is a dropdown in one row: players, 2D or 3D, category and order. "Group by category" is now the order option "By category". Old links (?cat=Racing, ?group=1) still work.

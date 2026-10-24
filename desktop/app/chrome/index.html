@@ -15,10 +15,12 @@
       <button class="ghost host" id="host" hidden></button>
     </nav>
     <div class="actions">
+      <button class="ghost update" id="update" hidden></button>
       <button class="outline" id="records">My records</button>
       <button class="primary" id="together">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13.5c.6-2.4 2.3-3.8 4.5-3.8s3.9 1.4 4.5 3.8"/><circle cx="11.5" cy="6" r="2"/><path d="M11 9.8c1.8 0 3 1.1 3.5 3"/></svg>
         Play together
+        <span class="badge" id="together-count" hidden></span>
       </button>
     </div>
   </header>
@@ -31,21 +33,26 @@
     </div>
 
     <div id="invite">
-      <h2>Invite friends on this Wi‑Fi</h2>
-      <p class="muted">They scan the code or open the link on a phone or computer. Nothing to install.</p>
+      <h2 id="share-title"></h2>
+      <p class="muted" id="share-sub"></p>
       <div class="qr" id="qr"></div>
       <div class="link">
         <span id="url"></span>
         <button class="secondary" id="copy">Copy</button>
       </div>
+      <ol class="steps" id="steps"></ol>
     </div>
     <div id="offline" hidden>
       <h2>Not on a network</h2>
       <p class="muted">Connect to Wi‑Fi to play with people nearby. Every game still works offline on this Mac.</p>
     </div>
 
-    <h2 class="nearby-title">Macs nearby</h2>
-    <ul class="nearby" id="nearby"></ul>
+    <h2 class="section-title" id="devices-title">Connected</h2>
+    <ul class="list" id="devices"></ul>
+    <p class="muted" id="devices-empty">No one has joined yet. When a friend opens the code, they show up here.</p>
+
+    <h2 class="section-title">Macs nearby</h2>
+    <ul class="list" id="nearby"></ul>
     <p class="muted" id="nearby-empty">No one else on this network has Ludvig Games open.</p>
   </section>
 

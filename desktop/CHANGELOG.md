@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 — 24 October 2026
+
+- Update inside the app: when a new version is out, an "Update to x.y" button appears next to My records. It downloads the new version, then "Restart to update" swaps it in. Saved games and scores stay. Also under Ludvig Games → Check for Updates….
+- Play together now follows what you are doing. On a game it shows how to play it together (from runtime/together.json, 40 games). When you open a room, the panel opens by itself with a QR code that joins that room directly (separate games: ?room=CODE; hub games: their own invite link, e.g. Pigeon's ?square=CODE).
+- The panel lists the phones and computers that have opened this Mac's games in the last two minutes, and the Play together button shows how many.
+- Phones that scan the code see "Connected to <Mac name>" with a one-line hint for that game.
+- Nicer install window: light background, title, arrow and "Drag Ludvig Games into Applications".
+- Fix: the desktop script no longer breaks React hydration in Salvo and OX; inside the app it loads through the page preload instead.
+
 ## 0.2.0 — 24 October 2026
 
 - No visible top bar: three buttons sit in a thin strip that takes the colour of the game below. "All games" on the left (hidden on the start page), "My records" and a more prominent "Play together" on the right.

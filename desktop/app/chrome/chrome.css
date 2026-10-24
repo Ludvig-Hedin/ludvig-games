@@ -37,6 +37,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: def
 .ghost { padding-left: 8px; color: inherit; opacity: .72; }
 .ghost:hover { opacity: 1; background: color-mix(in srgb, currentColor 10%, transparent); }
 .host { opacity: 1; }
+.update { opacity: .85; font-variant-numeric: tabular-nums; }
+.update:disabled { cursor: default; }
+.update.is-ready { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
 .outline { border: 1px solid color-mix(in srgb, currentColor 22%, transparent); color: inherit; }
 .outline:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
 .primary { background: var(--ink, #f2f2f2); color: rgb(var(--tint, 8 8 8)); }
@@ -61,8 +64,19 @@ h2 { margin: 0 0 4px; font-size: 13px; font-weight: 500; }
 .secondary:hover { background: rgba(255, 255, 255, .06); }
 .joined { padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
 .joined p { margin: 0 0 10px; }
-.nearby-title { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-.nearby { list-style: none; margin: 8px 0 0; padding: 0; }
-.nearby li { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 36px; }
-.nearby li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nearby li em { font-style: normal; color: var(--muted); }
+.section-title { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.list { list-style: none; margin: 8px 0 0; padding: 0; }
+.list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 36px; }
+.list li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list li em { font-style: normal; color: var(--muted); }
+
+#share-title { font-size: 15px; margin-bottom: 4px; }
+.steps { margin: 14px 0 0; padding: 0 0 0 18px; color: var(--text); }
+.steps li { margin: 0 0 6px; padding-left: 2px; }
+.steps li::marker { color: var(--muted); }
+.steps:empty { display: none; }
+.list li .dot { width: 7px; height: 7px; border-radius: 50%; background: #5bd38a; flex: none; }
+.list li .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.code { font-variant-numeric: tabular-nums; letter-spacing: .08em; font-weight: 600; }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #5bd38a; color: #08130c; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
+.steps.single { list-style: none; padding-left: 0; color: var(--muted); }

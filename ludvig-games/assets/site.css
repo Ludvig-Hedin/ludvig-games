@@ -44,6 +44,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .card-line { margin: 0; color: var(--muted); }
 .card-meta { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
 
+/* Play together dialog (together.js) */
+button.nav-button { background: transparent; cursor: pointer; font: inherit; font-size: 13px; font-weight: 500; }
+.together { width: min(440px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); }
+.together::backdrop { background: rgba(0, 0, 0, .6); }
+.together-close-row { position: absolute; top: 12px; right: 12px; margin: 0; }
+.together-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); }
+.together-title { margin: 0 0 20px; font-size: 18px; font-weight: 500; letter-spacing: -.01em; }
+.together-way { padding: 16px 0; border-top: 1px solid var(--line); }
+.together-way h3 { margin: 0 0 4px; font-size: 14px; font-weight: 500; }
+.together-way p { margin: 0 0 14px; color: var(--muted); }
+.together-note { margin: 4px 0 0; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+
 /* Filter bar (hub.js): a round search field and four dropdowns in one row. Hidden without JavaScript, so every
    game is listed. */
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 48px; min-width: 0; }
@@ -64,6 +76,28 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .group + .group { margin-top: 64px; }
 .group-title { margin: 0 0 20px; font-size: 14px; font-weight: 500; }
 .group-count { color: var(--muted); font-weight: 400; }
+
+/* Category links in the footer, the start page's short text, and the game info and category pages. */
+.footer-cats { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 16px; }
+.footer-cats a { color: var(--muted); transition: color 160ms ease; }
+.footer p { margin: 0; }
+.home-about { max-width: 62ch; margin-top: 96px; color: var(--muted); }
+.home-about p { margin: 0; }
+.crumbs { display: flex; gap: 8px; margin: -24px 0 28px; color: var(--muted); font-size: 13px; }
+.crumbs a { color: var(--muted); }
+.category-intro { max-width: 62ch; margin: -12px 0 40px; color: var(--muted); }
+.card-info { display: inline-block; margin-top: 6px; color: var(--muted); font-size: 12px; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.about-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.about-title { margin: 0; font-size: 30px; font-weight: 500; letter-spacing: -.02em; line-height: 1.15; }
+.about-keyword { margin: 6px 0 16px; color: var(--muted); }
+.about-text > p { max-width: 52ch; }
+.about-play { height: 44px; padding: 0 22px; margin: 8px 0 12px; font-size: 14px; }
+.about-section { max-width: 62ch; margin-top: 56px; }
+.about-section h2 { margin: 0 0 12px; font-size: 16px; font-weight: 500; }
+.about-section ol { margin: 0; padding-left: 20px; }
+.about-section li { margin-bottom: 6px; }
+.about-section p { margin: 0; color: var(--muted); }
+.about-section:last-child { max-width: none; }
 
 .footer { margin-top: 96px; padding-block: 24px max(32px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 
@@ -99,6 +133,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (hover: hover) {
   .empty a:hover, .filter-select select:hover { color: var(--text); }
   .wordmark:hover { color: var(--muted); }
+  .footer-cats a:hover, .crumbs a:hover, .card-info:hover { color: var(--text); }
+  .together-close:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
   .nav-button:hover { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .24); }
   .nav-button-primary:hover { background: #d9d9d9; border-color: #d9d9d9; }
   .card-link:hover .card-image { opacity: .88; }
@@ -111,6 +147,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+  .about-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 520px) {
   .shell { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }

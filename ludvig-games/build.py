@@ -46,7 +46,7 @@ def jsonld(value):
 
 def document(title, description, path, body, image=None, scripts=(), structured=None):
     """A hub page (catalog, My records, 404) in the dark portfolio style."""
-    script = "".join(f'<script src="{src}" defer></script>' for src in scripts)
+    script = "".join(f'<script src="{src}" defer></script>' for src in (*scripts, "/assets/together.js"))
     share_image = f'<meta property="og:image" content="{ORIGIN}{image}">' if image else ""
     twitter_card = "summary_large_image" if image else "summary"
     data = jsonld(structured) if structured else ""
@@ -95,11 +95,50 @@ MAC_DOWNLOAD = "https://github.com/Ludvig-Hedin/ludvig-games/releases/latest/dow
 def masthead():
     return f'''<header class="masthead">
     <a class="wordmark" href="/">Ludvig Games</a>
-    <nav class="masthead-nav" aria-label="Site"><a class="nav-button" href="/me/">My records</a><a class="nav-button nav-button-primary" href="{MAC_DOWNLOAD}">Download for Mac</a></nav>
-  </header>'''
+    <nav class="masthead-nav" aria-label="Site"><a class="nav-button" href="/me/">My records</a><button class="nav-button" type="button" data-together-open>Play together</button><a class="nav-button nav-button-primary" href="{MAC_DOWNLOAD}">Download for Mac</a></nav>
+  </header>
+  <dialog class="together" id="together" aria-labelledby="together-title">
+    <form method="dialog" class="together-close-row"><button class="together-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12"/></svg></button></form>
+    <h2 class="together-title" id="together-title">Play together</h2>
+    <section class="together-way">
+      <h3>On one device</h3>
+      <p>Many games have a two-player mode on the same keyboard or screen.</p>
+      <a class="nav-button" href="/?players=2">Show 2+ player games</a>
+    </section>
+    <section class="together-way">
+      <h3>With friends nearby</h3>
+      <p>One of you opens the Mac app. Everyone else on the same Wi‑Fi scans its QR code under Play together and plays in the browser, nothing to install.</p>
+      <a class="nav-button nav-button-primary" href="{MAC_DOWNLOAD}">Download for Mac</a>
+    </section>
+    <p class="together-note">Online play over the internet is paused for now.</p>
+  </dialog>'''
 
 
 FOOTER = '<footer class="footer">© 2026 Ludvig Hedin</footer>'
+
+
+def load_seo():
+    """Search copy per game, category and the start page (seo.json). Optional: without it pages use games.json."""
+    path = ROOT / "seo.json"
+    data = json.loads(path.read_text()) if path.is_file() else {}
+    return {"home": data.get("home") or {}, "categories": data.get("categories") or {}, "games": data.get("games") or {}}
+
+
+SEO = load_seo()
+
+
+def category_slug(group):
+    entry = SEO["categories"].get(group) or {}
+    return entry.get("slug") or re.sub(r"[^a-z0-9]+", "-", group.lower()).strip("-")
+
+
+def footer(groups=()):
+    """Footer with links to the category pages (search engines find every game through them)."""
+    label = lambda g: {"Board & cards": "Board and card", "Sports & racing": "Sports and racing"}.get(g, g)
+    links = "".join(f'<a href="/category/{category_slug(g)}/">{escape(label(g))} games</a>' for g in groups)
+    nav = f'<nav class="footer-cats" aria-label="Game categories">{links}</nav>' if links else ""
+    return f'<footer class="footer">{nav}<p>© 2026 Ludvig Hedin</p></footer>'
 
 
 def multiplayer(game):
@@ -192,12 +231,14 @@ def filter_bar(games):
 def game_seo(game):
     """SEO and share tags for a game served full screen at /<slug>/."""
     slug = game["slug"]
-    title = f"{game['name']} · Free browser game · Ludvig Games"
+    seo = SEO["games"].get(slug) or {}
+    title = f"{seo['title']} · Ludvig Games" if seo.get("title") else f"{game['name']} · Free browser game · Ludvig Games"
+    description = seo.get("description") or game["description"]
     url = f"{ORIGIN}/{slug}/"
     image = f"{ORIGIN}/assets/previews/{slug}.webp" if game.get("preview", True) else None
     low, high = player_range(game["players"])
     modes = (["https://schema.org/SinglePlayer"] if low == 1 else []) + (["https://schema.org/MultiPlayer"] if high > 1 else [])
-    data = {"@context": "https://schema.org", "@type": "VideoGame", "name": game["name"], "description": game["description"],
+    data = {"@context": "https://schema.org", "@type": "VideoGame", "name": game["name"], "description": description,
             "url": url, "playMode": modes[0] if len(modes) == 1 else modes, "applicationCategory": "Game",
             "operatingSystem": "Web browser", "author": AUTHOR, "isAccessibleForFree": True}
     if alternate_name(game):
@@ -206,15 +247,18 @@ def game_seo(game):
         data["genre"] = game["category"]
     if image:
         data["image"] = image
+    if seo.get("keyword"):
+        data["keywords"] = ", ".join([seo["keyword"], *seo.get("related", [])])
+    data["gamePlatform"] = "Web browser"
     genre = next((label for pattern, label in GENRES if re.search(pattern, game["description"], re.IGNORECASE)), None)
     if genre and "genre" not in data:
         data["genre"] = genre
     tags = [f"<title>{escape(title)}</title>",
-            f'<meta name="description" content="{escape(game["description"])}">',
+            f'<meta name="description" content="{escape(description)}">',
             f'<link rel="canonical" href="{url}">',
             '<meta property="og:type" content="website">', '<meta property="og:site_name" content="Ludvig Games">',
             f'<meta property="og:title" content="{escape(title)}">',
-            f'<meta property="og:description" content="{escape(game["description"])}">',
+            f'<meta property="og:description" content="{escape(description)}">',
             f'<meta property="og:url" content="{url}">',
             f'<meta name="twitter:card" content="{"summary_large_image" if image else "summary"}">']
     if image:
@@ -227,6 +271,8 @@ OWN_SEO = re.compile(r'''<title\b[^>]*>.*?</title\s*>|<meta\s[^>]*(?:name|proper
 
 
 AUDIO_RESUME = '<script src="/assets/audio-resume.js"></script>'
+# Every game gets a small "All games" button (assets/back-button.js) in the corner set by games.json backButton.
+BACK_CORNERS = ("tl", "tr", "bl", "br", "none")
 LUDVIG = '<script src="/assets/ludvig.js"></script>'
 SCORE_BRIDGE = '<script src="/assets/score-bridge.js"></script>'
 FORMATS = {"int", "float1", "time-ms", "time-s", "money"}
@@ -295,6 +341,7 @@ def inject_platform(path, game, boards, seo=False):
     # Cloudflare sends text/html without a charset, so declare UTF-8 before the injected scripts push the game's own tag past 1024 bytes.
     injected = '<meta charset="utf-8">' + TOUCH_STYLE + (game_seo(game) if seo else f'<link rel="canonical" href="{ORIGIN}/{slug}/">')
     injected += AUDIO_RESUME + LUDVIG
+    injected += f'<script src="/assets/back-button.js" data-corner="{game.get("backButton", "tl")}" defer></script>'
     ids = [board_id for board_id, b in boards.items() if b["game"] == slug]
     config = {"slug": slug, "name": game["name"], "boards": ids, "button": game.get("lbButton", "br") if ids else "none"}
     scores = bridge_config(slug, boards)
@@ -364,7 +411,114 @@ def load_boards(games):
     return boards
 
 
-def records_page():
+def seo_card(game):
+    """A card for the category and game info pages: the game itself, plus a link to its info page."""
+    slug = game["slug"]
+    name = escape(game["name"])
+    href = game["external"] or f"/{slug}/"
+    info = f'<a class="card-info" href="/{slug}/about/">How to play</a>' if SEO["games"].get(slug) and not game["external"] else ""
+    return f'''<article class="card">
+  <a class="card-link" href="{escape(href)}">
+    <img class="card-image" src="/assets/previews/{slug}.webp" alt="{name} gameplay screenshot" width="960" height="600" loading="lazy" decoding="async">
+    <h3 class="card-name">{name}</h3>
+    <p class="card-line">{escape(game['description'])}</p>
+  </a>
+  {info}
+</article>'''
+
+
+def about_page(game, games, groups):
+    """/<slug>/about/: what the game is, how to play and the controls, for people searching for it. The game
+    itself stays full screen at /<slug>/."""
+    slug = game["slug"]
+    seo = SEO["games"][slug]
+    group = category_group(game)
+    name = escape(game["name"])
+    steps = "".join(f"<li>{escape(step)}</li>" for step in seo.get("howToPlay", []))
+    facts = [game["players"], game.get("dims") or "", game.get("device") or ""]
+    facts_line = " · ".join(escape(f) for f in facts if f)
+    others = [g for g in games if category_group(g) == group and g["slug"] != slug and not g["external"]][:6]
+    more = "".join(seo_card(g) for g in others)
+    crumbs = f'<a href="/">All games</a><span aria-hidden="true">/</span><a href="/category/{category_slug(group)}/">{escape(group)}</a>' if group else '<a href="/">All games</a>'
+    body = f'''<div class="shell">
+  {masthead()}
+  <main class="about">
+    <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
+    <div class="about-hero">
+      <a class="about-shot" href="/{slug}/"><img class="card-image" src="/assets/previews/{slug}.webp" alt="{name} gameplay screenshot" width="960" height="600" fetchpriority="high"></a>
+      <div class="about-text">
+        <h1 class="about-title">{name}</h1>
+        <p class="about-keyword">{escape(seo.get("keyword", "").capitalize())}</p>
+        <p>{escape(seo.get("intro") or game["description"])}</p>
+        <a class="nav-button nav-button-primary about-play" href="/{slug}/">Play {name}</a>
+        <p class="card-meta">{facts_line} · Free, in your browser</p>
+      </div>
+    </div>
+    {f'<section class="about-section"><h2>How to play</h2><ol>{steps}</ol></section>' if steps else ""}
+    {f'<section class="about-section"><h2>Controls</h2><p>{escape(seo["controls"])}</p></section>' if seo.get("controls") else ""}
+    {f'<section class="about-section"><h2>More {escape(group.lower())} games</h2><div class="cards">{more}</div></section>' if more else ""}
+  </main>
+  {footer(groups)}
+</div>'''
+    url = f"{ORIGIN}/{slug}/about/"
+    structured = {"@context": "https://schema.org", "@graph": [
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "All games", "item": f"{ORIGIN}/"},
+            *([{"@type": "ListItem", "position": 2, "name": group, "item": f"{ORIGIN}/category/{category_slug(group)}/"}] if group else []),
+            {"@type": "ListItem", "position": 3 if group else 2, "name": game["name"], "item": url}]},
+        {"@type": "VideoGame", "name": game["name"], "description": seo.get("description") or game["description"],
+         "url": f"{ORIGIN}/{slug}/", "image": f"{ORIGIN}/assets/previews/{slug}.webp", "gamePlatform": "Web browser",
+         "operatingSystem": "Web browser", "applicationCategory": "Game", "isAccessibleForFree": True, "author": AUTHOR,
+         **({"genre": group} if group else {})}]}
+    title = f"{seo.get('title') or game['name']} · How to play"
+    return document(title, seo.get("description") or game["description"], f"/{slug}/about/", body,
+                    image=f"/assets/previews/{slug}.webp", structured=structured)
+
+
+def category_page(group, games, groups):
+    entry = SEO["categories"].get(group) or {}
+    listed = [g for g in games if category_group(g) == group]
+    cards = "".join(seo_card(g) for g in listed)
+    title = entry.get("title") or f"Free {group.lower()} games in your browser"
+    intro = entry.get("intro") or ""
+    body = f'''<div class="shell">
+  {masthead()}
+  <main>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">All games</a></nav>
+    <h1 class="intro">{escape(title)}</h1>
+    {f'<p class="category-intro">{escape(intro)}</p>' if intro else ""}
+    <section class="cards" aria-label="{escape(group)} games">{cards}</section>
+  </main>
+  {footer(groups)}
+</div>'''
+    path = f"/category/{category_slug(group)}/"
+    structured = {"@context": "https://schema.org", "@type": "CollectionPage", "name": title, "url": f"{ORIGIN}{path}",
+                  "mainEntity": {"@type": "ItemList", "itemListElement": [
+                      {"@type": "ListItem", "position": i + 1, "url": g["external"] or f"{ORIGIN}/{g['slug']}/", "name": g["name"]}
+                      for i, g in enumerate(listed)]}}
+    return document(f"{title} · Ludvig Games", entry.get("description") or f"{group} games you can play free in your browser.",
+                    path, body, image=f"/assets/previews/{listed[0]['slug']}.webp" if listed else None, structured=structured)
+
+
+def write_seo_pages(out, games, groups):
+    """Writes the game info and category pages. Returns their paths for the sitemap."""
+    pages = []
+    for game in games:
+        if game["external"] or game["slug"] not in SEO["games"]:
+            continue
+        folder = out / game["slug"] / "about"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "index.html").write_text(about_page(game, games, groups))
+        pages.append(f"/{game['slug']}/about/")
+    for group in groups:
+        folder = out / "category" / category_slug(group)
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "index.html").write_text(category_page(group, games, groups))
+        pages.append(f"/category/{category_slug(group)}/")
+    return pages
+
+
+def records_page(groups=()):
     body = f'''<a class="skip" href="#records">Skip to records</a>
 <div class="shell">
   {masthead()}
@@ -374,7 +528,7 @@ def records_page():
     <p class="records-status" id="records-status" role="status">Loading your records…</p>
     <ul class="records-list" id="records-list"></ul>
   </main>
-  {FOOTER}
+  {footer(groups)}
 </div>'''
     return document("My records · Ludvig Games", "Your best scores and ranks across Ludvig Games.", "/me/", body,
                     scripts=("/assets/ludvig.js", "/assets/scores-ui.js"))
@@ -428,6 +582,8 @@ def render(output):
             raise ValueError(f"quality must be a whole number 1-10: {slug}")
         if "formerName" in game and not isinstance(game["formerName"], str):
             raise ValueError(f"formerName must be a string: {slug}")
+        if game.get("backButton", "tl") not in BACK_CORNERS:
+            raise ValueError(f"backButton must be tl, tr, bl, br or none: {slug}")
         if game.get("lbButton", "br") not in ("tl", "tr", "bl", "br", "none"):
             raise ValueError(f"lbButton must be tl, tr, bl, br or none: {slug}")
         if game["external"] and not game["external"].startswith("https://"):
@@ -445,7 +601,7 @@ def render(output):
     previews.mkdir(parents=True)
     base = api_base()
     for asset in ["site.css", "favicon.svg", "game-storage.js", "audio-resume.js",
-                  "score-bridge.js", "scores-ui.js", "hub.js"]:
+                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js"]:
         shutil.copy2(ROOT / "assets" / asset, assets / asset)
     (assets / "ludvig.js").write_text(ludvig_script(base))
     boards = load_boards(games)
@@ -469,6 +625,10 @@ def render(output):
     # Best first; ties keep catalog order (sorted() is stable).
     shown = sorted(games, key=lambda g: -g.get("quality", 0))
     cards = "\n".join(game_card(game, index) for index, game in enumerate(shown))
+    groups = categories(games)
+    intro = (SEO["home"] or {}).get("intro")
+    home_about = f'<section class="home-about"><p>{escape(intro)}</p></section>' if intro else ""
+    seo_pages = write_seo_pages(OUT, shown, groups)
     body = f'''<a class="skip" href="#games">Skip to games</a>
 <div class="shell">
   {masthead()}
@@ -476,8 +636,9 @@ def render(output):
     <h1 class="intro">Experimental browser games made by Ludvig</h1>
     {filter_bar(games)}
     <div id="games-root"><section class="cards" id="games" aria-label="Games">{cards}</section></div>
+    {home_about}
   </main>
-  {FOOTER}
+  {footer(groups)}
 </div>'''
     urls = [g["external"] or f"{ORIGIN}/{g['slug']}/" for g in shown]
     structured = {"@context": "https://schema.org", "@graph": [
@@ -487,20 +648,24 @@ def render(output):
         {"@type": "ItemList", "name": "Games", "numberOfItems": len(games), "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "url": url, "name": g["name"],
              **({"alternateName": alternate_name(g)} if alternate_name(g) else {})} for i, (g, url) in enumerate(zip(shown, urls))]}]}
-    (OUT / "index.html").write_text(document("Ludvig Games · Free experimental browser games", SITE_DESCRIPTION, "/", body,
+    home = SEO["home"] or {}
+    (OUT / "index.html").write_text(document(home.get("title") or "Ludvig Games · Free experimental browser games",
+                                             home.get("description") or SITE_DESCRIPTION, "/", body,
                                              image="/assets/previews/flappy-first-person.webp", structured=structured,
                                              scripts=("/assets/hub.js",)))
     error = f'''<div class="shell">
   {masthead()}
   <main class="empty"><h1 class="page-title">Game not found</h1><p>Pick something else to play.</p><a href="/">All games</a></main>
-  {FOOTER}
+  {footer(groups)}
 </div>'''
     (OUT / "404.html").write_text(document("Page not found · Ludvig Games", "Return to all games.", "/404", error))
     (OUT / "me").mkdir()
-    (OUT / "me" / "index.html").write_text(records_page())
+    (OUT / "me" / "index.html").write_text(records_page(groups))
     local = [g for g in games if not g["external"]]
     sources = {g["slug"]: lastmod(ROOT / "source-games" / g["slug"] / "index.html") for g in local}
-    entries = [("/", max(sources.values(), default=time.strftime("%Y-%m-%d")))] + [(f"/{g['slug']}/", sources[g["slug"]]) for g in local]
+    newest = max(sources.values(), default=time.strftime("%Y-%m-%d"))
+    entries = [("/", newest)] + [(f"/{g['slug']}/", sources[g["slug"]]) for g in local]
+    entries += [(page, sources.get(page.split("/")[1], newest)) for page in seo_pages]
     (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                                      + "".join(f"<url><loc>{ORIGIN}{p}</loc><lastmod>{d}</lastmod></url>" for p, d in entries) + "</urlset>\n")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /games/\nDisallow: /api/\nDisallow: /mp/\nSitemap: {ORIGIN}/sitemap.xml\n")

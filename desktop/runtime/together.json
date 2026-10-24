@@ -1,0 +1,696 @@
+{
+  "pigeon": {
+    "name": "Pigeon",
+    "online": {
+      "steps": [
+        "Play online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "square"
+    },
+    "local": null,
+    "hint": "Tap \"Play online\", then \"Quick match\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "\"Play online\" is on the title screen (also in the pause menu) and only shows when ludvig.js mp is loaded and the device is online. Quick match drops you straight into the shared square (up to 12). Also: \"Private square\" creates a hidden room and copies an invite link; others type the 4-character code and tap \"Join square\". Reads ?square=CODE from the URL (also from window.top), prefills the code and asks you to press \"Join square\"; does not auto-join."
+  },
+  "flappy-first-person": {
+    "name": "Flap",
+    "online": {
+      "steps": [
+        "Race",
+        "Quick race",
+        "Start race"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "flappy-first-person"
+    },
+    "local": null,
+    "hint": "Tap \"Race\", then \"Quick race\". Everyone on this Wi-Fi lands together; the host taps \"Start race\".",
+    "note": "\"Race\" button on the home screen is hidden unless Ludvig.mp and WebSocket exist. No auto-start: only the host sees \"Start race\" and it needs 2+ players (max 8). Also: \"New private room\" shows \"Room CODE\" as the title; others type the code and tap \"Join\". Reads ?flappy-first-person=CODE and auto-joins."
+  },
+  "vibe-coder-tycoon": {
+    "name": "Vibe Coder Tycoon",
+    "online": {
+      "steps": [
+        "Coworkers",
+        "Find coworkers"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "office"
+    },
+    "local": null,
+    "hint": "Tap \"Coworkers\", then \"Find coworkers\". Everyone on this Wi-Fi who does the same shares one office.",
+    "note": "First visit shows an intro with \"Start\". \"Coworkers\" (header pill) jumps to the \"Office\" tab; the Shared office box is hidden unless mp is available and online. Max 4 per office, no start step. Also: \"Create private office\" shows an \"Office code\"; others type it and tap \"Join\". Reads ?office=CODE and auto-joins."
+  },
+  "anything-arena": {
+    "name": "Anything Arena",
+    "online": {
+      "steps": [
+        "Online",
+        "Quick match",
+        "Start picking"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "arena"
+    },
+    "local": null,
+    "hint": "Pick \"Online\", then \"Quick match\". Everyone on this Wi-Fi lands together; the host taps \"Start picking\".",
+    "note": "\"This device / Online\" toggle sits above the fighter picker and is hidden unless ludvig.js mp is loaded, the page is http(s) and online. Players are auto-placed on Team A/B (\"Join A\", \"Join B\", \"Watch\" to change); only the host sees \"Start picking\"; then \"Lock in\". Max 8. Also: \"Private room\" shows ROOM code; others type it and tap \"Join room\". Reads ?arena=CODE and auto-joins (#fight=... is a shared replay, not a room). \"This device\" is a watch-only AI battle, not local multiplayer."
+  },
+  "deadblock": {
+    "name": "Horde",
+    "online": {
+      "steps": [
+        "Co-op",
+        "QUICK MATCH",
+        "START"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "horde"
+    },
+    "local": null,
+    "hint": "Tap \"Co-op\", then \"QUICK MATCH\". Everyone on this Wi-Fi lands together; the host taps \"START\".",
+    "note": "Labels \"QUICK MATCH\" and \"START\" are uppercase in source. \"Co-op\" is on the main menu, hidden unless Ludvig.mp exists. Host-only \"START\", no auto-start; max 4, so a fifth player gets a new room. Also: \"Private room\" shows the code; others type it and tap \"Join\". Reads ?horde=CODE and auto-joins."
+  },
+  "citrus-circuit-coastline": {
+    "name": "Karts",
+    "online": {
+      "steps": [
+        "Race online",
+        "Quick race"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "race"
+    },
+    "local": null,
+    "hint": "Tap \"Race online\", then \"Quick race\". Everyone on this Wi-Fi lands together and the race starts soon.",
+    "note": "CSS uppercases these buttons, so they show as \"RACE ONLINE\" and \"QUICK RACE\". \"Race online\" is hidden unless mp is available, online and served over http(s). Quick rooms auto-start 20 s after a second racer joins (host can tap \"Start race\" sooner); max 4. Also: \"Create private race\" shows a \"Race code\"; others type it and tap \"Join with code\" (private rooms need the host to tap \"Start race\"). Reads ?race=CODE and auto-joins."
+  },
+  "overtime": {
+    "name": "Overtime",
+    "online": {
+      "steps": [
+        "ONLINE",
+        "QUICK MATCH"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "overtime"
+    },
+    "local": null,
+    "hint": "Tap \"ONLINE\", then \"QUICK MATCH\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "Labels are uppercase in source. \"ONLINE\" is in the main-menu links, hidden unless Ludvig.mp exists. Quick rooms auto-start 6 s after 2+ players (host can tap \"START MATCH\"); max 4, empty seats filled by bots. Also: \"PRIVATE ROOM\" shows ROOM code; others type it under ROOM CODE and tap \"JOIN\"; host taps \"START MATCH\". Reads ?overtime=CODE and auto-joins."
+  },
+  "six-clues": {
+    "name": "Six Clues",
+    "online": {
+      "steps": [
+        "Friends",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "race"
+    },
+    "local": null,
+    "hint": "Open the \"Friends\" tab, then tap \"Quick match\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "\"Friends\" tab is hidden unless mp is available and online. \"Quick match\" is in the Race card; quick rooms auto-start 10 s after 2+ players (max 6). Also: \"Private room\" shows the code with \"Invite\"; others type it and tap \"Join\"; host taps \"Start\". Separate League card (\"Start a league\", async daily scores) uses ?league=CODE. Reads ?race=CODE and auto-joins. Swedish UI exists; English used here. First visit may show a help dialog (\"Let’s play\")."
+  },
+  "higher-or-lower": {
+    "name": "Higher or Lower",
+    "online": {
+      "steps": [
+        "Game options",
+        "Duel",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "duel"
+    },
+    "local": null,
+    "hint": "Tap \"Game options\" (the ⋯ button), then \"Duel\", then \"Quick match\". Everyone on this Wi-Fi lands together.",
+    "note": "\"Game options\" is an icon-only ⋯ button (aria-label/title, no visible text); \"Duel\" also appears in the category picker. Duel entries only show when mp is loaded and online. Quick rooms auto-start 10 s after 2+ players; max 6. Also: \"Private room\" shows the code with \"Invite\"; others type it and tap \"Join\"; host taps \"Start\". Reads ?duel=CODE and opens/joins."
+  },
+  "slither-afterglow": {
+    "name": "Noodle",
+    "online": {
+      "steps": [
+        "Play online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "slither-afterglow"
+    },
+    "local": null,
+    "hint": "Tap \"Play online\", then \"Quick match\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "\"Play online\" sits under \"Let's slither\" on the home screen, hidden unless Ludvig.mp and WebSocket exist. Joining drops you straight into the arena (no start step); max 8. Also: \"New private room\" puts the code in the room tag; others type it and tap \"Join\". Reads ?slither-afterglow=CODE and auto-joins."
+  },
+  "stacklight": {
+    "name": "Stacks",
+    "online": {
+      "steps": [
+        "Versus",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "versus"
+    },
+    "local": null,
+    "hint": "For two, tap \"Versus\", then \"Quick match\". For more, one taps \"Private room · up to 4\" and shares the code.",
+    "note": "Quick match rooms hold only 2 players (VS_QUICK_MAX=2), so a third person lands in a different room. Quick auto-starts 4 s once full. \"Versus\" is on the start overlay, hidden unless mp is available and online. Also: \"Private room · up to 4\" shows the code with \"Invite\"; others type it and tap \"Join\"; host taps \"Start\". Reads ?versus=CODE and auto-joins."
+  },
+  "heatwave-san-sol-remastered": {
+    "name": "Getaway",
+    "online": {
+      "steps": [
+        "Play online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "city"
+    },
+    "local": null,
+    "hint": "Tap \"Play online\", then \"Quick match\". Everyone on this Wi-Fi who does the same lands in one city.",
+    "note": "\"Play online\" is on the title screen, hidden unless mp is available, online and served over http(s); in play an \"Online\" icon tool reopens the panel. Joining drops you into the shared city right away (free roam, max 8); host can then tap \"Start Tag\" or \"Start race\". Also: \"Private city\" shows a CODE; others type it and tap \"Join\". Reads ?city=CODE and auto-joins."
+  },
+  "pulse-shift": {
+    "name": "Pulse",
+    "online": {
+      "steps": [
+        "Race",
+        "Quick match",
+        "Start race"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "pulse-shift"
+    },
+    "local": null,
+    "hint": "Tap \"Race\", then \"Quick match\". Everyone on this Wi-Fi lands together; the host taps \"Start race\".",
+    "note": "\"Race\" is on the home hero, hidden unless Ludvig.mp exists. No auto-start: host picks a level and taps \"Start race\" (needs 2+, max 8). Also: \"Create room\" shows ROOM code; others type it and tap \"Join\". Reads ?pulse-shift=CODE and auto-joins."
+  },
+  "slope-overdrive": {
+    "name": "Roll",
+    "online": {
+      "steps": [
+        "RACE",
+        "QUICK MATCH",
+        "START RACE"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "slope-overdrive"
+    },
+    "local": null,
+    "hint": "Tap \"RACE\", then \"QUICK MATCH\". Everyone on this Wi-Fi lands together; the host taps \"START RACE\".",
+    "note": "Labels are uppercase in source. \"RACE\" is on the main menu, hidden unless Ludvig.mp exists. No auto-start: host taps \"START RACE\"; max 8. Also: \"CREATE ROOM\" shows ROOM code; others type it and tap \"JOIN\". Reads ?slope-overdrive=CODE and auto-joins."
+  },
+  "vice-run": {
+    "name": "Neon",
+    "online": {
+      "steps": [
+        "ONLINE",
+        "QUICK MATCH"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "city"
+    },
+    "local": null,
+    "hint": "Tap \"ONLINE\", then \"QUICK MATCH\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "The \"ONLINE\" button on the title screen is hidden unless the online service is available and the page is on http(s). Also: \"Private city\" shows a code; others type it in the CODE box and tap \"Join\". A room holds up to 8. Reads ?city=CODE and auto-joins. Once in, the host picks Free roam, Tag or Race, and \"BACK TO THE CITY\" closes the sheet."
+  },
+  "overrun": {
+    "name": "Overrun",
+    "online": {
+      "steps": [
+        "PLAY ONLINE",
+        "QUICK MATCH",
+        "START MATCH"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "overrun"
+    },
+    "local": null,
+    "hint": "Tap \"PLAY ONLINE\", then \"QUICK MATCH\". Everyone on this Wi-Fi lands together; the host taps \"START MATCH\".",
+    "note": "Code lives in src/*.js. \"PLAY ONLINE\" is on the PLAY tab and only shows when online is available and the browser is online. Only the host sees \"START MATCH\", enabled once 2+ are in. Others see \"WAITING FOR HOST\", or \"JOIN MATCH\" if a match is already running. Also: \"CREATE PRIVATE ROOM\" shows a code; others type it and tap \"JOIN\". Max 8. Reads ?overrun=CODE and auto-joins."
+  },
+  "velvet-pool": {
+    "name": "Velvet Pool",
+    "online": {
+      "steps": [
+        "Online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "velvet-pool"
+    },
+    "local": {
+      "steps": [
+        "Two players"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "Tap \"Online\", then \"Quick match\". Two players on this Wi-Fi who do the same get paired.",
+    "note": "Online rooms hold only 2, so quick match pairs people two at a time. Also: \"Private game\" shows a code; others type it in the Code box and tap \"Join\". Reads ?velvet-pool=CODE and auto-joins. \"Two players\" is pass-and-play: players take turns shooting and the turn label shows \"Player 1\" or \"Player 2\". \"Play computer\" is the bot mode."
+  },
+  "afterglow": {
+    "name": "Cruise",
+    "online": {
+      "steps": [
+        "ONLINE",
+        "LET’S DRIVE",
+        "QUICK RACE",
+        "START RACE"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "afterglow"
+    },
+    "local": null,
+    "hint": "Pick \"ONLINE\", tap \"LET’S DRIVE\", then \"QUICK RACE\". Everyone on this Wi-Fi lands together.",
+    "note": "\"ONLINE\" is a mode button beside ARCADE RUN and FREE DRIVE, hidden unless online is available. \"LET’S DRIVE\" uses a curly apostrophe in the source. Only the host sees \"START RACE\" (enabled with 2+), and the host side can also start on a countdown. Max 4. Also: \"PRIVATE ROOM\" shows a code; others type it and tap \"JOIN\". Reads ?afterglow=CODE and auto-joins."
+  },
+  "cage": {
+    "name": "Punchy",
+    "online": {
+      "steps": [
+        "ONLINE",
+        "QUICK MATCH"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "cage"
+    },
+    "local": null,
+    "hint": "Tap \"ONLINE\", then \"QUICK MATCH\". Two players on this Wi-Fi who do the same get paired.",
+    "note": "1v1: a room holds only 2, and the fight starts by itself once the opponent arrives. \"ONLINE\" is hidden unless online is available. Source labels have icon-spacing whitespace (\" ONLINE\", \"QUICK MATCH \"). Also: \"PRIVATE ROOM\" shows a code; others type it and tap \"JOIN\". Reads ?cage=CODE and auto-joins."
+  },
+  "kiln": {
+    "name": "Scrapyard",
+    "online": {
+      "steps": [
+        "Play online",
+        "Co-op waves",
+        "Quick match",
+        "Start mission"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "arena"
+    },
+    "local": null,
+    "hint": "Tap \"Play online\", then \"Quick match\" in the same mode. Everyone lands together; host taps \"Start mission\".",
+    "note": "\"Quick match\" does not use quick:true. It lists open rooms in the chosen mode (\"Co-op waves\" is the default, 2–4; \"Deathmatch\" 2–8), joins the fullest one, or else opens a new public room. Everyone must pick the same mode, and two people tapping at the exact same moment could end up in separate rooms. Host button reads \"Start mission\" (co-op) or \"Start round\" (deathmatch). Others see \"Waiting for the host\", or \"Join match\" if a game is live. Also: \"Create private room\" shows a code; others type it and tap \"JOIN\". Reads ?arena=CODE and auto-joins."
+  },
+  "lastlight": {
+    "name": "Storm",
+    "online": {
+      "steps": [
+        "Play with a friend",
+        "QUICK MATCH",
+        "DROP IN"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "lastlight"
+    },
+    "local": null,
+    "hint": "Tap \"Play with a friend\", then \"QUICK MATCH\". Two players on this Wi-Fi get paired; host taps \"DROP IN\".",
+    "note": "Two-player co-op: rooms hold 2. Only the host sees \"DROP IN\", enabled once both are in; the guest sees \"The host starts the match\". \"Play with a friend\" is hidden unless online is available. Also: \"Create private room\" shows a code; others type it and tap \"Join\". Reads ?lastlight=CODE and auto-joins."
+  },
+  "mosslight": {
+    "name": "Grove",
+    "online": {
+      "steps": [
+        "Build with friends",
+        "Quick match",
+        "Enter world"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "mosslight"
+    },
+    "local": null,
+    "hint": "Tap \"Build with friends\", \"Quick match\", then \"Enter world\". Everyone on this Wi-Fi lands together.",
+    "note": "A room holds up to 4. No host gate: each player taps \"Enter world\" once their world has loaded. \"Build with friends\" is hidden unless online is available. Also: \"Create private room\" shows a code; others type it and tap \"Join\". Reads ?mosslight=CODE and auto-joins."
+  },
+  "cubeville": {
+    "name": "Cubeville",
+    "online": {
+      "steps": [
+        "Online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "world"
+    },
+    "local": null,
+    "hint": "Tap \"Online\", then \"Quick match\". Everyone on this Wi-Fi who does the same lands together.",
+    "note": "\"Online\" is on the home screen beside \"Play Obby Rush\" and is hidden unless online is available; it opens a \"Play online\" sheet. Quick match first joins the fullest open room, then falls back to quick:true. A game's detail card also has an \"Online\" button, but that one only matches rooms for that game's world. Players land in a shared plaza; the host gets a \"Start\" button to begin a race. Also: \"Create private room\" shows a code; others type it and tap \"Join\". Reads ?world=CODE and auto-joins."
+  },
+  "last-drop": {
+    "name": "Drop",
+    "online": {
+      "steps": [
+        "Online",
+        "Quick match",
+        "Start match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "last-drop"
+    },
+    "local": null,
+    "hint": "Tap \"Online\", then \"Quick match\". Everyone on this Wi-Fi lands together; the host taps \"Start match\".",
+    "note": "CSS shows these labels in capitals (ONLINE, QUICK MATCH, START MATCH). Max 8. \"Start match\" shows only for the host with 2+ players; public rooms also count down 20 s and start by themselves. \"Online\" is hidden unless online is available. Also: \"Private match\" shows a code; others type it and tap \"Join\". Reads ?last-drop=CODE and auto-joins."
+  },
+  "draw-your-horse": {
+    "name": "Draw Your Horse",
+    "online": {
+      "steps": [
+        "DEN ÄR EN HÄST.",
+        "Tävla online",
+        "SNABBMATCH",
+        "STARTA LOPPET"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "draw-your-horse"
+    },
+    "local": null,
+    "hint": "Draw a horse, tap \"DEN ÄR EN HÄST.\", \"Tävla online\", then \"SNABBMATCH\". Everyone on this Wi-Fi meets.",
+    "note": "The UI is Swedish only (html lang=\"sv\"); no English variant or language switch. The title \"Draw your horse.\" is the only English text. \"Tävla online\" appears on the horse card after you finish a drawing, only if online is available. Max 7. In the lobby only the host gets \"STARTA LOPPET\", once 2+ horses are ready; others see \"VÄRDEN STARTAR\". Also: \"Skapa privat rum\" shows a code; others type it in RUMSKOD and tap \"Gå med\". Reads ?draw-your-horse=CODE and auto-joins. Saved stable horses in offline races are computer-run, not local players."
+  },
+  "under-sail": {
+    "name": "Under Sail",
+    "online": {
+      "steps": [
+        "Sail online",
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "under-sail"
+    },
+    "local": null,
+    "hint": "Tap \"Sail online\", then \"Quick match\". Everyone on this Wi-Fi who does the same sails together.",
+    "note": "After joining, everyone sails the same sea right away in explore mode. The host can open the pause menu and tap \"Start regatta\" with 2+ sailors. Max 8. \"Sail online\" is hidden unless online is available. Also: \"Private room\" shows a code; others type it and tap \"Join\". Reads ?under-sail=CODE and auto-joins."
+  },
+  "ashfall-84-wasteland": {
+    "name": "Cinder",
+    "online": {
+      "steps": [
+        "PLAY ONLINE",
+        "QUICK MATCH",
+        "START RUN"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "wastes"
+    },
+    "local": null,
+    "hint": "Tap \"PLAY ONLINE\", then \"QUICK MATCH\". Everyone on this Wi-Fi lands together; host taps \"START RUN\".",
+    "note": "Co-op, max 4. Only the host sees \"START RUN\"; others see \"Waiting for host\". \"PLAY ONLINE\" is hidden unless online is available and the browser is online. Also: \"CREATE PRIVATE ROOM\" shows a code; others type it and tap \"JOIN\". Reads ?wastes=CODE and auto-joins."
+  },
+  "air-hockey": {
+    "name": "Air Hockey",
+    "online": {
+      "steps": [
+        "Play a friend",
+        "New room",
+        "Create room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Two players",
+        "Same keyboard"
+      ],
+      "how": "same keyboard"
+    },
+    "hint": "One player taps \"Play a friend\" then \"Create room\" and shares the code; the other uses \"Join with code\".",
+    "note": "\"New room\" is the default tab. To join: \"Play a friend\", then the \"Join with code\" tab, type the 6-character code, tap \"Join\". Host then sees \"Copy invite link\" (\"Share invite\" on phones). ?room=CODE opens the Join tab with the code filled in (app/page.tsx:60). Two players only. Local: \"Same keyboard\" gives Blue and Coral their own keys; \"Touch screen\" lets each player drag a mallet (split screen touch); on touch-only devices \"Two players\" starts touch mode directly."
+  },
+  "chess": {
+    "name": "Chess",
+    "online": {
+      "steps": [
+        "Online",
+        "Create a private room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Local",
+        "Play now"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One taps \"Online\" then \"Create a private room\"; the other taps \"Join a friend\" and types the code.",
+    "note": "\"Online\" is a tab beside \"Computer\" and \"Local\"; the page opens on \"Computer\". To join: \"Join a friend\" at the top, or \"Join with a code\" under Online, opens \"Join a room\": type name and 8-character code, tap \"Join game\". \"Watch\" joins as spectator. Host sees \"Send this link to a friend.\" with link and code. ?room= read at app/page.tsx:124. Local is pass-and-play on one board; \"Rotate board after each move\" is under \"Game options\"."
+  },
+  "color-clash": {
+    "name": "Color Clash",
+    "online": {
+      "steps": [
+        "Play Friends",
+        "Create a room",
+        "Create room",
+        "Deal us in"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Play Locally",
+        "Deal us in"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "Host taps \"Play Friends\" then \"Create room\"; others pick \"Join a room\", type the code, tap \"Join room\".",
+    "note": "\"Create a room\" and \"Join a room\" are tabs; create is the default. Join needs a 6-character code, then \"Join room\". Host sees \"Copy invite\" and starts with \"Deal us in\". Up to 6 seats; host can add computer players. ?room=CODE opens the Join tab with the code filled in (app/page.tsx:98). Local: 2 human seats, up to 6 with \"Add a player\"; between turns \"Pass to <name>.\" and the next player taps \"I’m ready\"."
+  },
+  "gravity-arena": {
+    "name": "Gravity Arena",
+    "online": {
+      "steps": [
+        "Play a friend",
+        "Create a room",
+        "Create private room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Play locally"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One taps \"Play a friend\" then \"Create private room\"; the other picks \"Join a room\" and types the code.",
+    "note": "Invite is a normal query ?room=CODE (plus &watch=1 for a spectator link); no path segment or hash. Read at components/GravityArena.tsx:127-128. To join: \"Play a friend\", then the \"Join a room\" tab, type the 6-character code, tap \"Take a seat\" (\"Just watching\" changes it to \"Watch game\"). Host sees the code and \"Copy invite link\". Two seats plus spectators. Local: Coral and Blue take turns on the same device."
+  },
+  "hangd": {
+    "name": "Hängd",
+    "online": {
+      "steps": [
+        "Create a room",
+        "Start"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": null,
+    "hint": "One taps \"Create a room\" and shares the code; the others tap \"Have a room code? Join in\" and type it.",
+    "note": "Swedish is the starting language; English when the browser language is not sv/nb/nn/no/da; a saved choice wins; EN/SV header button toggles. Nickname (2+ characters) required before \"Create a room\" (\"Skapa ett rum\"). Join: \"Have a room code? Join in\" (\"Har du en rumskod? Hoppa in\"), type the 6-character code, tap \"Join the room\" (\"Hoppa in\"). Host shares with \"Invite friends\" (\"Bjud in vänner\") and needs 2+ players to press \"Start\" (\"Starta\"). ?room=CODE switches to join mode with the code filled in (lib/use-room.ts:44)."
+  },
+  "hoop-rush": {
+    "name": "Hoop Rush",
+    "online": {
+      "steps": [
+        "Online",
+        "Create room",
+        "Ready"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Local",
+        "Start"
+      ],
+      "how": "split screen touch"
+    },
+    "hint": "One taps \"Online\" then \"Create room\" and shares the code; the other types it under \"or join\", taps \"Join\".",
+    "note": "Join: on the \"Online\" screen, type the 6-character code in the CODE box under \"or join\", tap \"Join\". In the room both players tap \"Ready\". Host sees \"Copy link\" (\"Share link\" on phones). ?room=CODE opens the Online screen with the code filled in (app/game.jsx:52). Two players only. Local: split screen; on touch each player swipes on their own half; on keyboard Player 1 uses A/D + Space, Player 2 arrows + Enter (same keyboard)."
+  },
+  "little-links": {
+    "name": "Little Links",
+    "online": {
+      "steps": [
+        "Online",
+        "Create a room",
+        "Create a room",
+        "Everyone in? Let’s play"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Local",
+        "Let’s play"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One taps \"Online\" then \"Create a room\"; friends pick \"Join friends\", type the code, tap \"Join the round\".",
+    "note": "\"Online\" is a mode tab; under it \"Create a room\" (default) and \"Join friends\" are sub-tabs, so \"Create a room\" appears twice (tab, then main button). Join needs a 6-character code, then \"Join the round\". Lobby shows ROOM CODE and \"Copy invite link\". Host starts with \"Everyone in? Let’s play\" once 2+ are in, up to 8. The page reads ?room= (app/page.tsx:57); \"code\" is only used in its API calls. Local is hot-seat for 2–4 players set with the Players stepper."
+  },
+  "ludo": {
+    "name": "Ludo",
+    "online": {
+      "steps": [
+        "Online",
+        "Create room",
+        "Start the game"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Local",
+        "Let’s roll"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One player taps \"Online\", \"Create room\" and shares the code; others tap \"Join a room\" and type it.",
+    "note": "The Online tab opens on the \"Create a room\" sub-tab. Join: \"Online\", then \"Join a room\", type the 6-character code in \"Room code\", tap \"Join the table\". Host taps \"Start the game\" (\"Fill empty seats with bots\" toggle). \"Copy invite link\" copies origin/?room=CODE. ?room= read at app/page.tsx:57. Local: hot-seat for 2–4 humans (bots optional) on one screen. English only."
+  },
+  "mind-games": {
+    "name": "Mind Games",
+    "online": {
+      "steps": [
+        "Play Friend",
+        "Create private room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Play Locally",
+        "I’m Player 1"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One player taps \"Play Friend\", \"Create private room\" and shares the code; the other taps \"Join room\".",
+    "note": "The Play Friend dialog has \"Create room\" (default) and \"Join room\" tabs. Join: \"Join room\" tab, type the 7-character code in \"Room code\", then the \"Join room\" button. Match starts automatically when the friend joins. Lobby shows the code and \"Copy invite link\". ?room= read at app/page.tsx:248. Local: each player picks privately behind a privacy screen (\"Pass to Player N.\"), second player taps \"I’m Player 2\". English only."
+  },
+  "ox": {
+    "name": "OX",
+    "online": {
+      "steps": [
+        "Play Friend",
+        "Create a private room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Play Locally"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One player taps \"Play Friend\", \"Create a private room\"; the other types the code and taps \"Join\".",
+    "note": "Join form is in the same Play Friend sheet (\"or join a room\"): type the 8-character code in \"Room code\", tap \"Join\"; pasting a full ?room= link also works. Game starts when O joins. Waiting board shows \"Copy invite link\" and \"Room CODE\". ?room= read at app/useGame.ts:86. Local: two players take turns placing X and O on one board (\"Side by side\"). English only."
+  },
+  "salvo": {
+    "name": "Salvo",
+    "online": {
+      "steps": [
+        "Play Friend",
+        "Create private room"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Local Multiplayer",
+        "Position your fleets"
+      ],
+      "how": "pass the device"
+    },
+    "hint": "One player taps \"Play Friend\", \"Create private room\"; the other types the code and taps \"Join\".",
+    "note": "In the Play Friend dialog (\"OR JOIN A FRIEND\"), type the 6-character code in \"ROOM CODE\", tap \"Join\". The room code button on the setup screen copies an invite link (?room=CODE). ?room= read at components/SalvoApp.tsx:86. Local: enter two commander names, place fleets in turn, hand over at the privacy screen with \"I’m ready\". English only."
+  },
+  "table-tennis": {
+    "name": "Table Tennis",
+    "online": {
+      "steps": [
+        "Play a friend",
+        "Create room",
+        "Start match"
+      ],
+      "quickMatch": false,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": {
+      "steps": [
+        "Two players",
+        "Start"
+      ],
+      "how": "same keyboard"
+    },
+    "hint": "One player taps \"Play a friend\", \"Create room\"; the other types the code and taps \"Join\".",
+    "note": "In the Play a friend dialog (\"or join with a code\"), type the 6-character code in \"ROOM CODE\", tap \"Join\". The \"Invite a friend\" lobby has \"Copy invite link\". Host taps \"Start match\" once the guest is in. ?room= read at app/Game.jsx:136. Local: Player 1 uses W A S D + Space, Player 2 arrows + Enter; on touch devices it says a keyboard is needed and points to Play a friend. English only."
+  },
+  "ritkaos": {
+    "name": "Ritkaos",
+    "online": {
+      "steps": [
+        "Quick match"
+      ],
+      "quickMatch": true,
+      "roomCode": true,
+      "inviteParam": "room"
+    },
+    "local": null,
+    "hint": "Tap \"Quick match\". Everyone on this Wi-Fi who picks it lands together, if all use the same language.",
+    "note": "Has an English variant via the SV/EN toggle in the header menu; default is Swedish for a Swedish browser, otherwise English (public/app.js:145). Static HTML is Swedish until the script runs. Swedish labels: \"Snabbmatch\", \"Skapa ett rum\", \"Gå med\", \"Starta\". Quick match (under \"or play with others\") joins the fullest open public room in the player's language (max 8) or opens one; public rooms start on their own. Private: \"Create a room\", host taps \"Start\" in the lobby, \"Invite\" copies the link; others type the 6-character code in \"ROOM CODE\" and tap \"Join\". If the host ticks \"Visible to others on my network\", the room appears on others' start screens with a \"Join\" chip. On localhost the invite link uses the Mac's network address (public/app.js:411). ?room= read at public/app.js:495."
+  }
+}

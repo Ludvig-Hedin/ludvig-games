@@ -35,5 +35,18 @@ mac:
       - _ludvig-games._tcp
 dmg:
   title: Ludvig Games
+  # Background: build/background.png and background@2x.png, drawn from build/dmg-background.svg.
+  iconSize: 112
+  window:
+    width: 600
+    height: 380
+  contents:
+    - x: 170
+      y: 180
+      type: file
+    - x: 430
+      y: 180
+      type: link
+      path: /Applications
 # Fixed names, so the website's download link (releases/latest/download/…) always gets the newest version.
 artifactName: Ludvig-Games-mac-${arch}.${ext}

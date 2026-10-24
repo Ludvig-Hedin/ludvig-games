@@ -10,6 +10,14 @@ import { fileURLToPath } from "node:url";
 import { Bonjour } from "bonjour-service";
 import QRCode from "qrcode";
 import { HUB, GAMES, ALL } from "../runtime/games.mjs";
+import { bundlePath, checkForUpdate, downloadUpdate, installAndRestart } from "./updater.mjs";
+import fs from "node:fs";
+
+// How people play each game together (runtime/together.json): button labels, quick match, invite links.
+let TOGETHER = {};
+try {
+  TOGETHER = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "runtime", "together.json"), "utf8"));
+} catch {}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..");
@@ -49,6 +57,10 @@ const state = {
   shareUrl: null,
   qr: null,
   fullscreen: false,
+  update: null, // { version, status: available | downloading | ready | manual | failed, progress }
+  context: null, // the game on screen: { id, name, players, together }
+  room: null, // the online room the host is in: { game, code, kind: invite | mp, url }
+  devices: [], // other devices that opened a game on this Mac in the last two minutes
 };
 
 function computerName() {
@@ -85,27 +97,90 @@ function localFor(raw) {
   }
 }
 
-async function refreshShare() {
-  state.lan = lanAddress();
+/** Which game is on screen, from the window's address. */
+function contextFor(raw) {
+  try {
+    const url = new URL(raw);
+    if (!isLocalGameUrl(raw)) return null;
+    let id;
+    if (url.port === String(HUB.port)) {
+      const slug = url.pathname.split("/")[1] || "";
+      id = slug && slug !== "me" && slug !== "games" ? slug : "hub";
+    } else {
+      const game = GAMES.find((g) => String(g.port) === url.port);
+      id = game ? game.id : "hub";
+    }
+    const together = TOGETHER[id] || null;
+    const known = ALL.find((g) => g.id === id);
+    return { id, name: (together && together.name) || (known && known.name) || null, together };
+  } catch {
+    return null;
+  }
+}
+
+/** The address friends should open: the room's own invite link when there is one, else this game. */
+function shareTarget() {
+  const host = state.joined ? state.joined.address : state.lan;
+  if (!host) return null;
   const current = content ? content.webContents.getURL() : "";
-  let share = null;
+  const room = state.room;
+  const ctx = state.context;
   try {
     const url = new URL(current);
-    if (isLocalGameUrl(current)) {
-      if (url.hostname === "127.0.0.1" || url.hostname === "localhost") {
-        if (state.lan) url.hostname = state.lan;
-        else url.hostname = "";
-      }
-      share = url.hostname ? url.href : null;
+    if (!isLocalGameUrl(current)) return `http://${host}:${HUB.port}/`;
+    url.hostname = host;
+    // A one-player game: invite friends to the games instead.
+    if (ctx && ctx.id !== "hub" && !ctx.together) return `http://${host}:${HUB.port}/`;
+    const param = ctx && ctx.together && ctx.together.online && ctx.together.online.inviteParam;
+    if (room && room.kind === "mp" && param && ctx && room.game === ctx.id) {
+      // Hub games read their own invite key (?square=CODE in Pigeon), so the code can join the room directly.
+      return `${url.origin}${url.pathname}?${param}=${encodeURIComponent(room.code)}`;
     }
-  } catch {}
-  if (!share && state.lan && !state.joined) share = `http://${state.lan}:${HUB.port}/`;
-  if (!share && state.joined) share = `http://${state.joined.address}:${HUB.port}/`;
+    if (room && room.kind === "invite" && ctx && room.game === ctx.id) {
+      if (room.url) {
+        const invite = new URL(room.url);
+        invite.hostname = host;
+        return invite.href;
+      }
+      return `${url.origin}/?${param || "room"}=${encodeURIComponent(room.code)}`;
+    }
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  } catch {
+    return `http://${host}:${HUB.port}/`;
+  }
+}
+
+async function refreshShare() {
+  state.lan = lanAddress();
+  const share = shareTarget();
   state.shareUrl = share;
   state.qr = share
     ? await QRCode.toString(share, { type: "svg", margin: 2, errorCorrectionLevel: "M", color: { dark: "#080808", light: "#f2f2f2" } })
     : null;
 }
+
+// Devices that opened this Mac's games, shown in the panel so the host sees who joined.
+async function pollDevices() {
+  if (state.status !== "ready" || state.joined) {
+    if (state.devices.length) { state.devices = []; sendState(); }
+    return;
+  }
+  try {
+    const res = await fetch(`http://127.0.0.1:${HUB.port}/__ludvig/devices`);
+    const { devices } = await res.json();
+    const named = devices.map((d) => {
+      const ctx = contextFor(`http://127.0.0.1:${(ALL.find((g) => g.id === d.game) || HUB).port}${d.path}`);
+      return { ip: d.ip, kind: d.kind, game: ctx && ctx.id !== "hub" ? ctx.name : null };
+    });
+    if (JSON.stringify(named) !== JSON.stringify(state.devices)) {
+      state.devices = named;
+      sendState();
+    }
+  } catch {}
+}
+setInterval(pollDevices, 3000);
 
 function lanAddress() {
   const candidates = [];
@@ -262,9 +337,16 @@ async function selftest() {
       report.steps.push({ step: "game", url: content.webContents.getURL(), title: content.webContents.getTitle(), desktopScript });
       await shot("game");
     }
+    if (process.env.LUDVIG_SELFTEST_ROOM) {
+      // Opens a room the way the game's own button does, then checks that Play together switched to it.
+      await content.webContents.executeJavaScript(process.env.LUDVIG_SELFTEST_ROOM);
+      await wait(2500);
+      report.steps.push({ step: "room", room: state.room, panelOpen: state.panel, share: state.shareUrl });
+      await shot("room");
+    }
     await setPanel(true);
     await wait(800);
-    report.steps.push({ step: "panel", share: state.shareUrl, nearby: state.nearby.length });
+    report.steps.push({ step: "panel", share: state.shareUrl, nearby: state.nearby.length, context: state.context && state.context.id });
     await shot("panel");
   } catch (err) {
     report.error = String(err && err.stack || err);
@@ -272,6 +354,55 @@ async function selftest() {
   fs.writeFileSync(path.join(SELFTEST, "report.json"), JSON.stringify(report, null, 2));
   app.quit();
 }
+
+// ---------- updates ----------
+
+let pendingUpdate = null;
+let nextApp = null;
+
+async function lookForUpdate() {
+  if (!app.isPackaged || SELFTEST || (state.update && state.update.status !== "failed")) return;
+  try {
+    const found = await checkForUpdate();
+    if (!found) return;
+    pendingUpdate = found;
+    state.update = { version: found.version, status: bundlePath() ? "available" : "manual", progress: 0 };
+    sendState();
+  } catch {}
+}
+
+async function runUpdate() {
+  const u = state.update;
+  if (!u) return;
+  if (u.status === "manual") {
+    shell.openExternal("https://github.com/Ludvig-Hedin/ludvig-games/releases/latest");
+    return;
+  }
+  if (u.status === "ready" && nextApp) {
+    installAndRestart(nextApp, bundlePath());
+    return;
+  }
+  if (u.status !== "available" && u.status !== "failed") return;
+  state.update = { ...u, status: "downloading", progress: 0 };
+  sendState();
+  let last = 0;
+  try {
+    nextApp = await downloadUpdate(pendingUpdate, (p) => {
+      if (p - last < 0.02 && p < 1) return;
+      last = p;
+      state.update = { ...state.update, progress: p };
+      sendState();
+    });
+    state.update = { ...state.update, status: "ready", progress: 1 };
+  } catch (err) {
+    console.error("[app] update failed:", err.message);
+    state.update = { ...state.update, status: "failed" };
+  }
+  sendState();
+}
+
+setTimeout(lookForUpdate, 8000);
+setInterval(lookForUpdate, 6 * 60 * 60 * 1000);
 
 // ---------- nearby Macs ----------
 
@@ -326,7 +457,29 @@ function buildMenu() {
     ...GAMES.map((g) => ({ label: g.name, click: () => navigate(gameUrl(g)) })),
   ];
   const template = [
-    { role: "appMenu" },
+    {
+      label: app.name,
+      submenu: [
+        { role: "about" },
+        {
+          label: "Check for Updates…",
+          click: async () => {
+            if (state.update) return runUpdate();
+            await lookForUpdate();
+            if (!state.update) {
+              const { dialog } = await import("electron");
+              dialog.showMessageBox(win, { message: "Ludvig Games is up to date.", detail: `Version ${app.getVersion()}` });
+            }
+          },
+        },
+        { type: "separator" },
+        { role: "hide" },
+        { role: "hideOthers" },
+        { role: "unhide" },
+        { type: "separator" },
+        { role: "quit" },
+      ],
+    },
     { role: "editMenu" },
     {
       label: "View",
@@ -391,6 +544,10 @@ function createWindow() {
   const wc = content.webContents;
   const update = () => {
     state.onHome = isHubHome(wc.getURL());
+    const ctx = contextFor(wc.getURL());
+    if (!ctx || !state.context || ctx.id !== state.context.id) state.room = null;
+    state.context = ctx;
+    if (state.panel) refreshShare().then(sendState);
     sendState();
     sampleTint();
   };
@@ -450,6 +607,26 @@ ipcMain.on("join", (_e, id) => {
   if (peer) join(peer);
 });
 ipcMain.on("leave", () => leave());
+ipcMain.on("update", () => runUpdate());
+// A game opened or left an online room (runtime/inject.js via app/preload-content.cjs).
+let announced = null;
+ipcMain.on("room", async (event, room) => {
+  if (!content || event.sender !== content.webContents) return;
+  if (!room.code) {
+    state.room = null;
+  } else {
+    state.room = room;
+    // A new room: open Play together once, with the code that joins it.
+    const key = `${room.game}:${room.code}`;
+    if (key !== announced) {
+      announced = key;
+      await setPanel(true);
+      return;
+    }
+  }
+  if (state.panel) await refreshShare();
+  sendState();
+});
 ipcMain.on("copy", (_e, text) => clipboard.writeText(String(text)));
 ipcMain.on("retry", () => {
   stopRuntime();

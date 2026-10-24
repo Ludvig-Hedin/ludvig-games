@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld("app", {
   records: () => ipcRenderer.send("records"),
   join: (id) => ipcRenderer.send("join", id),
   leave: () => ipcRenderer.send("leave"),
+  update: () => ipcRenderer.send("update"),
   copy: (text) => ipcRenderer.send("copy", text),
 });

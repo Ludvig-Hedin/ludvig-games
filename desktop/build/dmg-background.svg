@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <!-- Install window (DMG). Icons sit at (170,180) and (430,180), 112 px; Finder draws their names below. -->
+  <rect width="600" height="380" fill="#f4f4f2"/>
+  <text x="300" y="52" text-anchor="middle" font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', Arial" font-size="17" font-weight="600" fill="#111111" letter-spacing="-0.2">Ludvig Games</text>
+  <text x="300" y="74" text-anchor="middle" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial" font-size="12.5" fill="#6e6e6c">Play every game offline, and with friends on the same Wi‑Fi</text>
+  <g fill="none" stroke="#9a9a97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M262 180 H332"/>
+    <path d="M320 168 L334 180 L320 192"/>
+  </g>
+  <text x="300" y="338" text-anchor="middle" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial" font-size="12.5" fill="#6e6e6c">Drag Ludvig Games into Applications</text>
+</svg>

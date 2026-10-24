@@ -1,0 +1,1079 @@
+{
+  "home": {
+    "title": "Ludvig Games: free browser games, no download",
+    "description": "Over 50 free browser games by Ludvig Hedin. Racing, shooters, puzzles, horror and calm games. No download. Play on phone or computer.",
+    "intro": "Ludvig Games is a collection of free browser games made by Ludvig Hedin. Every game runs in your browser with no download, and most work on both phone and computer. Pick a category or search for a game and start playing right away."
+  },
+  "categories": {
+    "Action": {
+      "slug": "action",
+      "title": "Free action and shooter games in your browser",
+      "description": "Free action games in your browser: shooters, battle royales, zombie waves, boxing and a prison escape. No download. Many have online multiplayer.",
+      "intro": "Shoot robot waves, survive a battle royale, fight zombies in co-op or box a friend online. Every action game here is free in your browser with no download."
+    },
+    "Arcade": {
+      "slug": "arcade",
+      "title": "Free arcade games to play in your browser",
+      "description": "Quick free arcade games: first person Flappy Bird, endless runners, rhythm games, platformers and a moon landing. No download, play in your browser.",
+      "intro": "Short, quick arcade games you can start in seconds, from a first person Flappy Bird to a slope runner and a beat maker. They are free in your browser, and most work on phone and computer."
+    },
+    "Sports & racing": {
+      "slug": "sports-racing",
+      "title": "Free racing and sports games in your browser",
+      "description": "Kart racing, rocket car soccer, 8 ball pool, skiing, snowboarding and traffic driving. Free in your browser, no download. Race friends online.",
+      "intro": "Race karts, play car soccer, shoot pool or ski down a mountain. These racing and sports games are free in your browser, and several let you play friends online."
+    },
+    "Puzzle": {
+      "slug": "puzzle",
+      "title": "Free puzzle and trivia games in your browser",
+      "description": "Daily country and city guessing, higher or lower trivia, falling blocks, CAPTCHA games and ragdoll physics. Free in your browser, no download.",
+      "intro": "Guess the daily country, pick the higher number or clear rows of falling blocks. These puzzle and trivia games are free in your browser on phone or computer."
+    },
+    "Board & cards": {
+      "slug": "board-cards",
+      "title": "Free strategy and tower defense games online",
+      "description": "Pop balloon waves with towers and a hero, or train troops and evolve through five ages. Free strategy games in your browser, no download.",
+      "intro": "Plan your defenses in a balloon tower defense game, or build an army and evolve through the ages. Both strategy games are free in your browser."
+    },
+    "Party": {
+      "slug": "party",
+      "title": "Free silly party games in your browser",
+      "description": "Swipe and date horses, or draw a horse and race it against friends online. Free party games in your browser on phone or computer, no download.",
+      "intro": "Silly games to laugh at alone or with friends, from horse dating to horse drawing. Draw Your Horse is in Swedish, and both are free in your browser."
+    },
+    "Adventure": {
+      "slug": "adventure",
+      "title": "Free adventure and horror games in your browser",
+      "description": "Pirate voyages, open world cities, a Western, an Antarctic rocket hunt and two horror games. Free adventure games in your browser, no download.",
+      "intro": "Sail for treasure, take jobs in an open city, ride through the Wild West or find your way out of a dark forest. These adventure and horror games are free in your browser."
+    },
+    "Chill": {
+      "slug": "chill",
+      "title": "Free relaxing and sandbox games in your browser",
+      "description": "Be a pigeon, sail a quiet ocean, pick mushrooms, mine and build, or run an AI app tycoon. Free chill games in your browser, no download.",
+      "intro": "Calm games and sandboxes with little pressure, from sailing and mushroom picking to causing trouble as a pigeon. They are free in your browser and most work on phone too."
+    }
+  },
+  "games": {
+    "pigeon": {
+      "keyword": "pigeon simulator game",
+      "title": "Pigeon: free pigeon simulator game in your browser",
+      "description": "Play a free pigeon simulator in your browser. Fly, peck, steal croissants and poop on a city square. Solo or online with up to 12 players.",
+      "intro": "Pigeon is a 3D pigeon simulator game set in a busy city square. Fly, glide, peck, grab snacks and cause trouble to build your chaos combo, and stay in the air to shake off angry owners. Play solo or join an online square, where four-minute rounds decide who caused the most chaos.",
+      "howToPlay": [
+        "Hold Space to fly. Release to glide down and land.",
+        "Grab snacks with E and peck or push with F.",
+        "Keep causing trouble to build your combo. Heavy loot slows your flight.",
+        "Stay airborne to shake off angry owners.",
+        "Online, the most chaos in a four-minute round wins."
+      ],
+      "controls": "WASD or arrows move, Space fly, Shift run, Ctrl dive, E grab, F peck, left click poop, right drag camera. Touch controls on phones.",
+      "related": [
+        "bird simulator game",
+        "play as a pigeon",
+        "multiplayer pigeon game",
+        "games like untitled goose game",
+        "free bird game online"
+      ]
+    },
+    "flappy-first-person": {
+      "keyword": "first person flappy bird",
+      "title": "Flap: a first person Flappy Bird style game",
+      "description": "Flap through pipe gaps from the bird's point of view. A free first person Flappy Bird style game in your browser, with a daily run and online races.",
+      "intro": "Flap is a first person take on the Flappy Bird idea. You see the pipes through the bird's own eyes and flap to stay in the gaps. Pick Chill or Classic, try the daily run, or race up to eight friends online.",
+      "howToPlay": [
+        "Press Space, click or tap to flap.",
+        "Keep flapping to stay in the air and fly through the pipe gaps.",
+        "Every gap you clear adds a point.",
+        "Try the daily run, or open a private room to race friends."
+      ],
+      "controls": "Space or click to flap, Esc pause, M sound. Tap anywhere on phones.",
+      "related": [
+        "3d flappy bird",
+        "flappy bird online free",
+        "flappy bird multiplayer",
+        "pipe dodging game"
+      ]
+    },
+    "one-small-fake": {
+      "keyword": "fake moon landing game",
+      "title": "One Small Fake: fake moon landing game",
+      "description": "Land a lunar module on a TV studio set in this free fake moon landing game. Five scenes, limited fuel and retakes. Plays in your browser.",
+      "intro": "One Small Fake is a lunar lander game set on the film set of a fake moon landing. Hold thrust to fly, steer onto the green tape and touch down gently before the fuel runs out. Land well across five scenes to keep the broadcast believable.",
+      "howToPlay": [
+        "Hold W or Up to thrust. Release to descend.",
+        "Steer with A and D, and press S to stop sideways drift.",
+        "Touch down on the green tape below 4.0 m/s down and 2.8 m/s sideways.",
+        "Space gives one emergency safety wire lift per take, but it costs believability.",
+        "Press R to retake the scene."
+      ],
+      "controls": "W or Up thrust, A D or arrows steer, S brake, Space safety wire, R retake, P or Esc pause. Touch buttons on phones.",
+      "related": [
+        "lunar lander game",
+        "moon landing hoax game",
+        "apollo moon landing game",
+        "lunar lander online free"
+      ]
+    },
+    "vibe-coder-tycoon": {
+      "keyword": "vibe coding tycoon game",
+      "title": "Vibe Coder Tycoon: idle vibe coding tycoon game",
+      "description": "Ship silly apps with AI agents, from Mum's kitchen table to a campus. A free idle tycoon game in your browser. Play solo or with up to 4 friends.",
+      "intro": "Vibe Coder Tycoon is an idle tycoon game about vibe coding. Prompt your AI agents for lines of code, ship apps for users and cash, and buy upgrades to grow from Mum's kitchen table to a campus. Open a shared office to build a team app with up to three friends.",
+      "howToPlay": [
+        "Press Prompt to add lines of code to the current app.",
+        "Press Ship it when the app is ready to win users and cash.",
+        "Spend cash on upgrades to earn faster.",
+        "In a shared office, stand next to a coworker to pair program at 1.5x speed."
+      ],
+      "controls": "Tap or click the buttons. Tap the floor to walk, or use WASD or arrows on desktop.",
+      "related": [
+        "vibe coding game",
+        "ai startup simulator",
+        "idle clicker tycoon browser game",
+        "coding tycoon game",
+        "multiplayer idle game"
+      ]
+    },
+    "anything-arena": {
+      "keyword": "who would win battle simulator",
+      "title": "Anything Arena: who would win battle simulator",
+      "description": "Pick fighters from 120 odd things and watch them battle. A free who would win simulator in your browser. 1v1, 2v2 or teams, on one device or online.",
+      "intro": "Anything Arena is a battle simulator where you pick fighters from a roster of 120 odd things and watch who wins. Every fighter has an element and a special move, and a fight ends by knockout or by remaining health after 27 seconds. Share a fight link and it replays the exact same battle.",
+      "howToPlay": [
+        "Choose 1v1, 2v2 or a team size.",
+        "Pick a fighter for each side, or press Random.",
+        "Press Fight and watch the battle play out.",
+        "Elements matter: fire melts ice, water puts out fire, earth grounds electricity, wind clears the stink.",
+        "Replay keeps the fight, Rematch changes it, and Share sends it."
+      ],
+      "controls": "Click or tap to pick fighters. Space pauses the fight.",
+      "related": [
+        "who would win game",
+        "auto battler browser game",
+        "random battle simulator",
+        "fight simulator online"
+      ]
+    },
+    "human-probably": {
+      "keyword": "captcha game",
+      "title": "Human, Probably: a silly captcha game",
+      "description": "Pass seven quick CAPTCHA tests and make the computer question itself. A free captcha game in your browser for mouse or touch.",
+      "intro": "Human, Probably is a captcha game made of seven fast microgames. Tap traffic lights, shred contracts, pop windows and drag puzzle pieces to prove you are human. Then the roles flip, and you get to verify the robot.",
+      "howToPlay": [
+        "Read the short task at the top of each test.",
+        "Tap, drag or hold as asked. There is no Verify button.",
+        "Clear all seven tests in a row.",
+        "Quick, clean answers build your score combo."
+      ],
+      "controls": "Mouse or touch. Some tests also take arrow keys and Enter.",
+      "related": [
+        "i'm not a robot game",
+        "captcha minigames",
+        "prove you are human game",
+        "funny browser game"
+      ]
+    },
+    "user-hostile": {
+      "keyword": "bad ui game",
+      "title": "User Hostile: a bad UI game with a terrible signup form",
+      "description": "Beat a five-minute deadline through six stages of a deliberately frustrating signup form. A free bad UI game in your browser.",
+      "intro": "User Hostile is a bad UI game built around the worst signup form you will ever meet. Get past fleeing buttons, unhelpful support chat and pointless extra steps across six stages before the five-minute timer runs out. If you liked User Inyerface, this is the same kind of pain.",
+      "howToPlay": [
+        "Finish the form before the five-minute timer expires.",
+        "Read every label closely. The obvious button is often the wrong one.",
+        "Some buttons run away, but they give up after a few tries.",
+        "Press Esc for a pause screen with honest help."
+      ],
+      "controls": "Mouse, touch and keyboard. Tab and Enter also work. Esc pauses.",
+      "related": [
+        "frustrating form game",
+        "games like user inyerface",
+        "worst website game",
+        "annoying ui puzzle game"
+      ]
+    },
+    "powder": {
+      "keyword": "snowboarding game",
+      "title": "Powder: free 3D snowboarding game",
+      "description": "Carve through mountain gates, jump ramps and spin in the air in this free 3D snowboarding game. Play in your browser on phone or computer.",
+      "intro": "Powder is a 3D downhill snowboarding game. Carve through gates for points, hit ramps for air and spins, and dodge hazards on your way to the lodge 1,800 m below. Play Classic or the daily run.",
+      "howToPlay": [
+        "Steer with the mouse or A and D.",
+        "Hold W to go faster and S to brake.",
+        "Click or press Space to jump. Press again in the air to spin.",
+        "Pass gates for points and reach the lodge."
+      ],
+      "controls": "Mouse or A D steer, W faster, S brake, click or Space jump and spin, Esc pause. Drag to steer and tap to jump on phones.",
+      "related": [
+        "snowboard game online",
+        "downhill snowboarding browser game",
+        "snowboard tricks game",
+        "free winter sports game"
+      ]
+    },
+    "deadblock": {
+      "keyword": "top down zombie shooter",
+      "title": "Horde: top down zombie shooter with co-op",
+      "description": "Fight zombie waves, unlock weapons and pick upgrades to survive. A free top down zombie shooter in your browser. Solo or co-op with up to 4.",
+      "intro": "Horde is a top down zombie wave shooter. Clear each wave, choose an upgrade, and unlock new weapons as your kills add up. Play three maps on Casual, Normal or Brutal, try the daily run, or team up online in co-op.",
+      "howToPlay": [
+        "Move with WASD and aim with the mouse.",
+        "Hold click to shoot. Guns reload on their own, or press R.",
+        "Clear a wave to pick an upgrade. Kills unlock weapons.",
+        "Shoot red barrels to blow up crowds, but keep your distance.",
+        "In co-op, stand next to a downed teammate to revive them."
+      ],
+      "controls": "WASD move, mouse aim, hold click shoot, Space or Shift dash, 1 to 7 weapons, R reload, G grenade, E barrel. Two sticks on touchscreens.",
+      "related": [
+        "zombie survival game online",
+        "co-op zombie game",
+        "zombie wave shooter browser",
+        "twin stick shooter"
+      ]
+    },
+    "citrus-circuit-coastline": {
+      "keyword": "kart racing game",
+      "title": "Karts: free 3D kart racing game in your browser",
+      "description": "Race three laps against AI karts with drift boosts, jumps and items. A free 3D kart racing game in your browser. Race up to 4 friends online.",
+      "intro": "Karts is a 3D kart racing game in the spirit of Mario Kart. Drift for turbo, hit ramps for air tricks and use items like Surge, Seeker and Slick to finish three laps ahead of the pack. Pick Cruise, Race or Expert, or race friends online.",
+      "howToPlay": [
+        "Hold W or Up to accelerate. Auto accelerate is in the main menu.",
+        "Hold Shift and turn to drift. Release at blue or gold sparks for turbo.",
+        "Tap Shift in the air after a ramp for a trick and a landing boost.",
+        "Collect coins for top speed, and press Enter or Ctrl to use an item.",
+        "Start accelerating as the countdown reaches 1 for a launch boost."
+      ],
+      "controls": "W A S D or arrows drive, Shift or Space drift, Enter or Ctrl item, R recover, Esc pause. Touch controls on phones.",
+      "related": [
+        "mario kart style game online",
+        "browser kart racing game",
+        "kart racing multiplayer free",
+        "drift racing game"
+      ]
+    },
+    "no-brakes": {
+      "keyword": "ragdoll physics game",
+      "title": "No Brakes: ragdoll physics game with a level editor",
+      "description": "Ragdoll through six courses of very bad ideas. A free ragdoll physics game in your browser with three vehicles, a daily course and a level editor.",
+      "intro": "No Brakes is a 2D ragdoll physics game about reaching the finish in one piece, or at least most of it. Pick one of three vehicles, lean to land your jumps and crash your way through six courses. Build your own death trap in the level editor or try the daily course.",
+      "howToPlay": [
+        "Press W or Up to drive and S to brake.",
+        "Lean back and forward with A and D to land jumps.",
+        "Space uses your vehicle's special. Shift slows time.",
+        "Press E to eject and crawl, or R to retry from a checkpoint."
+      ],
+      "controls": "W S drive and brake, A D lean, Space special, Shift slow motion, E eject, R retry. Arrows work too. Touch buttons on phones.",
+      "related": [
+        "happy wheels style game",
+        "ragdoll crash game",
+        "physics obstacle course game",
+        "level editor physics game"
+      ]
+    },
+    "overtime": {
+      "keyword": "rocket car soccer game",
+      "title": "Overtime: rocket car soccer game in your browser",
+      "description": "Drive a rocket car, jump and boost to score goals. A free rocket car soccer game in your browser. Play bots from 1v1 to 3v3, or friends online.",
+      "intro": "Overtime is a 3D car soccer game in the style of Rocket League. Drive, jump, dodge and boost into a giant ball to score in the other team's goal. Play 1v1, 2v2 or 3v3 against bots, practice shots in Training, or start an online match.",
+      "howToPlay": [
+        "Drive with WASD and press Space to jump.",
+        "Hold Shift to boost for a harder shot.",
+        "Jump, then jump again with a direction to dodge into the ball.",
+        "Pick team size, bot difficulty and match length in Match setup.",
+        "Use Training to practice shots and saves."
+      ],
+      "controls": "WASD drive, Space jump, Shift boost, C ball cam, R reset, Esc menu. Gamepad and touch controls work too.",
+      "related": [
+        "rocket league style game",
+        "car soccer online free",
+        "car football game",
+        "rocket league browser alternative"
+      ]
+    },
+    "six-clues": {
+      "keyword": "daily country guessing game",
+      "title": "Six Clues: daily country guessing game",
+      "description": "One secret country a day. Guess it with as few of the six clues as you can, then share your grid. A free daily geography game in your browser.",
+      "intro": "Six Clues is a daily country guessing game. Each day hides one secret country behind six clues that go from hard to easy. Guess it with as few clues as you can, keep your streak and share your grid, in English or Swedish.",
+      "howToPlay": [
+        "Read the first clue. It is the hardest one.",
+        "Type a country and pick it from the list.",
+        "Each wrong guess shows the next, easier clue.",
+        "Solve it within six clues, then share your grid.",
+        "Come back tomorrow for a new country, or play practice rounds."
+      ],
+      "controls": "Type or tap to guess. Works with keyboard, mouse or touch.",
+      "related": [
+        "guess the country game",
+        "daily geography quiz",
+        "wordle style geography game",
+        "country trivia game"
+      ]
+    },
+    "jailbreak": {
+      "keyword": "prison escape game",
+      "title": "Jailbird: 3D prison escape stealth game",
+      "description": "Steal a key, cut the power and slip past the guards. A free prison escape game in your browser. Drop banana peels to trip guards who chase you.",
+      "intro": "Jailbird is a short 3D prison escape game about sneaking. Borrow the warden's key, cut the power at the shed, flip the switch and get out through the south gate to the van. Sneak to stay unseen, and drop banana peels when a guard gives chase.",
+      "howToPlay": [
+        "Follow the yellow markers: key, power shed, switch, south gate, van.",
+        "Sneak with Shift. Guards notice you more slowly, and walls block their view.",
+        "Press Space to dash.",
+        "Press Q to drop a banana peel. A chasing guard slips on it.",
+        "Snack boxes refill your bananas."
+      ],
+      "controls": "WASD or arrows move, E use, Space dash, Shift sneak, Q banana, Esc pause. Left stick and buttons on phones.",
+      "related": [
+        "jailbreak game online",
+        "escape from prison game",
+        "stealth game browser",
+        "sneak past guards game"
+      ]
+    },
+    "paper-after-hours": {
+      "keyword": "paper toss game",
+      "title": "Paper: office paper toss game in 3D",
+      "description": "Flick paper into an office bin while a fan pushes it off course. A free 3D paper toss game in your browser. Three misses end the run.",
+      "intro": "Paper is a 3D paper toss game set in an office after hours. Drag, spin and flick the paper into the bin, and allow for the fan that blows it sideways. Three misses end the run, so build the longest streak you can.",
+      "howToPlay": [
+        "Drag to move the paper.",
+        "Circle to add spin, then flick to throw.",
+        "Watch the fan. It pushes the paper off course.",
+        "Three misses end the run. Easy mode adds aiming guides."
+      ],
+      "controls": "Drag, spin and flick with mouse or touch. Keyboard: hold Space and release to throw, left and right to steer.",
+      "related": [
+        "paper toss online",
+        "office paper ball game",
+        "throw paper in the bin game",
+        "flick game"
+      ]
+    },
+    "higher-or-lower": {
+      "keyword": "higher or lower game",
+      "title": "Higher or Lower: Google searches trivia game",
+      "description": "Which gets more Google searches? Pick the higher card to build a streak. A free higher or lower game in your browser with a daily challenge.",
+      "intro": "Higher or Lower is a trivia game where you pick which of two cards has the higher number. Guess which gets more Google searches, who has more Instagram followers, or which Apple product had the higher launch price. Build a streak, try the daily dozen, or play with friends.",
+      "howToPlay": [
+        "Look at the two cards.",
+        "Pick the one you think has the higher number.",
+        "Swipe it up, click it or tap it. Left and right arrows also choose.",
+        "Keep guessing right to grow your streak.",
+        "Try the daily dozen: 12 fixed pairs each day."
+      ],
+      "controls": "Click, tap or swipe up on a card. Arrow keys, Tab and Enter also work.",
+      "related": [
+        "higher lower game google searches",
+        "which gets more searches game",
+        "more or less trivia game",
+        "higher or lower online"
+      ]
+    },
+    "slither-afterglow": {
+      "keyword": "snake io game",
+      "title": "Noodle: glowing 3D snake io game",
+      "description": "Eat glowing orbs, dodge rival snakes and grow your snake. A free snake io game in your browser. Play solo or online with up to 8 players.",
+      "intro": "Noodle is a 3D snake game in the style of slither.io. Eat the glowing orbs to grow longer, boost to cut off rivals and avoid crashing into other snakes. Play solo or join an online room.",
+      "howToPlay": [
+        "Move the mouse to steer, or drag on a phone.",
+        "Eat glowing orbs to grow.",
+        "Hold click or Space to boost. Boosting burns length.",
+        "Avoid other snakes, and turn back at the arena edge."
+      ],
+      "controls": "Mouse steer, hold click or Space boost, Esc pause. Drag and the bolt button on phones.",
+      "related": [
+        "slither io style game",
+        "snake game online multiplayer",
+        "3d snake game",
+        "worm io game"
+      ]
+    },
+    "block-hop": {
+      "keyword": "3d platformer jumping game",
+      "title": "Hop: 3D platform jumping game against the clock",
+      "description": "Jump between platforms and reach the summit before time runs out. A free 3D platformer jumping game in your browser on phone or computer.",
+      "intro": "Hop is a 3D platformer about jumping from block to block. Reach the summit before the clock runs out, pick up gems on the way and try not to fall.",
+      "howToPlay": [
+        "Move with WASD or the arrow keys.",
+        "Press Space or click to jump.",
+        "Collect gems and reach the summit before the timer hits zero.",
+        "On phones, your left thumb moves and your right thumb jumps."
+      ],
+      "controls": "WASD or arrows move, Space or click jump, Esc pause. Left thumb moves and right thumb jumps on phones.",
+      "related": [
+        "parkour jumping game",
+        "obby game online",
+        "platform jumping game free",
+        "3d jump game"
+      ]
+    },
+    "stacklight": {
+      "keyword": "falling blocks game",
+      "title": "Stacks: falling blocks puzzle with versus mode",
+      "description": "Rotate and drop blocks to clear rows before the stack hits the top. A free falling blocks game in your browser, solo or versus with up to 4.",
+      "intro": "Stacks is a falling blocks puzzle game in the style of Tetris. Move, rotate and drop pieces to clear full rows, hold a piece for later and climb through the levels. Play a solo run or a versus match online.",
+      "howToPlay": [
+        "Move pieces with the left and right arrows.",
+        "Rotate with Up or X. Z rotates the other way.",
+        "Press Space for a hard drop and Down for a soft drop.",
+        "Press C or Shift to hold a piece.",
+        "Clear full rows before the stack reaches the top."
+      ],
+      "controls": "Arrows or A D move, Up or X rotate, Space drop, C hold. On phones, drag to move, tap to rotate, swipe down to drop.",
+      "related": [
+        "tetris style game online",
+        "block stacking puzzle",
+        "multiplayer tetris style game",
+        "line clear puzzle game"
+      ]
+    },
+    "sunset-dash": {
+      "keyword": "endless runner game",
+      "title": "Dash: 3D endless runner across three tracks",
+      "description": "Dodge trains, jump barriers and grab coins across three tracks. A free endless runner game in your browser, with a hoverboard and a daily run.",
+      "intro": "Dash is a 3D endless runner in the style of Subway Surfers. Switch between three tracks to dodge trains, jump and slide past barriers, and collect coins as you go. A hoverboard saves you from one crash.",
+      "howToPlay": [
+        "Swipe or press left and right to switch tracks.",
+        "Swipe up or press Up to jump. Swipe down or press Down to slide.",
+        "Collect coins and grab the coin magnet.",
+        "Press B or tap the hoverboard to survive one crash."
+      ],
+      "controls": "Arrows or WASD, Space jump, B hoverboard. Mouse: drag to steer, click to jump, right click to slide. Swipe on phones.",
+      "related": [
+        "subway surfers style game",
+        "train runner game online",
+        "lane runner game",
+        "endless running game free"
+      ]
+    },
+    "fresh-tracks": {
+      "keyword": "skiing game",
+      "title": "Fresh Tracks: free 3D skiing game",
+      "description": "Ski 1,800 m through gates and over ramps, then race the ghost of your best run. A free 3D skiing game in your browser on phone or computer.",
+      "intro": "Fresh Tracks is an arcade skiing game down a 1,800 m mountain. Carve through 24 gates, jump ramps and spin in the air on your way to the lodge. Every run, you race the ghost of your best one.",
+      "howToPlay": [
+        "Carve with A and D or the arrows.",
+        "Hold W to tuck for speed and S to brake.",
+        "Press Space to jump, and again in the air to spin.",
+        "Pass gates for points and beat your ghost to the lodge."
+      ],
+      "controls": "A D or arrows carve, W tuck, S brake, Space jump and spin. Drag to carve and tap JUMP on phones.",
+      "related": [
+        "ski game online",
+        "downhill skiing game",
+        "slalom game browser",
+        "alpine arcade game"
+      ]
+    },
+    "goldwake-gunnery": {
+      "keyword": "pirate ship game",
+      "title": "Plunder: pirate ship game with treasure and cannons",
+      "description": "Sail to treasure islands, dig for gold and fight hunter ships with broadsides. A free 3D pirate ship game in your browser, on phone or computer.",
+      "intro": "Plunder is a single player 3D pirate game. Sail your sloop through the Shattered Keys, go ashore to dig up three lost treasures and bring them home to Havenport. Catch the wind, fire broadsides at hunter ships and repair your hull to make it back.",
+      "howToPlay": [
+        "Use W and S for the sails and A and D to steer.",
+        "Press E to go ashore, then hold E to dig where the ground glints.",
+        "Fire with click or Space, or use Q and F for left and right broadsides.",
+        "Press R to repair your hull.",
+        "Bring all three treasures back to Havenport."
+      ],
+      "controls": "W S sails, A D steer, click or Space fire, Q F broadsides, E land and dig, R repair, Shift catch wind. Left stick on phones.",
+      "related": [
+        "pirate game online free",
+        "pirate ship cannon game",
+        "treasure hunt pirate game",
+        "3d sailing adventure game"
+      ]
+    },
+    "bloop": {
+      "keyword": "beat maker game",
+      "title": "Bloop: beat maker and rhythm game in your browser",
+      "description": "Make beats with pads and a step sequencer, record your voice, export WAV, then play the beat quest. A free beat maker game in your browser.",
+      "intro": "Bloop is a beat maker you can play like a game. Tap colourful pads, paint a 16-step sequencer, record your own sounds and export your loop as a WAV file. Then switch to Beat quest and hit the notes as they reach the line.",
+      "howToPlay": [
+        "Click the pads or press their letter keys to make sounds.",
+        "Press Record and play, or paint the squares in the step sequencer.",
+        "Record your voice or import audio, and queue scenes with keys 1 to 4.",
+        "In Beat quest, press the note keys when they cross the hit line.",
+        "Export your track as a WAV file."
+      ],
+      "controls": "Mouse, touch or letter keys for the pads. Space play and pause, Shift-click accent, hold N for echo and B for filter.",
+      "related": [
+        "online beat maker",
+        "step sequencer online free",
+        "music making game",
+        "drum machine in the browser"
+      ]
+    },
+    "heatwave-san-sol-remastered": {
+      "keyword": "open world crime game",
+      "title": "Getaway: open world crime game in your browser",
+      "description": "Work your way up an open city with story missions, races and car upgrades. A free GTA style open world game in your browser, solo or online.",
+      "intro": "Getaway is a GTA style open world game set in the city of San Sol. Take story jobs from Mara, drive and tune cars, and work your way up from a fresh start. Your story saves on its own, and online you can start races or a game of Tag with friends.",
+      "howToPlay": [
+        "Press E to get in and out of cars.",
+        "Press Tab to accept Mara's next job, then follow the objective.",
+        "Spend your cash in the garage, armory and safehouse.",
+        "Open Online to race on three routes or play Tag."
+      ],
+      "controls": "WASD move and drive, mouse look and aim, E enter car, Tab jobs, Esc pause. Left stick and drag to look on phones.",
+      "related": [
+        "gta style browser game",
+        "open world driving game online",
+        "crime city game free",
+        "car mission game"
+      ]
+    },
+    "pop-island": {
+      "keyword": "balloon tower defense game",
+      "title": "Pop Island: balloon tower defense game",
+      "description": "Pop waves of balloons with towers, upgrades and a hero. A free balloon tower defense game in your browser with 40, 60 or 80 rounds.",
+      "intro": "Pop Island is a tower defense game in the style of Bloons TD. Place your crew beside the path, upgrade them and level up your hero to pop every balloon wave before it gets through. Choose Chill, Standard or Expert, or play Sandbox with unlimited cash.",
+      "howToPlay": [
+        "Pick a crew member, then click or tap grass beside the path to build.",
+        "Click a placed tower to upgrade it.",
+        "Press Start round or Space to send the next wave.",
+        "Your hero gains levels every round and unlocks two abilities.",
+        "Pop the balloons before they use up your lives."
+      ],
+      "controls": "Mouse or touch. Space starts the next round.",
+      "related": [
+        "bloons td style game",
+        "balloon popping tower defense",
+        "tower defense browser game free",
+        "free tower defense online"
+      ]
+    },
+    "pulse-shift": {
+      "keyword": "one button rhythm game",
+      "title": "Pulse: one button rhythm runner like Geometry Dash",
+      "description": "Jump and fly to the beat in a free one button rhythm runner. Three levels, practice mode, a level editor and online races. Plays in your browser.",
+      "intro": "Pulse is a one button rhythm runner in the style of Geometry Dash. Tap to jump over spikes in time with the music, and handle new rules when you turn into a ship, ball, UFO, wave and more. Use practice mode with checkpoints, build your own levels, or race friends online.",
+      "howToPlay": [
+        "Tap, click, or press Space, W or Up to jump. Hold to keep jumping.",
+        "Each form has its own rule, like hold to rise in the ship.",
+        "In practice mode, press Z to place a checkpoint and X to remove it.",
+        "Reach 100% to complete the level."
+      ],
+      "controls": "One button: click, tap, Space, W or Up. Z and X for practice checkpoints, R restart.",
+      "related": [
+        "geometry dash style game",
+        "rhythm platformer online",
+        "one tap rhythm game",
+        "rhythm game level editor"
+      ]
+    },
+    "slope-overdrive": {
+      "keyword": "slope ball game",
+      "title": "Roll: neon slope ball game",
+      "description": "Steer a ball down an endless neon slope and stay off the red. A free slope ball game in your browser, with a daily run and online races.",
+      "intro": "Roll is an endless slope game in the style of Slope. Steer a ball down a neon track, stay on the edge and stay off the red. Try the daily run, replay the same track, or race up to eight players online.",
+      "howToPlay": [
+        "Press Space to drop in.",
+        "Steer left and right with A and D or the arrows.",
+        "Stay on the track and keep off the red.",
+        "Go as far as you can for a high score."
+      ],
+      "controls": "A D or arrows steer, Space to drop in. Touch steering on phones.",
+      "related": [
+        "slope game online",
+        "neon ball rolling game",
+        "endless slope runner",
+        "3d ball game"
+      ]
+    },
+    "vice-run": {
+      "keyword": "city heist driving game",
+      "title": "Neon: night city heist driving game",
+      "description": "Grab three cash drops, lose the police and reach the boat. A free neon city heist driving game in your browser, with free roam and online modes.",
+      "intro": "Neon is an open city driving game set after dark, in the spirit of GTA Vice City. In The Heist you drive, drift and shoot your way to three cash drops, grab them on foot, lose the police and escape by boat. Free roam has no timer, and online you can race or play Tag.",
+      "howToPlay": [
+        "Drive with WASD and press E to get in or out of a car.",
+        "Follow the green route and grab each cash drop on foot.",
+        "Lose the police and reach the boat before time runs out.",
+        "Shift is nitro and Space drifts. Green cross markers repair your car."
+      ],
+      "controls": "WASD drive and walk, mouse aim, click or F fire, E enter car, Space drift, Shift nitro, Q radio. Touch controls on phones.",
+      "related": [
+        "vice city style browser game",
+        "police chase game online",
+        "neon night driving game",
+        "heist game free"
+      ]
+    },
+    "strandad-antarktis": {
+      "keyword": "antarctica adventure game",
+      "title": "Strandad: Antarctic rocket adventure game in Swedish",
+      "description": "Stranded in Antarctica, find six rocket parts and fly home before Nova does. A free 3D adventure game in your browser. In Swedish.",
+      "intro": "Strandad is a 3D adventure game in Swedish. You are stranded in Antarctica and race a rival named Nova to find six rocket parts, build your rocket and get home first. Throw snowballs, dodge and outsmart the polar bears on the way.",
+      "howToPlay": [
+        "Follow the orange marker to find rocket parts.",
+        "Carry parts back to your rocket and fit them with E.",
+        "Keep an eye on Nova. She lifts off 20 seconds after her rocket is ready.",
+        "Choose Expedition (12 minutes) or Race (9 minutes)."
+      ],
+      "controls": "WASD or arrows walk, Shift run, E interact, Space snowball, C dodge, Q map. Touch controls on phones.",
+      "related": [
+        "svenskt äventyrsspel",
+        "spel på svenska",
+        "rocket building game",
+        "snow adventure game"
+      ]
+    },
+    "cold-delivery-rush": {
+      "keyword": "food delivery game",
+      "title": "Lunch Rush: food delivery game in a busy city",
+      "description": "Pick up orders and deliver them before the food gets cold. A free 3D food delivery game in your browser, with traffic, rain and wind.",
+      "intro": "Lunch Rush is a 3D food delivery game set in a busy city at lunchtime. Accept an order, follow the dots to the restaurant and rush the food to the customer before it goes cold. Watch the traffic, jump the puddles, and hurry when rain or wind cools the food faster.",
+      "howToPlay": [
+        "Press E to accept an order.",
+        "Follow the dots to the restaurant and press E to pick up.",
+        "Press E at the customer to deliver before the food goes cold.",
+        "Press Space or Shift to dash and jump over puddles.",
+        "Press Tab to switch between orders."
+      ],
+      "controls": "WASD or arrows move, Space or Shift dash, E interact, Tab switch order, right drag look, scroll zoom. Joystick on phones.",
+      "related": [
+        "delivery game online",
+        "courier game browser",
+        "deliver food game",
+        "keep the food hot game"
+      ]
+    },
+    "just-one-more-prompt": {
+      "keyword": "doomscrolling game",
+      "title": "One More Prompt: a doomscrolling game about vibe coding",
+      "description": "Ship the demo before 04:00 without getting caught on your phone. A free 3D game about doomscrolling and vibe coding, in your browser.",
+      "intro": "One More Prompt is a 3D doomscrolling game about a late night coding session. Your AI builds the demo while you scroll clips on your phone, take the client's calls and hide the phone when Mum knocks. Press Deploy when the build hits 100%, before 04:00.",
+      "howToPlay": [
+        "Watch the build progress on the monitor.",
+        "Put the phone face down when Mum knocks, and keep it down until she leaves.",
+        "Answer the client's calls.",
+        "Refill your brain cell with a three-second clip or a Volt.",
+        "Press Deploy on the monitor when the build reaches 100%."
+      ],
+      "controls": "Drag to look, swipe on the phone, Space pick up phone, E deploy, F lean in, Esc pause, M mute.",
+      "related": [
+        "procrastination game",
+        "vibe coding game",
+        "phone addiction game",
+        "funny coding game"
+      ]
+    },
+    "overrun": {
+      "keyword": "fps game online",
+      "title": "Overrun: free FPS game online with bots or friends",
+      "description": "A fast free FPS in your browser. Play team deathmatch, free for all, gun game or capture points against bots or friends online. Three maps.",
+      "intro": "Overrun is a fast first person shooter that runs in your browser. Pick one of three maps and five modes, including team deathmatch, free for all, gun game and capture the objectives, then play against bots or up to eight players online. Choose your weapons in the armory and pick an operator.",
+      "howToPlay": [
+        "Choose a map, mode, team and time limit, then deploy.",
+        "Move with WASD, aim with the mouse and press R to reload.",
+        "Sprint with Shift, jump with Space and crouch with C.",
+        "In gun game, every kill moves you up a nine weapon ladder.",
+        "In the objectives mode, capture and hold A, B and C."
+      ],
+      "controls": "WASD move, mouse aim and fire, R reload, Shift sprint, Space jump, C crouch, V melee. Touch controls on phones.",
+      "related": [
+        "browser fps multiplayer",
+        "gun game online",
+        "team deathmatch browser game",
+        "call of duty style browser game"
+      ]
+    },
+    "velvet-pool": {
+      "keyword": "8 ball pool online",
+      "title": "Velvet Pool: free 8 ball pool online",
+      "description": "Play eight-ball pool free in your browser against the computer, a friend or someone online. Works with mouse or touch, no download.",
+      "intro": "Velvet Pool is an eight-ball pool game for one or two players. Aim, set your power and pot your group of balls before you sink the 8. Play the computer, a friend, or someone online.",
+      "howToPlay": [
+        "Move the mouse or drag on the table to aim.",
+        "Click to lock your aim on a spot.",
+        "Press, pull back and release to shoot. On touch, slide the power bar and let go.",
+        "Pot your group, then sink the 8. Do not foul on the 8."
+      ],
+      "controls": "Mouse aim, click to lock, pull back and release to shoot. Arrow keys fine-tune and Space holds power. Drag and power bar on touch.",
+      "related": [
+        "play pool online free",
+        "8 ball pool browser game",
+        "billiards game online",
+        "2 player pool game"
+      ]
+    },
+    "hay-you": {
+      "keyword": "horse dating game",
+      "title": "Hay, You: horse dating sim with swipes and dates",
+      "description": "Swipe through charmingly unhinged horses, pick the right reply, then gallop on a sunset date. A free horse dating game in your browser.",
+      "intro": "Hay, You is a horse dating game. Swipe through eight horses each evening, read their bios and pick the reply that fits, then go on a 30-second sunset date where you catch hearts and jump logs. Aim for three great dates with 70% chemistry or more.",
+      "howToPlay": [
+        "Pick your mood before your first swipe. Same-mood horses always match.",
+        "Swipe right to like and left to pass. A carrot makes a sure match.",
+        "Read the bio and choose the reply it hints at.",
+        "On the date, move with the arrows, jump logs with Space and catch hearts.",
+        "Reach 70% chemistry for a great date. Get three."
+      ],
+      "controls": "Swipe or click to like and pass. On dates, left and right arrows move and Space jumps. On-screen buttons on phones.",
+      "related": [
+        "dating sim parody",
+        "swipe dating game",
+        "funny horse game",
+        "tinder parody game"
+      ]
+    },
+    "skyline": {
+      "keyword": "airplane flying game",
+      "title": "Skyline: arcade airplane flying game",
+      "description": "Fly a coastal gate circuit, explore an island coast or practice runway landings. A free arcade airplane flying game in your browser.",
+      "intro": "Skyline is an arcade flight game over an island coast with AI air traffic. Fly through 20 gold gates in Coast run, explore at your own pace in Free flight, or learn to land in Landing school. Takeoff and approach assists keep it friendly.",
+      "howToPlay": [
+        "Hold W to speed up. Takeoff assist lifts you off the runway.",
+        "Turn with A and D, and climb or descend with the arrows.",
+        "Hold Shift to boost through the gold gates.",
+        "To land, stay under 110 knots, line up, hold Down for a gentle glide and brake with Space.",
+        "Press R to recover in the air."
+      ],
+      "controls": "W S speed, A D turn, Up Down climb and descend, Shift boost, Space brake, C camera, R recover. Keyboard and mouse.",
+      "related": [
+        "flight simulator browser game",
+        "plane landing game",
+        "fly a plane online free",
+        "3d flying game"
+      ]
+    },
+    "afterglow": {
+      "keyword": "traffic driving game",
+      "title": "Cruise: arcade traffic driving game at golden hour",
+      "description": "Weave through coastal traffic, brake and boost for 90 seconds. A free arcade traffic driving game in your browser. Race up to 4 players online.",
+      "intro": "Cruise is an arcade traffic driving game on a coastal road at golden hour. You get 90 seconds and three hits to score as much as you can, and near misses refill your boost. Try Free drive with no pressure, or race friends online.",
+      "howToPlay": [
+        "The car accelerates on its own. Steer with A and D or the arrows.",
+        "Press Space, W or Up to boost, and S or Down to brake.",
+        "Near misses refill your boost.",
+        "The run ends after three hits or when the 90 seconds are up."
+      ],
+      "controls": "A D or arrows steer, Space W or Up boost, S or Down brake, M sound. Touch buttons on phones.",
+      "related": [
+        "highway traffic racer",
+        "car dodging game",
+        "traffic racer online free",
+        "endless car driving game"
+      ]
+    },
+    "cage": {
+      "keyword": "boxing game",
+      "title": "Punchy: 3D boxing game against AI or friends online",
+      "description": "Jab, cross, kick and dodge in a free 3D boxing game in your browser. Fight the AI at three levels or a friend online, over three rounds.",
+      "intro": "Punchy is a 3D boxing game with kicks thrown in. Mix jabs, crosses, uppercuts and kicks, guard against hits and dodge to slip punches. Fight a Rookie, Contender or Champion AI, warm up in Training, or face a friend online.",
+      "howToPlay": [
+        "Left click to jab, right click to cross.",
+        "Press Q to kick and E for an uppercut.",
+        "Hold Shift to guard and press Space to dodge.",
+        "Click early to queue the next strike, and mix punches to chain combos.",
+        "Knock out your opponent to win."
+      ],
+      "controls": "WASD move, left click jab, right click cross, Q kick, E uppercut, Shift guard, Space dodge. J K I L for keyboard only. Touch buttons on phones.",
+      "related": [
+        "boxing game online free",
+        "kickboxing game browser",
+        "1v1 fighting game online",
+        "3d punching game"
+      ]
+    },
+    "kiln": {
+      "keyword": "robot shooter fps",
+      "title": "Scrapyard: robot wave FPS with a boss fight",
+      "description": "Fight through five waves of robots and defeat the Warden to escape. A free FPS in your browser: solo, co-op for 2 to 4, or deathmatch online.",
+      "intro": "Scrapyard is a first person shooter against robot drones. Clear five waves, destroy the Warden and reach extraction with your pulse rifle and a shockwave. Pick a difficulty from Easy to Nightmare, or play co-op waves and deathmatch online.",
+      "howToPlay": [
+        "Click Start mission to lock the mouse. Esc releases it.",
+        "Move with WASD, look with the mouse and click to fire.",
+        "Press Q for a shockwave and R to reload.",
+        "Health is restored between waves.",
+        "Clear five waves, defeat the Warden, then extract."
+      ],
+      "controls": "WASD move, mouse look, left click fire, right click aim, Shift sprint, Space jump, Q shockwave, R reload. Touch controls on phones.",
+      "related": [
+        "wave shooter fps browser",
+        "robot shooting game",
+        "co-op fps online",
+        "boss fight shooter"
+      ]
+    },
+    "origin": {
+      "keyword": "guess the city game",
+      "title": "Origin: guess the city from food and street clues",
+      "description": "Guess five cities from food, street and landmark clues, then pin them on a world map. A free guess the city game in your browser, with a daily round.",
+      "intro": "Origin is a geography game where you guess the city from clues. Each round shows a food, street or landmark clue, and you drop a pin on the world map as close as you can. Play the daily five, or practice as long as you like.",
+      "howToPlay": [
+        "Look at the clue: a food, a street or a landmark.",
+        "Place a pin on the world map and submit your guess.",
+        "Your points depend on how close you get.",
+        "Stuck? A hint costs 500 points.",
+        "Five rounds make one game."
+      ],
+      "controls": "Click or tap the map to pin. Drag to pan, scroll to zoom. Arrow keys move the pin and Enter submits.",
+      "related": [
+        "geoguessr style game",
+        "city guessing game",
+        "geography quiz game free",
+        "daily geography game"
+      ]
+    },
+    "epoch": {
+      "keyword": "age of war style game",
+      "title": "Ages: Age of War style strategy game in 3D",
+      "description": "Train troops, defend your stronghold and evolve through five ages to destroy the enemy base. A free 3D strategy game in your browser.",
+      "intro": "Ages is a lane battle strategy game in the style of Age of War. Spend gold to train troops, earn experience in combat and evolve from the Stone age through five ages for stronger units and defenses. Destroy the enemy stronghold before it destroys yours.",
+      "howToPlay": [
+        "Click a troop or press 1 to 3 to train it with gold.",
+        "Combat earns experience. Press E to evolve to the next age.",
+        "Evolving unlocks stronger troops and restores base health.",
+        "Press Q for your special, like the meteor storm, and T for defenses.",
+        "Pick Relaxed, Normal or Brutal."
+      ],
+      "controls": "Mouse or touch to train troops. 1 to 3 recruit, Q special, T defenses, E evolve.",
+      "related": [
+        "games like age of war",
+        "evolution strategy game",
+        "base defense game browser",
+        "stone age war game"
+      ]
+    },
+    "lastlight": {
+      "keyword": "battle royale with building",
+      "title": "Storm: free battle royale with building",
+      "description": "Drop on an island, loot weapons, build walls and ramps, and outlast 15 other fighters. A free battle royale in your browser, solo or duo online.",
+      "intro": "Storm is a 3D battle royale with building, in the spirit of Fortnite. Drop in with 16 fighters, loot weapons, put up walls and ramps for cover and stay inside the storm. Play solo, or team up with a friend in a private room.",
+      "howToPlay": [
+        "Move with WASD, look and fire with the mouse, and right click to aim.",
+        "Press Q to build a wall and E to build a ramp.",
+        "Move in when the storm closes.",
+        "Be the last one standing."
+      ],
+      "controls": "WASD move, mouse look and fire, right click aim, Space jump, Shift sprint, Q wall, E ramp, R reload. Touch controls on phones.",
+      "related": [
+        "fortnite style browser game",
+        "build battle royale",
+        "battle royale online free",
+        "duo battle royale"
+      ]
+    },
+    "sunbound": {
+      "keyword": "2d platformer game",
+      "title": "Lighthouse: coastal 2D platformer",
+      "description": "Run and jump along the coast, collect sun seals and reach the lighthouse. A free 2D platformer game in your browser on phone or computer.",
+      "intro": "Lighthouse is a 2D platformer set on a sunny coast. Run and jump along the shore, collect coins and three sun seals, and make it to the lighthouse at the end.",
+      "howToPlay": [
+        "Move with the arrows or A and D.",
+        "Press Space or click to jump. Hold it to jump higher.",
+        "Hold Shift to run.",
+        "Collect coins and the three sun seals on the way to the lighthouse."
+      ],
+      "controls": "Arrows or A D move, Space or click jump, Shift run. Hold the arrows to run on phones.",
+      "related": [
+        "side scrolling platformer free",
+        "jump and run game",
+        "retro platformer browser",
+        "mario style platformer online"
+      ]
+    },
+    "mosslight": {
+      "keyword": "block mining and building game",
+      "title": "Grove: block mining and building survival game",
+      "description": "Mine blocks, craft tools and bring twelve crystals to the beacon before night. A free Minecraft style game in your browser, solo or with friends.",
+      "intro": "Grove is a block world game about mining, building and surviving the night, in the spirit of Minecraft. Mine timber and stone, craft a better pickaxe and lanterns, and carry twelve crystals to the beacon before the woods get dangerous. Build with up to three friends in an online room.",
+      "howToPlay": [
+        "Hold left click to mine blocks or fight.",
+        "Right click to place blocks. Pick items with 1 to 5.",
+        "Press C to craft a tempered pickaxe or lanterns.",
+        "Eat berries with F to restore hearts.",
+        "Bring all twelve crystals to the beacon before dusk."
+      ],
+      "controls": "WASD move, Space jump, Shift sprint, left click mine, right click place, 1 to 5 items, C craft, F eat. Touch controls on phones.",
+      "related": [
+        "minecraft style browser game",
+        "voxel survival game online",
+        "block building game free",
+        "craft and mine game"
+      ]
+    },
+    "glantan-v2": {
+      "keyword": "mushroom picking game",
+      "title": "Gläntan: calm mushroom picking game in Swedish",
+      "description": "Walk a calm Swedish forest and pick mushrooms for the evening fika. A free 3D mushroom picking game in your browser. In Swedish.",
+      "intro": "Gläntan is a calm 3D mushroom picking game in Swedish. Walk the forest, look for mushrooms and fill your basket for the evening fika at the cabin. It is a playful game forest, not a guide to real mushrooms.",
+      "howToPlay": [
+        "Walk with WASD and look around with the mouse.",
+        "Press E to pick a mushroom.",
+        "Press Q for mushroom sight, B for your mushroom book and M for the map.",
+        "Fill your basket to save the fika."
+      ],
+      "controls": "WASD walk, mouse look, E pick, Shift hurry, Q mushroom sight, B book, M map, P photo mode. Left thumb on phones.",
+      "related": [
+        "svampplockning spel",
+        "spel på svenska",
+        "cozy forest game",
+        "relaxing walking game"
+      ]
+    },
+    "cubeville": {
+      "keyword": "obby game",
+      "title": "Cubeville: obby and parkour worlds in your browser",
+      "description": "Explore little 3D worlds, run the Obby Rush parkour course and style your avatar. A free obby game in your browser, solo or online.",
+      "intro": "Cubeville is a small world of 3D games in the style of Roblox. Pick a world from Discover, follow the coins across parkour courses like Obby Rush, and reach the gold platform. Style your avatar and play solo or online with friends.",
+      "howToPlay": [
+        "Pick a world from Discover.",
+        "Move with WASD, jump with Space and sprint with Shift.",
+        "Follow the coins and reach the gold platform.",
+        "Press R to go back to your last checkpoint.",
+        "Finishing a world gives you a reward."
+      ],
+      "controls": "WASD move, Space jump, Shift sprint, R checkpoint, mouse look, Esc pause.",
+      "related": [
+        "roblox style browser game",
+        "parkour obby online",
+        "3d parkour game",
+        "obby multiplayer"
+      ]
+    },
+    "last-drop": {
+      "keyword": "battle royale game",
+      "title": "Drop: free 3D battle royale on an island",
+      "description": "Loot weapons, fight and be the last of sixteen left on Aster Island as the safe zone shrinks. A free battle royale game in your browser.",
+      "intro": "Drop is a 3D battle royale game where sixteen fighters land on Aster Island and only one is left at the end. Loot guns, meds and grenades, stay inside the shrinking ring and pick your fights. Play solo, try the daily match, or join up to eight players online.",
+      "howToPlay": [
+        "Move with WASD, look with the mouse and hold left click to fire.",
+        "Press E to loot, R to reload and 1 to 3 to switch weapons.",
+        "Heal with Q and throw a grenade with G.",
+        "Stay inside the ring as the safe zone closes in.",
+        "Be the last of sixteen standing."
+      ],
+      "controls": "WASD move, mouse look, left click fire, right click aim, Shift sprint, Space jump, C crouch, E loot, Q heal, G grenade. Touch controls on phones.",
+      "related": [
+        "pubg style browser game",
+        "battle royale online free",
+        "last man standing game",
+        "island shooter game"
+      ]
+    },
+    "still-house": {
+      "keyword": "haunted house horror game",
+      "title": "Still House: first person haunted house horror game",
+      "description": "Find five family photos in a dark house and stay in the light. A free first person horror game in your browser on phone or computer.",
+      "intro": "Still House is a first person haunted house horror game. Search a dark family home for five photographs and reach the front door, while warm lamps keep your composure up. Use your camera flash to push back what waits in the dark.",
+      "howToPlay": [
+        "Move with WASD and look with the mouse.",
+        "Find the five family photographs.",
+        "Stay near lamps to restore composure, and relight dark lamps with E.",
+        "Press Space to fire the camera flash. It recharges in 10 seconds.",
+        "Reach the front door to get out."
+      ],
+      "controls": "WASD move, mouse look, E interact, Shift run, Space flash, F light, Esc pause. Left thumb moves and right side looks on phones.",
+      "related": [
+        "horror game browser free",
+        "scary house game",
+        "short horror game online",
+        "first person scary game"
+      ]
+    },
+    "the-eighth-signal": {
+      "keyword": "slender style horror game",
+      "title": "Eight Notes: Slender style horror game in a forest",
+      "description": "Collect eight notes in a dark forest and get back to the gate. Do not stare at him. A free Slender style horror game in your browser.",
+      "intro": "Eight Notes is a first person horror game in the spirit of Slender. Find eight notes in a dark forest with your flashlight, then return to the gate. Watching him stops him, but staring too long lets the signal in.",
+      "howToPlay": [
+        "Move with WASD and sprint with Shift.",
+        "Press E or click to take a note.",
+        "Turn the flashlight on and off with F.",
+        "Look at him to stop him, then break eye contact.",
+        "Collect all eight notes and return to the gate."
+      ],
+      "controls": "WASD move, mouse look, Shift sprint, E or click take, F flashlight. Left thumb moves and right thumb looks on phones.",
+      "related": [
+        "slenderman game online",
+        "collect 8 pages horror game",
+        "forest horror game free",
+        "scary game browser"
+      ]
+    },
+    "draw-your-horse": {
+      "keyword": "draw a horse game",
+      "title": "Draw Your Horse: draw a horse and race it",
+      "description": "Draw a horse with your finger or mouse, then watch it race six others. A free drawing party game in your browser. In Swedish.",
+      "intro": "Draw Your Horse is a silly party game in Swedish. Draw a horse with your finger or mouse, give it a name, and watch it race six other horses. Play alone or with up to seven players online.",
+      "howToPlay": [
+        "Draw your horse with your finger or the mouse. A dot is enough, but try harder.",
+        "Give your horse a name.",
+        "Watch seven horses race to the finish.",
+        "Draw a new horse and race again."
+      ],
+      "controls": "Draw with your finger or the mouse.",
+      "related": [
+        "rita en häst spel",
+        "horse race drawing game",
+        "drawing party game online",
+        "spel på svenska"
+      ]
+    },
+    "under-sail": {
+      "keyword": "sailing game",
+      "title": "Under Sail: relaxing sailing game in your browser",
+      "description": "Sail through eight buoy gates around an island, or just explore a quiet ocean. A free relaxing sailing game in your browser, solo or online.",
+      "intro": "Under Sail is a calm 3D sailing game. Sail the island loop through eight buoy gates for a best time, or explore the ocean with no time limit. The sail trims itself, so you just steer and catch gusts, and you can start a regatta with friends online.",
+      "howToPlay": [
+        "Steer with A and D or the arrows. The sail trims itself.",
+        "Hold Shift or Space for a burst of speed.",
+        "Press S to slow down for a turn.",
+        "Sail between the orange buoys in order. A side wind is fastest.",
+        "There is no sinking and no time limit."
+      ],
+      "controls": "A D or arrows steer, Shift or Space gust, S slow down, C camera, P photo view, Esc pause. Hold the arrows or drag on phones.",
+      "related": [
+        "boat sailing game online",
+        "regatta game",
+        "calm ocean game",
+        "relaxing boat game"
+      ]
+    },
+    "frontier-blood-and-dust": {
+      "keyword": "top down western game",
+      "title": "Dust: top down Western with duels and bounties",
+      "description": "Ride your horse, take bounties and win quick-draw duels in Redwater County. A free top down Western game in your browser that saves as you play.",
+      "intro": "Dust is a top down Western adventure set in Redwater County. Take work from the sheriff, ride your horse across the map, hunt bounties and win quick-draw duels. Your trail saves on its own, so you can pick it up later.",
+      "howToPlay": [
+        "Visit the sheriff in Redwater for work.",
+        "Press F to mount your horse and H to call it.",
+        "Aim with the mouse and click to fire. R reloads.",
+        "In a duel, wait for DRAW, then click or press Space.",
+        "Press Q for Steady Eye, click targets to tag them, then press Q again to fire."
+      ],
+      "controls": "WASD move, Shift sprint, mouse aim, click fire, R reload, F mount, H call horse, V lasso, E interact, M map. Keyboard and mouse.",
+      "related": [
+        "cowboy game online",
+        "wild west browser game",
+        "red dead style 2d game",
+        "quick draw duel game"
+      ]
+    },
+    "ashfall-84-wasteland": {
+      "keyword": "post apocalyptic shooter",
+      "title": "Cinder: retro post apocalyptic shooter",
+      "description": "Leave the shelter and recover three reactor cores from the ruins. A free retro wasteland FPS in your browser, solo or co-op online for up to 4.",
+      "intro": "Cinder is a first person post apocalyptic shooter set in a retro wasteland outside Shelter 07. Recover three reactor cores from the ruins, keep an eye on health, radiation and medkits, and use Focus when a fight gets close. Play solo or in a co-op run with up to three friends.",
+      "howToPlay": [
+        "Click the view to capture the mouse.",
+        "Move with WASD, look and fire with the mouse.",
+        "Press E to collect and F to use a medkit.",
+        "Press Q for Focus and R to reload.",
+        "Recover all three cores. In co-op, hold E next to a downed friend to revive them."
+      ],
+      "controls": "WASD move, mouse look and fire, Shift sprint, Q focus, E collect, R reload, F medkit, Space jump. Touch controls on phones.",
+      "related": [
+        "fallout style browser game",
+        "wasteland fps online",
+        "co-op shooter browser",
+        "retro fps game free"
+      ]
+    }
+  }
+}
