@@ -312,8 +312,15 @@ function startProxy(entry, target, entries) {
       const up = http.request(
         { host: remote.host, port: remotePort(remote, entry), method: req.method, path: req.url, headers: forwardHeaders(req), agent: false },
         (r) => {
-          const headers = { ...r.headers };
-          delete headers["set-cookie"]; // the other Mac cannot set cookies for this Mac's address
+          // Room answers are data. The other Mac cannot hand this Mac's address a page or set its cookies.
+          if (/html|xml|javascript/i.test(String(r.headers["content-type"] || ""))) {
+            r.resume();
+            res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
+            res.end("Unexpected answer from the Mac with the rooms.");
+            return;
+          }
+          const headers = { ...r.headers, "x-content-type-options": "nosniff" };
+          delete headers["set-cookie"];
           res.writeHead(r.statusCode, headers);
           r.pipe(res);
         },
