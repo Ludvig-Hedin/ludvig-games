@@ -110,6 +110,7 @@ const clientIp = (req) => String(req.socket.remoteAddress || "127.0.0.1").replac
 // Other devices that opened a game on this Mac recently, so the host can see who joined (Play together panel).
 const devices = new Map(); // ip -> { ip, kind, game, path, seen }
 const DEVICE_TTL = 120e3;
+const DEVICE_TOKEN = process.env.LUDVIG_DEVICE_TOKEN || "";
 
 function deviceKind(ua = "") {
   if (/iPhone/.test(ua)) return "iPhone";
@@ -203,9 +204,12 @@ function startProxy(entry, target, entries) {
 
   const server = http.createServer((req, res) => {
     if (req.url === "/__ludvig/devices") {
-      // Only the app on this Mac may ask who is connected.
+      // Only the app on this Mac may ask who is connected: a loopback connection, a loopback Host (so a web page
+      // cannot reach it through DNS rebinding) and the per-launch token the app passed to this process.
       const ip = clientIp(req);
-      if (ip !== "127.0.0.1" && ip !== "::1") { res.writeHead(404); res.end(); return; }
+      const hostOk = [`127.0.0.1:${entry.port}`, `localhost:${entry.port}`].includes(String(req.headers.host || ""));
+      const tokenOk = Boolean(DEVICE_TOKEN) && req.headers["x-ludvig-token"] === DEVICE_TOKEN;
+      if ((ip !== "127.0.0.1" && ip !== "::1") || !hostOk || !tokenOk) { res.writeHead(404); res.end(); return; }
       res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
       res.end(JSON.stringify({ devices: activeDevices() }));
       return;

@@ -24,6 +24,8 @@ const root = path.join(here, "..");
 const BAR = 44;
 const SERVICE = "ludvig-games";
 const instanceId = crypto.randomUUID();
+// Lets this app (and nothing else) read the connected-devices list from its runtime.
+const deviceToken = crypto.randomBytes(24).toString("hex");
 // Development check: run without showing a window, capture screenshots, then quit (scripts/selftest.mjs).
 const SELFTEST = process.env.LUDVIG_SELFTEST || null;
 
@@ -168,7 +170,7 @@ async function pollDevices() {
     return;
   }
   try {
-    const res = await fetch(`http://127.0.0.1:${HUB.port}/__ludvig/devices`);
+    const res = await fetch(`http://127.0.0.1:${HUB.port}/__ludvig/devices`, { headers: { "x-ludvig-token": deviceToken } });
     const { devices } = await res.json();
     const named = devices.map((d) => {
       const ctx = contextFor(`http://127.0.0.1:${(ALL.find((g) => g.id === d.game) || HUB).port}${d.path}`);
@@ -285,6 +287,7 @@ function startRuntime() {
       ELECTRON_RUN_AS_NODE: "1",
       LUDVIG_BUNDLE: path.join(root, "bundle"),
       LUDVIG_DATA: path.join(app.getPath("userData"), "games-data"),
+      LUDVIG_DEVICE_TOKEN: deviceToken,
     },
     stdio: ["ignore", "inherit", "inherit", "ipc"],
   });
@@ -339,9 +342,10 @@ async function selftest() {
     }
     if (process.env.LUDVIG_SELFTEST_ROOM) {
       // Opens a room the way the game's own button does, then checks that Play together switched to it.
-      await content.webContents.executeJavaScript(process.env.LUDVIG_SELFTEST_ROOM);
+      const answer = await content.webContents.executeJavaScript(process.env.LUDVIG_SELFTEST_ROOM).catch((e) => String(e));
       await wait(2500);
-      report.steps.push({ step: "room", room: state.room, panelOpen: state.panel, share: state.shareUrl });
+      const loaded = await content.webContents.executeJavaScript("Boolean(window.__ludvigDesktop)");
+      report.steps.push({ step: "room", answer, loaded, room: state.room, panelOpen: state.panel, share: state.shareUrl });
       await shot("room");
     }
     await setPanel(true);

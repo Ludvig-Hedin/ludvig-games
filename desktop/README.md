@@ -32,6 +32,21 @@ npm run dist                    # release/Ludvig-Games-mac-arm64.dmg (ad-hoc sig
 
 Development: `npm start` opens the app; `node runtime/server.mjs` runs only the games (http://127.0.0.1:47800). With the runtime running, `agent-heavy-run browser bun run browser-test <dir>` runs the two-device check in headless Chrome. `LUDVIG_PORT_OFFSET=200 LUDVIG_SELFTEST=<dir> npx electron .` starts a separate copy beside the installed app, without a window, saves screenshots of the bar, the hub and the panel, and quits.
 
+## Updates
+
+The app checks the latest GitHub release a few seconds after start and every six hours. If it is newer, an "Update to x.y" button appears in the top strip (also Ludvig Games → Check for Updates…). It downloads `Ludvig-Games-mac-arm64.zip`, checks that its SHA-256 is signed in `…zip.sig` with the release key, that the unpacked app passes `codesign --verify` and is `com.ludvighedin.games`, then swaps the app bundle after quitting and reopens it. Saved games and scores are in Application Support and stay.
+
+- `npm run dist` signs the zip with `scripts/sign-update.mjs`. The private key is only on the release Mac, at `~/Library/Application Support/Ludvig Games Release/update-signing-key.pem`; its public half is `app/update-key.pem`. Without that private key no update can be published (users would install the next version by hand once).
+- A release needs three files: the `.dmg` (website download), the `.zip` and the `.zip.sig` (updater). Upload all three, then publish the release.
+- The app cannot replace itself when it runs from the DMG or from Downloads (macOS read-only "translocation"). Then the button opens the release page instead.
+
+## Play together
+
+- `runtime/together.json`: per game, how to play online (button labels, quick match, invite key such as `room` or Pigeon's `square`) and on one device, plus a one-line hint. Read by the app's panel and by the guest notice.
+- `runtime/inject.js` reports rooms to the app: the separate games' `POST /api/...` answers with a room code, `?room=` in the address, `Ludvig.mp.create/join` in hub games, and copied invite links. The panel then opens by itself with a QR code that joins that room.
+- The runtime counts other devices that opened a game in the last two minutes (`/__ludvig/devices`, loopback only, with a per-launch token from the app).
+- Guests that are not in the app see "Connected to <Mac name>" for a few seconds on hub pages.
+
 ## Signing (prepared, not active)
 
 The app is ad-hoc signed. On first open, macOS says it can't check the app: open **System Settings → Privacy & Security** and click **Open Anyway**.

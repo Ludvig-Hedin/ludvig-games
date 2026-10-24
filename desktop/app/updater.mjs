@@ -3,7 +3,8 @@
 // download its zip, unpack it next to the running app, then swap the app bundle after quitting and reopen it.
 // Saved games, rooms and scores live in Application Support and are not touched.
 import { app } from "electron";
-import { spawn, execFile } from "node:child_process";
+import { spawn, execFile, execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -11,6 +12,10 @@ import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 
 const REPO = "Ludvig-Hedin/ludvig-games";
+const BUNDLE_ID = "com.ludvighedin.games";
+// Public half of the release signing key (scripts/sign-update.mjs). Only zips signed with its private half,
+// which stays on the Mac that builds releases, are installed.
+const UPDATE_KEY = crypto.createPublicKey(fs.readFileSync(new URL("./update-key.pem", import.meta.url)));
 const ASSET = `Ludvig-Games-mac-${process.arch === "arm64" ? "arm64" : "x64"}.zip`;
 
 /** "0.10.2" > "0.9.9". Tags may start with "v". */
@@ -45,8 +50,9 @@ export async function checkForUpdate() {
   if (!res.ok) return null;
   const release = await res.json();
   const asset = (release.assets || []).find((a) => a.name === ASSET);
-  if (!asset || !newer(release.tag_name, app.getVersion())) return null;
-  return { version: String(release.tag_name).replace(/^v/, ""), url: asset.browser_download_url, size: asset.size };
+  const sig = (release.assets || []).find((a) => a.name === `${ASSET}.sig`);
+  if (!asset || !sig || !newer(release.tag_name, app.getVersion())) return null;
+  return { version: String(release.tag_name).replace(/^v/, ""), url: asset.browser_download_url, sigUrl: sig.browser_download_url, size: asset.size };
 }
 
 const run = (cmd, args) =>
@@ -66,13 +72,30 @@ export async function downloadUpdate(update, onProgress) {
     if (total) onProgress(Math.min(1, received / total));
   });
   await pipeline(counted, fs.createWriteStream(zip));
+
+  // Authenticity: the zip's SHA-256 must be signed with the release key.
+  const sigRes = await fetch(update.sigUrl, { headers: { "User-Agent": "LudvigGames-Updater" } });
+  if (!sigRes.ok) throw new Error("signature missing");
+  const { sha256, signature } = await sigRes.json();
+  const hash = crypto.createHash("sha256");
+  await new Promise((resolve, reject) => fs.createReadStream(zip).on("data", (c) => hash.update(c)).on("end", resolve).on("error", reject));
+  const digest = hash.digest();
+  if (digest.toString("hex") !== sha256 || !crypto.verify(null, digest, UPDATE_KEY, Buffer.from(String(signature), "base64"))) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    throw new Error("update signature does not match");
+  }
+
   const out = path.join(dir, "app");
   await run("/usr/bin/ditto", ["-x", "-k", zip, out]);
   fs.rmSync(zip, { force: true });
   const name = fs.readdirSync(out).find((f) => f.endsWith(".app"));
   if (!name) throw new Error("no app in the update");
   const next = path.join(out, name);
-  // Downloaded by the app itself, so macOS adds no quarantine; clear it anyway in case.
+  // The unpacked app must be intact (its own code signature) and be this app.
+  await run("/usr/bin/codesign", ["--verify", "--deep", "--strict", next]);
+  const id = execFileSync("/usr/bin/plutil", ["-extract", "CFBundleIdentifier", "raw", path.join(next, "Contents", "Info.plist")], { encoding: "utf8" }).trim();
+  if (id !== BUNDLE_ID) throw new Error(`unexpected app ${id}`);
+  // Only after those checks: downloaded by the app itself, so macOS adds no quarantine; clear it in case.
   await run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", next]).catch(() => {});
   return next;
 }
