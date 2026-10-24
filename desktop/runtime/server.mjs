@@ -11,10 +11,11 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Miniflare } from "miniflare";
-import { ALL } from "./games.mjs";
+import { ALL, HUB } from "./games.mjs";
 import { ROUTER_SOURCE } from "./router.mjs";
 import { applyMigrations } from "./migrations.mjs";
 import { serveStatic, workerRoutes } from "./static.mjs";
+import { sharedPath } from "./share.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const bundleDir = process.env.LUDVIG_BUNDLE || path.join(here, "..", "bundle");
@@ -105,6 +106,35 @@ function readConfig(id) {
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : null;
 }
 
+// Where this Mac's rooms live (runtime/share.mjs): null for this Mac, or another Mac's { host, hubPort }. The app
+// sends it as Macs come and go; LUDVIG_ROOM_HOST=address:port sets it for development checks.
+const FORWARDED = "x-ludvig-forwarded";
+const parseRoomHost = (value) => {
+  const m = /^([\w.-]+):(\d+)$/.exec(value || "");
+  return m ? { host: m[1], hubPort: Number(m[2]) } : null;
+};
+let roomHost = parseRoomHost(process.env.LUDVIG_ROOM_HOST);
+process.on("message", (msg) => {
+  if (!msg || msg.type !== "roomHost") return;
+  roomHost = msg.host ? { host: msg.host, hubPort: msg.hubPort } : null;
+  log("rooms on", roomHost ? `${roomHost.host}:${roomHost.hubPort}` : "this Mac");
+});
+/** The other Mac stopped answering: keep playing on this one until the app finds it again. */
+function roomHostFailed(remote) {
+  if (roomHost !== remote) return;
+  roomHost = null;
+  log("room Mac unreachable, rooms on this Mac");
+  if (process.send) process.send({ type: "roomHostDown" });
+}
+const remotePort = (remote, entry) => remote.hubPort + (entry.port - HUB.port);
+/** The player's request as the room Mac gets it: no cookies or credentials, marked so it is not passed on again. */
+function forwardHeaders(req) {
+  const headers = { ...req.headers, [FORWARDED]: "1" };
+  delete headers.cookie;
+  delete headers.authorization;
+  return headers;
+}
+
 const clientIp = (req) => String(req.socket.remoteAddress || "127.0.0.1").replace(/^::ffff:/, "");
 
 // Other devices that opened a game on this Mac recently, so the host can see who joined (Play together panel).
@@ -124,6 +154,7 @@ function deviceKind(ua = "") {
 }
 
 function noteDevice(req, entry) {
+  if (req.headers[FORWARDED]) return; // room traffic from another Mac, its players are listed there
   const ip = clientIp(req);
   if (ip === "127.0.0.1" || ip === "::1" || ip === lanAddress()) return;
   const accept = String(req.headers.accept || "");
@@ -230,6 +261,15 @@ function startProxy(entry, target, entries) {
       serveStatic(target.client, req, res, injectHtml);
       return;
     }
+    const local = (body) => toLocal(req, res, body);
+    const remote = roomHost && !req.headers[FORWARDED] && sharedPath(entry, target.kind, pathname) ? roomHost : null;
+    if (remote) forward(req, res, remote, local);
+    else local(null);
+  });
+
+  // This Mac's own Worker or Ritkaos server. `body` is the request body when it was already read (a request that
+  // could not reach the room Mac), otherwise the request is streamed.
+  function toLocal(req, res, body) {
     const upstream = http.request(
       { host: "127.0.0.1", port: target.port, method: req.method, path: req.url, headers: headersFor(req) },
       (up) => {
@@ -258,26 +298,79 @@ function startProxy(entry, target, entries) {
       if (!res.headersSent) res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
       res.end("This game is still starting. Try again in a moment.");
     });
-    req.pipe(upstream);
-  });
+    if (body) upstream.end(body);
+    else req.pipe(upstream);
+  }
+
+  // Room traffic to the Mac that holds the rooms, unchanged (its Host and Origin stay this Mac's address, which is
+  // what the player's page uses). If that Mac does not answer within two seconds, the request is served here.
+  function forward(req, res, remote, fallback) {
+    const chunks = [];
+    req.on("data", (c) => chunks.push(c));
+    req.on("end", () => {
+      const body = Buffer.concat(chunks);
+      const up = http.request(
+        { host: remote.host, port: remotePort(remote, entry), method: req.method, path: req.url, headers: forwardHeaders(req), agent: false },
+        (r) => {
+          const headers = { ...r.headers };
+          delete headers["set-cookie"]; // the other Mac cannot set cookies for this Mac's address
+          res.writeHead(r.statusCode, headers);
+          r.pipe(res);
+        },
+      );
+      up.on("socket", (s) => {
+        const timer = setTimeout(() => up.destroy(new Error("no answer")), 2000);
+        s.once("connect", () => clearTimeout(timer));
+        s.once("close", () => clearTimeout(timer));
+      });
+      up.on("error", () => {
+        if (res.headersSent) { res.destroy(); return; }
+        roomHostFailed(remote);
+        fallback(body);
+      });
+      up.end(body);
+    });
+  }
 
   server.on("upgrade", (req, socket, head) => {
-    const up = net.connect(target.port, "127.0.0.1", () => {
+    let pathname = "/";
+    try { pathname = new URL(req.url, "http://local").pathname; } catch {}
+    const remote = roomHost && !req.headers[FORWARDED] && sharedPath(entry, target.kind, pathname) ? roomHost : null;
+    const local = () => {
       const headers = headersFor(req);
       delete headers["accept-encoding"];
-      let raw = `${req.method} ${req.url} HTTP/1.1\r\n`;
-      for (const [k, v] of Object.entries(headers)) {
-        for (const value of Array.isArray(v) ? v : [v]) raw += `${k}: ${value}\r\n`;
-      }
-      up.write(raw + "\r\n");
-      if (head && head.length) up.write(head);
-      socket.pipe(up).pipe(socket);
+      tunnel(net.connect(target.port, "127.0.0.1"), headers);
+    };
+    // Sends the upgrade request on `up` once it connects, then joins the two sockets.
+    const tunnel = (up, headers, onFail) => {
+      let open = false;
+      const timer = onFail ? setTimeout(() => up.destroy(new Error("no answer")), 2000) : null;
+      up.once("connect", () => {
+        open = true;
+        clearTimeout(timer);
+        let raw = `${req.method} ${req.url} HTTP/1.1\r\n`;
+        for (const [k, v] of Object.entries(headers)) {
+          for (const value of Array.isArray(v) ? v : [v]) raw += `${k}: ${value}\r\n`;
+        }
+        up.write(raw + "\r\n");
+        if (head && head.length) up.write(head);
+        socket.pipe(up).pipe(socket);
+      });
+      const close = () => { socket.destroy(); up.destroy(); };
+      up.on("error", () => {
+        clearTimeout(timer);
+        if (!open && onFail) { up.destroy(); onFail(); return; }
+        close();
+      });
+      up.on("close", () => { if (open || !onFail) close(); });
+      socket.on("error", close);
+      socket.on("close", () => { if (open || !onFail) up.destroy(); });
+    };
+    if (!remote) { local(); return; }
+    tunnel(net.connect(remotePort(remote, entry), remote.host), forwardHeaders(req), () => {
+      roomHostFailed(remote);
+      local();
     });
-    const close = () => { socket.destroy(); up.destroy(); };
-    up.on("error", close);
-    socket.on("error", close);
-    up.on("close", close);
-    socket.on("close", close);
   });
 
   return new Promise((resolve, reject) => {

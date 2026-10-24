@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 — 25 October 2026
+
+- Macs on the same Wi‑Fi share their rooms. Before, each Mac had its own, so two Macs pressing Quick match in Horde (or any game) landed in separate empty lobbies. Now the Mac whose app has been open longest holds the rooms, and quick match, room codes and invite links find players on every Mac and on phones connected to any of them. Pages, scores and My records stay on each Mac. If that Mac leaves, rooms are made on this Mac again. Both Macs need this version.
+- Every multiplayer game was played with two players to check that both end up in the same room and see each other. Scrapyard and Mosslight started everyone on the same spot, so the teammate was hidden inside your own view; the others now start a little behind.
+- Scrapyard's Play together hint now says that the others tap "Join match" once the host has started.
+
 ## 0.3.1 — 24 October 2026
 
 - Play together starts with one clear answer: "Ready to play together" (green) or "Not on Wi‑Fi, others can't join yet" (amber), with what to do: join a Wi‑Fi, or use a phone's Personal Hotspot. The network does not need internet.

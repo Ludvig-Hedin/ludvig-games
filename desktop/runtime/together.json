@@ -312,7 +312,7 @@
       "inviteParam": "arena"
     },
     "local": null,
-    "hint": "Tap \"Play online\", then \"Quick match\" in the same mode. Everyone lands together; host taps \"Start mission\".",
+    "hint": "Tap \"Play online\", then \"Quick match\" in the same mode. Everyone lands together; host taps \"Start mission\", then the others tap \"Join match\".",
     "note": "\"Quick match\" does not use quick:true. It lists open rooms in the chosen mode (\"Co-op waves\" is the default, 2–4; \"Deathmatch\" 2–8), joins the fullest one, or else opens a new public room. Everyone must pick the same mode, and two people tapping at the exact same moment could end up in separate rooms. Host button reads \"Start mission\" (co-op) or \"Start round\" (deathmatch). Others see \"Waiting for the host\", or \"Join match\" if a game is live. Also: \"Create private room\" shows a code; others type it and tap \"JOIN\". Reads ?arena=CODE and auto-joins."
   },
   "lastlight": {
@@ -614,7 +614,7 @@
       "how": "pass the device"
     },
     "hint": "One player taps \"Play Friend\", \"Create private room\" and shares the code; the other taps \"Join room\".",
-    "note": "The Play Friend dialog has \"Create room\" (default) and \"Join room\" tabs. Join: \"Join room\" tab, type the 7-character code in \"Room code\", then the \"Join room\" button. Match starts automatically when the friend joins. Lobby shows the code and \"Copy invite link\". ?room= read at app/page.tsx:248. Local: each player picks privately behind a privacy screen (\"Pass to Player N.\"), second player taps \"I’m Player 2\". English only."
+    "note": "The Play Friend dialog has \"Create room\" (default) and \"Join room\" tabs. Join: \"Join room\" tab, type the 7-character code in \"Room code\", then the \"Join room\" button. Match starts automatically when the friend joins. Lobby shows the code and \"Copy invite link\". ?room= opens the Join tab with the code filled in; the guest still taps \"Join room\" (app/page.tsx:248). Local: each player picks privately behind a privacy screen (\"Pass to Player N.\"), second player taps \"I’m Player 2\". English only."
   },
   "ox": {
     "name": "OX",

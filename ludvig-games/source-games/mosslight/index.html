@@ -1575,9 +1575,21 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
         for (const [i, id] of coop.edits) coopApply(i % W, Math.floor(i / (W * W)), Math.floor(i / W) % W, id);
         startGame();
         stayAndBuild(true);
+        coopSeat();
         coop.inWorld = true; coop.clock = 0; coop.lastSent = '';
         $('new-btn').textContent = 'Leave world';
         coop.room.send({ t: 'hello' });
+    }
+    // Everyone used to start on the same block, inside each other's camera. Later builders now start in a staggered line
+    // behind the first one, where they can see the others ahead.
+    function coopSeat() {
+        const list = [...coop.room.peers].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0)), k = list.findIndex(p => p.id === coop.room.self.id);
+        if (k < 1) return;
+        const row = Math.ceil(k / 2), side = k % 2 ? -1 : 1;
+        for (const [dx, dz] of [[side * 1.8 * row, 2.2 * row], [-side * 1.8 * row, 2.2 * row], [side * 1.8 * row, 0]]) {
+            const x = player.x + dx, z = player.z + dz;
+            if (!collides(x, player.y, z)) { player.x = x; player.z = z; return; }
+        }
     }
     function coopApply(x, y, z, id) {
         const i = index(x, y, z), old = get(x, y, z);

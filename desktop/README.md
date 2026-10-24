@@ -3,7 +3,7 @@
 A Mac app with every game from games.ludvighedin.com plus the separate game sites (Chess, Ludo, Air Hockey and the rest). Everything runs on the Mac, so it works offline and costs nothing to run. People on the same Wi‑Fi can play together:
 
 - **Phones and other computers** scan the QR code under **Play together** (or open the link). They play in their browser; nothing to install.
-- **Other Macs with the app** show up under **Macs nearby** in the same panel. **Join** opens that Mac's games.
+- **Other Macs with the app** share one set of rooms: quick match and room codes find players on every Mac on the network. They also show up under **Macs nearby** in the same panel; **Join** opens that Mac's games.
 
 Owner decisions (24 Oct 2026): both ways of joining, Mac first, distributed to anyone. Unsigned for now, prepared for Developer ID signing and notarization.
 
@@ -13,6 +13,7 @@ Owner decisions (24 Oct 2026): both ways of joining, Mac first, distributed to a
 - One proxy per game listens on the network at a fixed port (`runtime/games.mjs`: hub 47800, games 47801–47813). It serves the game's static files itself (`runtime/static.mjs`, Cloudflare's `auto-trailing-slash` and `404-page` rules) and sends only `/api/*` (and the hub's `/mp/*`) to the Worker. Miniflare can only hold one asset folder per instance, which is why the files are not served through it.
 - A small router Worker (`runtime/router.mjs`) passes each request to the right game with the player's own address as the URL, so the games' same-origin checks keep working. The hub API only answers its public origin, so its requests are presented as coming from `https://games.ludvighedin.com`.
 - Every page gets `/__ludvig-desktop.js` (`runtime/inject.js`): links to a game's public site open the local copy, and on the host Mac (whose window uses 127.0.0.1) copied or shared invite links get the Mac's network address.
+- Shared rooms (`runtime/share.mjs`): each app announces its version and start time over Bonjour. The oldest running app of the same version holds the rooms, and the other Macs' proxies pass their room traffic to it unchanged: the hub's `/mp/*` and `/api/mp/*`, the separate games' `/api/*` and Ritkaos' `/ws` and `/api/rooms`. Pages, scores and records stay on each Mac. If that Mac stops answering for two seconds, rooms are made on this Mac again until the app finds it. `LUDVIG_ROOM_HOST=address:port` sets the room Mac by hand for development checks.
 - Direct play between devices is the games' existing WebRTC code. The app turns off Chromium's mDNS hiding of local addresses, so connections work on a local network without internet.
 - `app/main.mjs` is the Electron window: a 44 px strip above the games with no colour of its own (it copies the top edge of the page), holding three buttons: All games (not on the start page), My records and Play together. The Bonjour service `_ludvig-games._tcp` finds other Macs. Saved games, rooms and scores live in `~/Library/Application Support/Ludvig Games/`.
 
@@ -30,7 +31,7 @@ npm run dist                    # release/Ludvig-Games-mac-arm64.dmg (ad-hoc sig
 
 `stage.mjs` and the game builds open local ports while prerendering, and need network access for `npm ci`. After staging, `.stage/*/node_modules` is removed.
 
-Development: `npm start` opens the app; `node runtime/server.mjs` runs only the games (http://127.0.0.1:47800). With the runtime running, `agent-heavy-run browser bun run browser-test <dir>` runs the two-device check in headless Chrome. `LUDVIG_PORT_OFFSET=200 LUDVIG_SELFTEST=<dir> npx electron .` starts a separate copy beside the installed app, without a window, saves screenshots of the bar, the hub and the panel, and quits.
+Development: `npm start` opens the app; `node runtime/server.mjs` runs only the games (http://127.0.0.1:47800). With the runtime running, `agent-heavy-run browser bun run browser-test <dir>` runs the two-device check in headless Chrome. `LUDVIG_PORT_OFFSET=200 LUDVIG_SELFTEST=<dir> npx electron .` starts a separate copy beside the installed app, without a window, saves screenshots of the bar, the hub and the panel, and quits. Shared rooms: start one runtime normally and one with `LUDVIG_ROOM_HOST=127.0.0.1:<first hub port>`, then `bun run browser-test:federation <dir> <first offset> <second offset>`; `bun run browser-test:together` plays each multiplayer game with two players. Ritkaos' internal port is 47901 + offset, so two offsets 100 apart collide; 200 and 500 work.
 
 ## Updates
 
@@ -63,6 +64,7 @@ The Intel build also needs the Intel workerd binary: `npm install --no-save --os
 
 - Only Apple Silicon Macs for now (`npm run dist` builds arm64).
 - macOS asks once to allow incoming connections and access to the local network. Saying no keeps solo play working but stops friends from joining.
-- Guest devices need the host Mac's app open, on the same network. Networks that block devices from seeing each other (some guest and school Wi‑Fi) stop local play.
+- Guest devices need the host Mac's app open, on the same network. Macs only share rooms when they run the same app version, so update both.
+- Any device on the network could announce itself as the room Mac. Room traffic is game moves and player names, nothing else. Networks that block devices from seeing each other (some guest and school Wi‑Fi) stop local play.
 - Hub leaderboards in the app are local to the Mac that hosts. They never reach the public site.
 - Fonts from Google Fonts fall back to system fonts offline.

@@ -1,3 +1,7 @@
+# 2026-10-25: teammates in view in Scrapyard and Mosslight
+
+- Scrapyard (co-op) and Mosslight: every player used to start on the same spot, inside each other's camera, so you could not see your teammate. The first player keeps the spot; the others start a little behind and to the side, where they see the team ahead.
+
 # 2026-10-24: search pages, Play together and an All games button in every game
 
 - Every game has an info page at /<slug>/about/ (what it is, how to play, controls, more games like it), and there is a page per category at /category/<name>/. Titles and descriptions come from seo.json, written from each game's own code around the phrases people search for (for example "fake moon landing game" for One Small Fake). The sitemap lists them all. The footer links to the categories, and the start page ends with a short description.

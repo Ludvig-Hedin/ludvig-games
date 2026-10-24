@@ -1302,7 +1302,7 @@ Object.assign(net,(()=>{
  function toRoom(){net.live=false;backMenu();showSheet('room')}
  function onNewGame(){runDifficulty=net.mode==='coop'?net.diff:difficulty;deaths=0;respawnT=0;protectT=0;revive.clear();takenPk.clear();mirrors.clear();hintShown=false;fired=false;
   if(net.mode==='dm'){mission='dm';barrels=[];spawnAt();protectT=P.DM.protect;if(!roundEnd)roundEnd=performance.now()+P.DM.round*1000}
-  else if(!host())wave=0;
+  else{if(!host())wave=0;coopSeat()}
   $('again').firstChild.textContent='Back to room ';$('back-menu').textContent='LEAVE ROOM'}
  function enterLive(){
   if(net.mode==='coop'){if(host()&&wave===0)startWave();if(!hintShown){hintShown=true;showHint('Co-op · stand next to a downed teammate to revive them',4)}}
@@ -1395,6 +1395,10 @@ Object.assign(net,(()=>{
  function spawnAt(){const others=[];for(const p of peers.values())if(live(p)&&!(p.flags&F.dead))others.push({x:p.pos.x,z:p.pos.z});
   const pts=DM_SPAWNS.filter(s=>!collides(s.x,s.z,.5,0,1.8)),s=K.pickSpawn(pts.length?pts:DM_SPAWNS,others);
   Object.assign(player,{x:s.x,y:1.72,z:s.z,vx:0,vz:0,vy:0,hp:100,dead:false,down:false,ground:true,yaw:Math.atan2(-s.x,s.z),pitch:-.02});serial++;ammo=24;reloadT=0;damageAt=-99}
+ // Co-op pilots used to share one start point, so each one stood inside the other's camera. Later pilots now start in a
+ // staggered line behind the first, where they can see the team ahead of them.
+ function coopSeat(){if(!room)return;const list=[...room.peers].sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)),k=list.findIndex(p=>p.id===self());if(k<1)return;
+  const row=Math.ceil(k/2),side=k%2?-1:1;for(const [dx,dz] of [[side*1.8*row,2.2*row],[-side*1.8*row,2.2*row],[side*1.8*row,0]]){const x=player.x+dx,z=player.z+dz;if(!collides(x,z,.5,0,1.8)){player.x=x;player.z=z;return}}}
  function rayPilots(ro,dir,limit,inflate){let best=null;const now=performance.now();for(const p of peers.values()){if(!live(p,now)||(p.flags&F.dead))continue;const h=P.hitPilot(ro,dir,p.pos,best?best.t:limit,inflate);if(h)best={t:h.t,zone:h.zone,peer:p}}return best}
  function pilotTargets(){const out=[],now=performance.now();for(const p of peers.values())if(live(p,now)&&!(p.flags&F.dead))out.push([p.pos.x,p.pos.y-.5,p.pos.z]);return out}
  function hitPilot(h){event({t:'h',to:h.peer.id,d:Math.round(Math.min(P.DM.maxHit,P.dmDamage(h.zone)*(overdriveT>0?1.15:1))),z:h.zone==='head'?1:0});h.peer.hitT=.1}

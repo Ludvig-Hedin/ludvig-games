@@ -11,6 +11,7 @@ import { Bonjour } from "bonjour-service";
 import QRCode from "qrcode";
 import { HUB, GAMES, ALL } from "../runtime/games.mjs";
 import { bundlePath, checkForUpdate, downloadUpdate, installAndRestart } from "./updater.mjs";
+import { pickRoomHost } from "../runtime/share.mjs";
 import fs from "node:fs";
 
 // How people play each game together (runtime/together.json): button labels, quick match, invite links.
@@ -26,6 +27,7 @@ const root = path.join(here, "..");
 const BAR = 44;
 const SERVICE = "ludvig-games";
 const instanceId = crypto.randomUUID();
+const startedAt = Date.now(); // the Mac whose app has run longest holds the rooms (runtime/share.mjs)
 // Lets this app (and nothing else) read the connected-devices list from its runtime.
 const deviceToken = crypto.randomBytes(24).toString("hex");
 // Development check: run without showing a window, capture screenshots, then quit (scripts/selftest.mjs).
@@ -49,6 +51,7 @@ let tipView = null; // the "play with friends" card over a game (chrome/tip.html
 let tipHeight = 120;
 const tipsShown = new Set(); // games whose card was already shown or closed this session
 let runtime = null;
+let sentRoomHost; // where the runtime was told the rooms are: "address:port", "" for this Mac, undefined before
 let bonjour = null;
 let browser = null;
 let lanAtPublish = null;
@@ -57,7 +60,7 @@ const state = {
   status: "starting", // starting | ready | failed
   lan: null,
   joined: null, // { name, address } when playing on another Mac
-  nearby: [], // [{ id, name, address }]
+  nearby: [], // [{ id, name, address, port, version, started }]
   onHome: true, // the hub's start page: no "All games" button there
   tint: { r: 8, g: 8, b: 8 }, // colour of the top of the page, so the strip above it blends in
   panel: false,
@@ -324,6 +327,7 @@ function leave() {
 
 function startRuntime() {
   state.status = "starting";
+  sentRoomHost = undefined;
   sendState();
   const server = path.join(root, "runtime", "server.mjs");
   runtime = spawn(process.execPath, [server], {
@@ -337,12 +341,17 @@ function startRuntime() {
     stdio: ["ignore", "inherit", "inherit", "ipc"],
   });
   runtime.on("message", (msg) => {
+    if (msg && msg.type === "roomHostDown") {
+      sentRoomHost = undefined; // tried again on the next look around the network
+      return;
+    }
     if (msg && msg.type === "ready") {
       state.status = "ready";
       state.lan = msg.lan;
       sendState();
       navigate(hubUrl());
       publish();
+      refreshNearby();
       if (SELFTEST) selftest();
     }
   });
@@ -404,9 +413,11 @@ async function selftest() {
         report.steps.push({ step: "update", ok: false, error: err.message });
       }
     }
+    // LUDVIG_SELFTEST_HOLD: stay open a while, so a second copy can find this one and share its rooms.
+    if (process.env.LUDVIG_SELFTEST_HOLD) await wait(Number(process.env.LUDVIG_SELFTEST_HOLD));
     await setPanel(true);
     await wait(800);
-    report.steps.push({ step: "panel", share: state.shareUrl, nearby: state.nearby.length, context: state.context && state.context.id });
+    report.steps.push({ step: "panel", share: state.shareUrl, nearby: state.nearby.map((p) => `${p.name} ${p.address}:${p.port}`), roomHost: sentRoomHost, context: state.context && state.context.id });
     await shot("panel");
   } catch (err) {
     report.error = String(err && err.stack || err);
@@ -472,7 +483,7 @@ function publish() {
     if (!bonjour) bonjour = new Bonjour();
     bonjour.unpublishAll();
     lanAtPublish = lanAddress();
-    bonjour.publish({ name: `${computerName()} (${instanceId.slice(0, 4)})`, type: SERVICE, port: HUB.port, txt: { id: instanceId, name: computerName() } });
+    bonjour.publish({ name: `${computerName()} (${instanceId.slice(0, 4)})`, type: SERVICE, port: HUB.port, txt: { id: instanceId, name: computerName(), v: app.getVersion(), started: String(startedAt) } });
     if (browser) browser.stop();
     browser = bonjour.find({ type: SERVICE });
     const update = () => refreshNearby();
@@ -485,9 +496,9 @@ function publish() {
 
 // Macs that announce the app and actually answer on their address. Bonjour can keep an old announcement after a
 // Mac left the network (or list this Mac itself), so each one is tried before it is shown.
-async function reachable(address) {
+async function reachable(address, port = HUB.port) {
   try {
-    const res = await fetch(`http://${address}:${HUB.port}/__ludvig-desktop.js`, { signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`http://${address}:${port}/__ludvig-desktop.js`, { signal: AbortSignal.timeout(1500) });
     return res.ok;
   } catch {
     return false;
@@ -504,17 +515,32 @@ async function refreshNearby() {
       const id = s.txt && s.txt.id;
       if (!id || id === instanceId) continue;
       const address = (s.addresses || []).find((a) => /^\d+\.\d+\.\d+\.\d+$/.test(a)) || (s.referer && s.referer.address);
-      if (!address || address === own || !/^\d+\.\d+\.\d+\.\d+$/.test(address)) continue;
-      seen.set(id, { id, name: (s.txt && s.txt.name) || s.name, address });
+      const port = Number(s.port) || HUB.port;
+      // An old announcement of this Mac itself (a development copy on other ports is another app).
+      if (!address || (address === own && port === HUB.port) || !/^\d+\.\d+\.\d+\.\d+$/.test(address)) continue;
+      // Only real network addresses and the app's own port range: an announcement cannot point room traffic at
+      // this Mac's loopback services or at other ports.
+      if (/^(127|0)\./.test(address) || port < 47800 || port > 48900) continue;
+      seen.set(id, { id, name: (s.txt && s.txt.name) || s.name, address, port, version: s.txt.v || "", started: Number(s.txt.started) });
     }
   }
-  const checked = await Promise.all([...seen.values()].map(async (p) => ((await reachable(p.address)) ? p : null)));
+  const checked = await Promise.all([...seen.values()].map(async (p) => ((await reachable(p.address, p.port)) ? p : null)));
   if (run !== nearbyRun) return;
   const nearby = checked.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
   if (JSON.stringify(nearby) !== JSON.stringify(state.nearby)) {
     state.nearby = nearby;
     sendState();
   }
+  shareRooms(nearby);
+}
+
+// Rooms are shared by every Mac on the network: tell this Mac's runtime which Mac holds them.
+function shareRooms(nearby) {
+  const leader = pickRoomHost({ id: instanceId, version: app.getVersion(), started: startedAt }, nearby);
+  const key = leader ? `${leader.address}:${leader.port}` : "";
+  if (key === sentRoomHost || !runtime || !runtime.connected) return;
+  sentRoomHost = key;
+  runtime.send({ type: "roomHost", host: leader ? leader.address : null, hubPort: leader ? leader.port : null });
 }
 
 // The network can change (another Wi-Fi, waking from sleep). Announce again on the new address.
