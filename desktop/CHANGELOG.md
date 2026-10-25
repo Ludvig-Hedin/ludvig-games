@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 — 25 October 2026
+
+- Pigeon solo is a 3-minute round with a results card and "Play again". Scrapyard starts on Normal for new players. Bloop shows How to play on phones.
+
 ## 0.4.1 — 25 October 2026
 
 - A polish round across the games: the corner "All games" button no longer covers scores or controls, about 20 bugs fixed (Drop re-awarding XP after a win, Cinder's black holes and lost FIRE taps, Dust shooting townspeople, cut-off touch buttons in Overtime, and more), and more feel: hit direction and shake, night lighting, trails, landing shadows, ghosts of your best run. Full list in the games changelog.

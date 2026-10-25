@@ -1,3 +1,9 @@
+# 2026-10-25: Pigeon rounds, Scrapyard on Normal, Bloop help on phones
+
+- Pigeon solo is now a 3-minute round. The clock sits under the score, and when it runs out a results card shows your chaos score, your best and "Play again". The score goes to the leaderboard then. Online squares keep their 4-minute rounds.
+- Scrapyard starts on Normal (2 / 5) for new players. Players who picked a level keep it.
+- Bloop shows the "?" How to play button on phones too; the top bar is a little tighter so Export still fits.
+
 # 2026-10-25: polish round across the games
 
 - The round "All games" button no longer covers scores, health, logos or controls in about 35 games (the game moves its own HUD clear of it).
