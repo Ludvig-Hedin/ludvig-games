@@ -42,3 +42,4 @@ The new catalog design (dropdown filters, 8 categories, "Download for Mac") went
 ## Static redeploy, 25 Oct
 
 The games polish round went live the same way (temporary copy, 10 offline external games hidden, `wrangler deploy -c wrangler.static.jsonc`, static files only). Checked live: 52 cards, `/api/scores` still 404, the Neon and Noodle fixes are in the served pages.
+Same day, later: Pigeon solo rounds, Scrapyard on Normal and Bloop's phone help went live the same way (6 files). Checked live: 52 cards, `/api/scores` 404.
