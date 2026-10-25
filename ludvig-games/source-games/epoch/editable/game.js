@@ -33,13 +33,14 @@ const descriptions=[
  ['An automatic rifle makes this soldier a versatile front-line unit.','Heavy rockets deal explosive splash damage. Protect the launcher.','An armored tank with a powerful cannon. Expensive, durable, and devastating.'],
  ['An armored energy trooper. Built for the final battlefield.','Long-range plasma fire tears through the enemy front line.','Long-range plasma artillery and heavy armor. Outranges most defenses and breaks a stalemate.']
 ];
-let view,sim,audio,portraits,mode='loading',difficulty='normal',speed=1,aiming=false,defenseOpen=false,last=performance.now(),accumulator=0,uiClock=0,noticeEnd=0,announcementEnd=0,resultAt=0,realTime=0,lastAge=-1,queueKey='',panelKey='',evolutionNotified=-1,firstRecruit=false,frameCount=0;
+let view,sim,audio,portraits,mode='loading',difficulty='normal',speed=1,aiming=false,defenseOpen=false,last=performance.now(),accumulator=0,uiClock=0,noticeEnd=0,announcementEnd=0,resultAt=0,realTime=0,lastAge=-1,queueKey='',panelKey='',evolutionNotified=-1,firstRecruit=false,frameCount=0,hurt=0,drag=null;
+const touch=matchMedia('(hover:none) and (pointer:coarse)').matches,firstLine=touch?'Tap a troop to train your army':'Click a troop to train your army';
 const noopAudio=new Proxy({}, {get:()=>()=>{}});
 const money=n=>Math.floor(n).toLocaleString('en-US');
 const clock=n=>`${String(Math.floor(n/60)).padStart(2,'0')}:${String(Math.floor(n%60)).padStart(2,'0')}`;
 function show(id,v=true){$(id).classList.toggle('hidden',!v);}
 function notice(text,seconds=2.3){$('notice').textContent=text;$('notice').classList.add('show');noticeEnd=realTime+seconds;}
-function notifyAge(age){const el=$('ageAnnouncement');el.querySelector('h2').textContent=AGES[age].label;el.classList.add('show');announcementEnd=realTime+3.0;$('flash').style.opacity='.17';setTimeout(()=>$('flash').style.opacity='0',100);}
+function notifyAge(age){$('notice').classList.remove('show');noticeEnd=0;const el=$('ageAnnouncement');el.querySelector('h2').textContent=AGES[age].label;el.classList.add('show');announcementEnd=realTime+3.0;$('flash').style.opacity='.17';setTimeout(()=>$('flash').style.opacity='0',100);}
 function soundState(){$('sound').innerHTML=audio.muted?icons.mute:icons.sound;$('sound').setAttribute('aria-label',audio.muted?'Unmute sound':'Mute sound');}
 function setupBattle(demo=false){
  view.clear();sim=new EpochSim.Battle({difficulty,seed:demo?3471:Math.floor(Math.random()*99999999),demo});
@@ -48,7 +49,7 @@ function setupBattle(demo=false){
  sim.drain().forEach(e=>view.process(e,sim,noopAudio));
  lastAge=-1;queueKey='';panelKey='';evolutionNotified=-1;firstRecruit=false;accumulator=0;resultAt=0;aiming=false;defenseOpen=false;
  show('aimHint',false);show('defensePanel',false);show('tooltip',false);document.body.classList.remove('aiming');
- $('ageAnnouncement').classList.remove('show');$('notice').classList.remove('show');$('firstHint').style.opacity='1';$('objective').style.opacity='1';$('firstHint').textContent='Click a troop to train your army';
+ $('ageAnnouncement').classList.remove('show');$('notice').classList.remove('show');$('firstHint').style.opacity='1';$('objective').style.opacity='1';$('firstHint').textContent=firstLine;hurt=0;$('hurt').style.opacity='0';
  speed=1;$('speed').textContent='1×';$('power').classList.remove('aiming');refreshUI(true);
 }
 async function start(){
@@ -92,13 +93,14 @@ function handleEvents(){
   view.process(e,sim,mode==='menu'?noopAudio:audio);
   if(mode==='menu')continue;
   if(e.type==='evolve'){if(e.side===0)notifyAge(e.age);else notice(`The enemy entered the ${AGES[e.age].name.toLowerCase()} age`,3);refreshUI(true);}
+  if(e.type==='baseHit'&&e.side===0&&mode==='playing'){const b=sim.teams[0];hurt=Math.min(.85,hurt+.18+e.damage/b.maxHp*8);}
   if(e.type==='end'&&mode==='playing')finish(e.result);
  }
 }
 function refreshUI(force=false){
  if(!sim)return;const t=sim.teams[0],a=t.age;
  $('gold').textContent=money(t.gold);$('battleTime').textContent=clock(sim.time);$('population').textContent=`${t.pop} / 28`;
- for(let side=0;side<2;side++){const b=sim.teams[side];$('hp'+side).textContent=money(Math.max(0,b.hp));$('bar'+side).style.width=`${clamp(b.hp/b.maxHp,0,1)*100}%`;}
+ for(let side=0;side<2;side++){const b=sim.teams[side];$('hp'+side).textContent=money(Math.max(0,b.hp));$('bar'+side).style.width=`${clamp(b.hp/b.maxHp,0,1)*100}%`;$('base'+side).classList.toggle('low',b.hp>0&&b.hp<b.maxHp*.3);}
  if(lastAge!==a){lastAge=a;$('ageLabel').textContent=AGES[a].label;document.querySelectorAll('.age-node').forEach((n,i)=>{n.classList.toggle('active',i===a);n.classList.toggle('past',i<a);});
   for(let k=0;k<3;k++){const card=$('unit'+k),st=unitStats(a,k);card.querySelector('img').src=portraits?.[a]?.[k]||'';card.querySelector('.unit-name').textContent=st.name;card.querySelector('b').textContent=st.cost;card.setAttribute('aria-label',`Train ${st.name}, ${st.cost} gold`);}
   $('powerName').textContent=AGES[a].power;$('powerIcon').innerHTML=powers[a];$('nextAge').textContent=a<4?AGES[a+1].name:'Final age';$('evolve').querySelector('.evolve-eyebrow').textContent=a<4?'NEXT AGE':'AGE V';
@@ -109,7 +111,7 @@ function refreshUI(force=false){
  $('evolve').classList.toggle('available',ready);$('xpBar').style.width=`${a===4?100:clamp((t.xp-previous)/(next-previous),0,1)*100}%`;
  $('xpText').textContent=a===4?'':ready?'EVOLVE NOW':`${money(t.xp)} / ${money(next)} XP`;
  $('evolve').setAttribute('aria-label',a===4?'Final age reached':ready?`Evolve to ${AGES[a+1].name} age`:`Evolve: ${money(t.xp)} of ${next} experience`);
- if(ready&&evolutionNotified!==a&&mode==='playing'){evolutionNotified=a;notice('Ready to evolve',3);audio.coin();}
+ if(ready&&evolutionNotified!==a&&mode==='playing'&&!announcementEnd){evolutionNotified=a;notice('Ready to evolve',3);audio.coin();}
  const charged=t.power>=.999;$('power').classList.toggle('ready',charged);$('powerMeta').textContent=charged?'READY':`${Math.ceil((1-t.power)*(a===4?43:38))}s`;$('cooldownShade').style.height=`${(1-t.power)*100}%`;
  $('power').setAttribute('aria-label',`${AGES[a].power}, ${charged?'ready. Choose a target on the battlefield.':'recharging.'}`);
  [...$('slotDots').children].forEach((el,i)=>el.classList.toggle('filled',!!t.turrets[i]));
@@ -138,6 +140,7 @@ function positionLabels(){
 }
 function bind(){
  $('sound').innerHTML=icons.sound;$('pause').innerHTML=icons.pause;$('fullscreen').innerHTML=icons.fullscreen;if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled))$('fullscreen').hidden=true;$('defenseIcon').innerHTML=icons.defense;$('evolutionIcon').innerHTML=icons.evolution;$('powerIcon').innerHTML=powers[0];
+ if(touch){const n=$('aimHint').children[1].firstChild;if(n&&n.nodeType===3)n.nodeValue='Tap the battlefield';}
  $('ageTrack').innerHTML=AGES.map((a,i)=>`${i?'<span class="age-link"></span>':''}<span class="age-node ${i===0?'active':''}" title="${a.label}">${roman[i]}</span>`).join('');
  $('start').addEventListener('click',start);$('playAgain').addEventListener('click',start);$('backToMenu').addEventListener('click',menu);
  document.querySelectorAll('[data-difficulty]').forEach(el=>el.addEventListener('click',()=>{difficulty=el.dataset.difficulty;document.querySelectorAll('[data-difficulty]').forEach(b=>{b.classList.toggle('selected',b===el);b.setAttribute('aria-pressed',b===el?'true':'false');});}));
@@ -152,8 +155,9 @@ function bind(){
   if(!ok)audio.deny();handleEvents();refreshUI(true);
  });
  $('power').addEventListener('click',()=>setAim(!aiming));$('evolve').addEventListener('click',evolve);
- $('world').addEventListener('pointermove',e=>{if(aiming)view.aim(true,view.pointerX(e.clientX,e.clientY));});
- $('world').addEventListener('pointerdown',e=>{if(mode!=='playing')return;if(aiming){const x=view.pointerX(e.clientX,e.clientY);if(sim.power(0,x)){setAim(false);handleEvents();refreshUI(true);}}else if(defenseOpen)setDefenses(false);});
+ $('world').addEventListener('pointermove',e=>{if(aiming)view.aim(true,view.pointerX(e.clientX,e.clientY));else if(drag&&e.pointerId===drag.id){view.panBy(e.clientX-drag.x);drag.x=e.clientX;}});
+ const endDrag=e=>{if(drag&&e.pointerId===drag.id)drag=null;};$('world').addEventListener('pointerup',endDrag);$('world').addEventListener('pointercancel',endDrag);
+ $('world').addEventListener('pointerdown',e=>{if(mode!=='playing')return;if(aiming){const x=view.pointerX(e.clientX,e.clientY);if(sim.power(0,x)){setAim(false);handleEvents();refreshUI(true);}}else{if(defenseOpen)setDefenses(false);if(view.follow)drag={id:e.pointerId,x:e.clientX};}});
  $('pause').addEventListener('click',()=>togglePause());$('resume').addEventListener('click',()=>togglePause(false));
  $('restart').addEventListener('click',()=>{start();});
  $('sound').addEventListener('click',async()=>{await audio.unlock();audio.toggleMute();soundState();});
@@ -191,6 +195,7 @@ function frame(now){
  view.update(sim,worldDt,realTime);view.draw(sim,mode!=='menu');
  if(mode!=='menu'){positionLabels();uiClock+=realDt;if(uiClock>.1){refreshUI();uiClock=0;}if(sim.time>7&&firstRecruit)$('firstHint').style.opacity='0';if(sim.time>14)$('objective').style.opacity='0';}
  if(mode==='playing'||mode==='ending')audio.tick(sim.teams[0].age,Math.min(1,sim.units.length/17));
+ if(hurt>0){hurt=mode==='paused'?hurt:Math.max(0,hurt-realDt*1.4);$('hurt').style.opacity=hurt.toFixed(3);}
  if(noticeEnd&&realTime>noticeEnd){$('notice').classList.remove('show');noticeEnd=0;}
  if(announcementEnd&&realTime>announcementEnd){$('ageAnnouncement').classList.remove('show');announcementEnd=0;}
  if(mode==='ending'&&realTime>resultAt){mode='result';show('resultScreen');}

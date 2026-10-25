@@ -124,3 +124,11 @@ body.playing #setup{display:none}
 .arena-top{display:none}
 .room-status:empty{display:none}
 .scoreboard{top:20px}
+
+/* 2026-10-25: keep the corner "All games" button (bottom left) off the FIGHT and result buttons. */
+body:not(.playing) .shell{padding-bottom:max(62px,calc(env(safe-area-inset-bottom) + 56px))}
+body:not(.playing):not(.result-mode) .arena{height:min(calc(100dvh - 430px),760px)}
+.result-mode .arena{height:calc(100dvh - 245px)}
+@media(max-width:850px){.result-mode .arena{height:calc(100dvh - 228px)}}
+@media(max-width:700px){body:not(.playing):not(.result-mode) .arena{height:calc(44dvh - 50px)}}
+@media(max-width:560px){.result-mode .arena{height:calc(100dvh - 262px)}}

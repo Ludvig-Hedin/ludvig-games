@@ -41,13 +41,19 @@ void main(){vec4 w=uModel*vec4(aPosition,1.);vWorld=w.xyz;vNormal=normalize(mat3
 const FS=`precision highp float;varying vec3 vWorld;varying vec3 vNormal;varying vec4 vColor;
 uniform vec3 uEye;uniform float uTime;uniform float uMode;uniform float uAlpha;
 void main(){vec3 light=normalize(vec3(-.55,.82,-.32));vec3 n=normalize(vNormal);vec3 view=normalize(uEye-vWorld);
- float diffuse=max(dot(n,light),0.);vec3 c=vColor.rgb*(.60+diffuse*.56);float a=vColor.a*uAlpha;
+ // Two-sided low-poly faces: light the side that faces the camera. Sky/ground ambient plus a warm sun.
+ if(dot(n,view)<0.)n=-n;
+ float diffuse=max(dot(n,light),0.);vec3 amb=mix(vec3(.50,.47,.38),vec3(.60,.70,.76),n.y*.5+.5);
+ vec3 c=vColor.rgb*(amb+vec3(1.,.93,.80)*diffuse*.58);float a=vColor.a*uAlpha;
  if(uMode>1.5){c=vColor.rgb;}
  else if(uMode>.5){float wave=sin(vWorld.x*.068+uTime*.55)*sin(vWorld.z*.08-uTime*.8);n=normalize(vec3(wave*.055,1.,cos(vWorld.x*.049+uTime*.6)*.065));
  float fr=pow(1.-max(dot(n,view),0.),3.);float spec=pow(max(dot(reflect(-light,n),view),0.),90.);
  c=mix(vec3(.14,.48,.55),vec3(.65,.80,.82),fr*.6)+wave*.012+vec3(1.,.86,.61)*spec*.75;
  }
- float d=distance(vWorld,uEye);float fog=1.-exp(-pow(d*.00044,1.52));c=mix(c,vec3(.72,.83,.84),min(.995,fog));
+ float d=distance(vWorld,uEye);float fog=1.-exp(-pow(d*.00044,1.52));
+ // Aerial perspective: haze warms toward the sun.
+ float toSun=pow(max(dot(-view,normalize(vec3(-.55,.45,-.7))),0.),5.);vec3 haze=mix(vec3(.72,.83,.84),vec3(.92,.86,.74),toSun*.55);
+ c=mix(c,haze,min(.995,fog));
  gl_FragColor=vec4(c,a);}`;
 const SKYVS=`attribute vec2 aPosition;varying vec2 vUV;void main(){vUV=aPosition;gl_Position=vec4(aPosition,.99999,1.);}`;
 const SKYFS=`precision highp float;varying vec2 vUV;uniform vec3 uForward;uniform vec3 uRight;uniform vec3 uUp;uniform float uAspect;uniform float uTan;
@@ -66,6 +72,9 @@ class Renderer{
   gl.disable(gl.CULL_FACE);this.quality=1.35;this.resize();
  }
  programFor(v,f){const gl=this.gl,p=gl.createProgram();for(const[type,source]of[[gl.VERTEX_SHADER,v],[gl.FRAGMENT_SHADER,f]]){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));gl.attachShader(p,s);}gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));return p;}
+ // Streaming geometry (wing trails): one fixed-size buffer, rewritten each frame without new allocations.
+ dynamicMesh(maxVertices,mode=2){const gl=this.gl,b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,maxVertices*40,gl.DYNAMIC_DRAW);return{buffer:b,count:0,mode,data:new Float32Array(maxVertices*10)};}
+ upload(mesh,count){const gl=this.gl;mesh.count=count;if(!count)return;gl.bindBuffer(gl.ARRAY_BUFFER,mesh.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,mesh.data.subarray(0,count*10));}
  mesh(g,mode=0){const gl=this.gl,b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.data),gl.STATIC_DRAW);return{buffer:b,count:g.data.length/10,mode};}
  resize(){const ratio=Math.min(window.devicePixelRatio||1,this.quality);this.canvas.width=Math.round(innerWidth*ratio);this.canvas.height=Math.round(innerHeight*ratio);this.gl.viewport(0,0,this.canvas.width,this.canvas.height);}
  begin(eye,target,fov=62,time=0){

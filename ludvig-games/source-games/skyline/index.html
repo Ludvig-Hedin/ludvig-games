@@ -38,7 +38,7 @@ html,body{height:100dvh}.lg-trophy{width:47px;padding:0;display:inline-grid;plac
 @media(max-width:600px),(pointer:coarse) and (max-height:500px){
 #compass,#mapWrap,#radio,#scoreWrap .eyebrow,#bestLabel,#mission .eyebrow,#missionTitle,#missionDetail,#missionProgress,#instruments .eyebrow,.meter,.submetric,.hint-sub{display:none}
 .top{top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right))}.tools{gap:5px}.iconbtn{width:44px;height:44px;border-radius:10px}
-#scoreWrap{left:calc(14px + env(safe-area-inset-left));right:auto;top:calc(14px + env(safe-area-inset-top));text-align:left;display:flex;align-items:baseline;gap:8px}#score{font-size:24px;letter-spacing:-.8px}#combo{margin:0;font-size:9px}
+#scoreWrap{left:calc(60px + env(safe-area-inset-left));right:auto;top:calc(17px + env(safe-area-inset-top));text-align:left;display:flex;align-items:baseline;gap:8px}#score{font-size:24px;letter-spacing:-.8px}#combo{margin:0;font-size:9px}
 #mission,#instruments{top:calc(64px + env(safe-area-inset-top));bottom:auto;padding:5px 9px;border-radius:9px;width:auto;min-width:0}
 #mission{left:calc(12px + env(safe-area-inset-left))}#missionBottom{margin:0;gap:10px;font-size:10px}
 #instruments{left:auto;right:calc(12px + env(safe-area-inset-right));transform:none}.instrument{padding:0 8px 0 0}.instrument+.instrument{padding-left:8px}.metric{margin:0;gap:3px}.metric b{font-size:15px;line-height:1.25;letter-spacing:0}.metric span{font-size:8px}
@@ -268,13 +268,19 @@ void main(){vec4 w=uModel*vec4(aPosition,1.);vWorld=w.xyz;vNormal=normalize(mat3
 const FS=`precision highp float;varying vec3 vWorld;varying vec3 vNormal;varying vec4 vColor;
 uniform vec3 uEye;uniform float uTime;uniform float uMode;uniform float uAlpha;
 void main(){vec3 light=normalize(vec3(-.55,.82,-.32));vec3 n=normalize(vNormal);vec3 view=normalize(uEye-vWorld);
- float diffuse=max(dot(n,light),0.);vec3 c=vColor.rgb*(.60+diffuse*.56);float a=vColor.a*uAlpha;
+ // Two-sided low-poly faces: light the side that faces the camera. Sky/ground ambient plus a warm sun.
+ if(dot(n,view)<0.)n=-n;
+ float diffuse=max(dot(n,light),0.);vec3 amb=mix(vec3(.50,.47,.38),vec3(.60,.70,.76),n.y*.5+.5);
+ vec3 c=vColor.rgb*(amb+vec3(1.,.93,.80)*diffuse*.58);float a=vColor.a*uAlpha;
  if(uMode>1.5){c=vColor.rgb;}
  else if(uMode>.5){float wave=sin(vWorld.x*.068+uTime*.55)*sin(vWorld.z*.08-uTime*.8);n=normalize(vec3(wave*.055,1.,cos(vWorld.x*.049+uTime*.6)*.065));
  float fr=pow(1.-max(dot(n,view),0.),3.);float spec=pow(max(dot(reflect(-light,n),view),0.),90.);
  c=mix(vec3(.14,.48,.55),vec3(.65,.80,.82),fr*.6)+wave*.012+vec3(1.,.86,.61)*spec*.75;
  }
- float d=distance(vWorld,uEye);float fog=1.-exp(-pow(d*.00044,1.52));c=mix(c,vec3(.72,.83,.84),min(.995,fog));
+ float d=distance(vWorld,uEye);float fog=1.-exp(-pow(d*.00044,1.52));
+ // Aerial perspective: haze warms toward the sun.
+ float toSun=pow(max(dot(-view,normalize(vec3(-.55,.45,-.7))),0.),5.);vec3 haze=mix(vec3(.72,.83,.84),vec3(.92,.86,.74),toSun*.55);
+ c=mix(c,haze,min(.995,fog));
  gl_FragColor=vec4(c,a);}`;
 const SKYVS=`attribute vec2 aPosition;varying vec2 vUV;void main(){vUV=aPosition;gl_Position=vec4(aPosition,.99999,1.);}`;
 const SKYFS=`precision highp float;varying vec2 vUV;uniform vec3 uForward;uniform vec3 uRight;uniform vec3 uUp;uniform float uAspect;uniform float uTan;
@@ -293,6 +299,9 @@ class Renderer{
   gl.disable(gl.CULL_FACE);this.quality=1.35;this.resize();
  }
  programFor(v,f){const gl=this.gl,p=gl.createProgram();for(const[type,source]of[[gl.VERTEX_SHADER,v],[gl.FRAGMENT_SHADER,f]]){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));gl.attachShader(p,s);}gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));return p;}
+ // Streaming geometry (wing trails): one fixed-size buffer, rewritten each frame without new allocations.
+ dynamicMesh(maxVertices,mode=2){const gl=this.gl,b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,maxVertices*40,gl.DYNAMIC_DRAW);return{buffer:b,count:0,mode,data:new Float32Array(maxVertices*10)};}
+ upload(mesh,count){const gl=this.gl;mesh.count=count;if(!count)return;gl.bindBuffer(gl.ARRAY_BUFFER,mesh.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,mesh.data.subarray(0,count*10));}
  mesh(g,mode=0){const gl=this.gl,b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.data),gl.STATIC_DRAW);return{buffer:b,count:g.data.length/10,mode};}
  resize(){const ratio=Math.min(window.devicePixelRatio||1,this.quality);this.canvas.width=Math.round(innerWidth*ratio);this.canvas.height=Math.round(innerHeight*ratio);this.gl.viewport(0,0,this.canvas.width,this.canvas.height);}
  begin(eye,target,fov=62,time=0){
@@ -458,6 +467,40 @@ function makeWorld(renderer){
  world.gateActive=renderer.mesh(active,2);world.gateFuture=renderer.mesh(future,2);world.gateDecor=renderer.mesh(decor,2);
  world.shadow=renderer.mesh(new G().disk(0,0,0,6.8,4.3,0x183b3c,.25));
  const puff=new G().sphere(0,0,0,1,1,1,0xffda93,6,4);world.particleMesh=renderer.mesh(puff,2);
+ // Wingtip vapour trails: two ring buffers of points, drawn as camera-facing ribbons from one streaming buffer.
+ const TRAIL=56,TRAIL_LIFE=1.5;
+ world.trails=[-1,1].map(side=>({side,n:0,head:0,last:-1,pts:Array.from({length:TRAIL},()=>({x:0,y:0,z:0,t:0,k:0}))}));
+ world.trailMesh=renderer.dynamicMesh(2*(TRAIL-1)*6);world.trailSide=[0,0,0];
+ world.resetTrails=function(){for(const tr of this.trails){tr.n=0;tr.head=0;tr.last=-1;}};
+ world.drawTrails=function(r,flight,game){
+  const time=this.time,playing=game.phase==='playing'&&!flight.grounded&&!flight.crashed;
+  // Vapour shows in hard turns, pull-ups and boost, more at speed.
+  const pull=Math.max(Math.abs(flight.bank)-.22,0)/.4+Math.max(flight.vy-4,0)/14+(flight.boosting?.8:0);
+  const k=playing?clamp(pull,0,1)*clamp((flight.speed-38)/30,0,1):0;
+  const m=M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank),eye=r.eye,d=this.trailMesh.data,cap=d.length/10-6,a=this.trailSide;let v=0;
+  const put=(x,y,z,al)=>{const o=v*10;d[o]=x;d[o+1]=y;d[o+2]=z;d[o+3]=0;d[o+4]=1;d[o+5]=0;d[o+6]=.97;d[o+7]=.98;d[o+8]=1;d[o+9]=al;v++;};
+  for(const tr of this.trails){
+   const tip=S.transform(m,[tr.side*7.15,.3,1.05]);
+   const prev=tr.n?tr.pts[(tr.head+TRAIL-1)%TRAIL]:null;
+   if(prev&&Math.hypot(tip[0]-prev.x,tip[1]-prev.y,tip[2]-prev.z)>40)tr.n=0;
+   if(time-tr.last>=1/30||!tr.n){const p=tr.pts[tr.head];p.x=tip[0];p.y=tip[1];p.z=tip[2];p.t=time;p.k=k;tr.head=(tr.head+1)%TRAIL;tr.n=Math.min(TRAIL,tr.n+1);tr.last=time;}
+   else{const p=tr.pts[(tr.head+TRAIL-1)%TRAIL];p.x=tip[0];p.y=tip[1];p.z=tip[2];}
+   let has=false,ax=0,ay=0,az=0,aa=0;
+   for(let i=0;i<tr.n;i++){
+    const p=tr.pts[(tr.head-tr.n+i+TRAIL*2)%TRAIL],age=time-p.t;if(age>TRAIL_LIFE){has=false;continue;}
+    const q=tr.pts[(tr.head-tr.n+Math.min(i+1,tr.n-1)+TRAIL*2)%TRAIL],o=tr.pts[(tr.head-tr.n+Math.max(i-1,0)+TRAIL*2)%TRAIL];
+    const tx=q.x-o.x,ty=q.y-o.y,tz=q.z-o.z,vx=eye[0]-p.x,vy=eye[1]-p.y,vz=eye[2]-p.z;
+    let sx=ty*vz-tz*vy,sy=tz*vx-tx*vz,sz=tx*vy-ty*vx;const sl=Math.hypot(sx,sy,sz)||1,w=(.12+age*.28)/sl;sx*=w;sy*=w;sz*=w;
+    const near=Math.min(1,Math.max(0,(Math.hypot(vx,vy,vz)-8)/22)),alpha=p.k*(1-age/TRAIL_LIFE)*.42*near*Math.min(1,(tr.n-1-i)/2+.35);
+    if(has&&v<cap){
+     put(ax-a[0],ay-a[1],az-a[2],aa);put(ax+a[0],ay+a[1],az+a[2],aa);put(p.x+sx,p.y+sy,p.z+sz,alpha);
+     put(ax-a[0],ay-a[1],az-a[2],aa);put(p.x+sx,p.y+sy,p.z+sz,alpha);put(p.x-sx,p.y-sy,p.z-sz,alpha);
+    }
+    has=true;a[0]=sx;a[1]=sy;a[2]=sz;ax=p.x;ay=p.y;az=p.z;aa=alpha;
+   }
+  }
+  r.upload(this.trailMesh,v);if(v)r.draw(this.trailMesh,undefined,.98);
+ };
  world.update=function(dt,time){
   this.time=time;
   for(const p of this.planes){
@@ -494,6 +537,8 @@ function makeWorld(renderer){
    r.draw(j===0?this.gateActive:this.gateFuture,M(g.x,g.y,g.z,g.angle),j===0?1:.54);
    if(j===0)r.draw(this.gateDecor,M(g.x,g.y,g.z,g.angle,0,time*.3),.65);
   }
+  // The gate just flown through swells and fades, so every pass reads clearly.
+  if(game.gatePulse){const age=time-game.gatePulse.t,g=S.route[game.gatePulse.i];if(age>=0&&age<.7&&g)r.draw(this.gateActive,M(g.x,g.y,g.z,g.angle,0,0,1+age*.75),(1-age/.7)*(game.gatePulse.perfect?.9:.6));}
   const shadowY=S.groundAt(flight.x,flight.z)+.08,agl=Math.max(0,flight.y-shadowY);
   if(agl<150)r.draw(this.shadow,M(flight.x+agl*.3,shadowY,flight.z+agl*.12,flight.heading,0,0,1+agl*.012),clamp(1-agl/160,0,.8));
   if(game.camera!==1){r.draw(this.playerMesh,M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank));r.draw(this.propMesh,S.multiply(M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank),M(0,0,0,0,0,time*(35+flight.throttle*85))));}
@@ -502,6 +547,7 @@ function makeWorld(renderer){
    r.draw(this.playerMesh,M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank));
   }
   for(const p of game.particles){r.draw(this.particleMesh,M(p.x,p.y,p.z,0,0,0,p.size),p.life/p.max);}
+  if(game.camera!==1)this.drawTrails(r,flight,game);
  };
  return world;
 }
@@ -609,7 +655,7 @@ function toggleSound(){audio.unlock();settings.muted=!settings.muted;audio.setMu
 function selectActivity(name){game.activity=name;for(const b of document.querySelectorAll('[data-activity]')){const selected=b.dataset.activity===name;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));}$('runwayBtn').hidden=name==='landing';$('flyBtn').innerHTML=(name==='landing'?'Practice landing':'Fly now')+' <svg><use href="#i-arrow"/></svg>';}
 function start(spawn='air'){
  if(!world)return;audio.unlock();clearInput();game.phase='playing';
- Object.assign(game,{gate:0,score:0,combo:1,comboTime:0,totalGates:0,nearMisses:0,elapsed:0,flightTime:0,crashes:0,particles:[],lowTime:0,lowPoints:0,previousBoost:false,landingDone:false,nextRadio:23,toastTime:0,radioTime:0,snapCamera:true});
+ Object.assign(game,{gatePulse:null,kick:0,gate:0,score:0,combo:1,comboTime:0,totalGates:0,nearMisses:0,elapsed:0,flightTime:0,crashes:0,particles:[],lowTime:0,lowPoints:0,previousBoost:false,landingDone:false,nextRadio:23,toastTime:0,radioTime:0,snapCamera:true});
  game.flight=S.createFlight(spawn);$('toast').classList.remove('show');for(const p of world.planes)p.nearCooldown=0;
  if(game.activity==='landing'){Object.assign(game.flight,{x:0,y:81,z:900,speed:51,throttle:.37,heading:0,pitch:0});}
  for(const id of['menu','pause','crash','finish'])$(id).hidden=true;document.body.classList.add('playing');$('touch').style.visibility='visible';
@@ -662,13 +708,13 @@ function update(dt){
  }
  if(s.crashed)return;
  if(game.landingDone&&s.grounded&&s.speed<2&&game.activity==='landing'){endFlight('Landed','');return;}
- if(s.boosting&&!game.previousBoost)audio.play('boost');game.previousBoost=s.boosting;
+ if(s.boosting&&!game.previousBoost){audio.play('boost');game.kick=Math.max(game.kick||0,2.5);}game.previousBoost=s.boosting;
  if(game.comboTime>0)game.comboTime-=dt;else game.combo=1;
  if(game.activity!=='landing'){
   const g=S.route[game.gate];
   if(S.crossedGate(s.previous,s,g)){
    const offset=Math.hypot(s.x-g.x,s.y-g.y,s.z-g.z),perfect=offset<15,points=(perfect?250:150)*game.combo;
-   award(points);audio.play(perfect?'perfect':'gate');sparks(s.x,s.y,s.z,18,1.25);game.totalGates++;game.gate=(game.gate+1)%S.route.length;game.combo=Math.min(5,game.combo+1);game.comboTime=13;
+   award(points);audio.play(perfect?'perfect':'gate');sparks(s.x,s.y,s.z,perfect?30:18,perfect?1.6:1.25);game.gatePulse={i:game.gate,t:game.worldTime,perfect};game.kick=Math.max(game.kick||0,perfect?5:3);game.totalGates++;game.gate=(game.gate+1)%S.route.length;game.combo=Math.min(5,game.combo+1);game.comboTime=13;
    toast(perfect?'Perfect':'Gate',`+${points} · COMBO ×${game.combo}`,1.65);
    if(game.gate===0){award(1500);if(game.activity==='coast'){endFlight('Coast complete',`All 20 gates · ${Math.max(0,Math.ceil(180-game.elapsed))} s left`);return;}else toast('Lap complete','+1,500',3);}
   }
@@ -692,7 +738,7 @@ function updateCamera(dt){
  }
  const k=game.camera===1?16:4.6;
  for(let j=0;j<3;j++){game.eye[j]=game.snapCamera?eye[j]:damp(game.eye[j],eye[j],k,dt);game.look[j]=game.snapCamera?look[j]:damp(game.look[j],look[j],7,dt);}
- game.snapCamera=false;game.fov=damp(game.fov,game.camera===1?74:61+(s.boosting?6:0)+clamp((s.speed-70)*.045,0,2),3,dt);
+ game.snapCamera=false;game.kick=damp(game.kick||0,0,4,dt);game.fov=damp(game.fov,game.camera===1?74:61+(s.boosting?6:0)+clamp((s.speed-70)*.045,0,2),3,dt);
 }
 const mapImage=document.createElement('canvas');mapImage.width=150;mapImage.height=150;
 function buildMap(){const c=mapImage.getContext('2d'),data=c.createImageData(150,150);for(let y=0;y<150;y++)for(let x=0;x<150;x++){const h=S.heightAt((x/150-.5)*3200,(y/150-.5)*3200),i=(y*150+x)*4;const col=h<1?[40,83,89]:h<10?[141,153,114]:h<70?[100,131,94]:[85+h*.1,114+h*.08,84+h*.09];for(let k=0;k<3;k++)data.data[i+k]=col[k];data.data[i+3]=255;}c.putImageData(data,0,0);}
@@ -752,7 +798,7 @@ function renderFrame(timestamp){
   accumulator+=dt;let steps=0;while(accumulator>=1/120&&steps<15){update(1/120);accumulator-=1/120;steps++;}
  }else accumulator=0;
  if(!document.hidden){
-  updateCamera(dt);renderer.begin(game.eye,game.look,game.fov,game.worldTime);world.draw(renderer,game.flight,game);updateLabels();game.renderedFrames++;
+  updateCamera(dt);renderer.begin(game.eye,game.look,game.fov+(game.kick||0),game.worldTime);world.draw(renderer,game.flight,game);updateLabels();game.renderedFrames++;
  }
  game.uiTime+=dt;if(game.uiTime>=.07){updateUI(game.uiTime);audio.update(game.flight,game.phase==='playing',game.uiTime,game.camera);game.uiTime=0;}
  game.frameCount++;

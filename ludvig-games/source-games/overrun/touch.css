@@ -150,3 +150,6 @@ body.touch-live #toast{bottom:auto;top:30%}
  .topbar nav button{letter-spacing:.6px;padding:0 5px;min-width:44px}
 }
 .topbar nav button{flex:none}
+
+/* During a touch match the corner "All games" link sat on the jump button; the pause button leads out instead. */
+body.touch-live>a[aria-label="All games"]{display:none!important}

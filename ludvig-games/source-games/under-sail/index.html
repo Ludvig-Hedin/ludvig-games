@@ -75,6 +75,8 @@ svg.ico{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stro
 body.photo-mode #mpLabels{display:none}
 .topbar .brand{min-width:0;flex:0 1 auto;overflow:hidden}.topbar .top-actions{flex:none}
 .modal{min-width:0}.modal-backdrop{grid-template-columns:minmax(0,auto)}.mp-peers li,.mp-results li{min-width:0}.mp-peers li b,.mp-results li b{min-width:0;flex:1}
+/* Leave room for the site's round All games button in the top-left corner. */
+@media(min-width:681px){.has-back .brand{margin-left:46px}}
 </style></head>
 <body>
 <canvas id="sea" tabindex="0" aria-label="3D sailing game. Steer with A and D or arrow keys. Hold Shift for a gust, S to slow down, Escape to pause."></canvas>
@@ -257,6 +259,11 @@ addEventListener('resize',resize);resize();
 // ---- GAME STATE & SAILING -------------------------------------------------
 const WIND_FROM=-Math.PI/4;
 let best=null;try{let n=Number(localStorage.getItem('tack.best.v1'));if(Number.isFinite(n)&&n>0)best=n}catch(_e){}
+// Ghost of the fastest finished solo loop (own key; best time key is unchanged).
+let ghost=null;try{let g=JSON.parse(localStorage.getItem('tack.ghost.v1')||'null');if(g&&Number.isFinite(g.t)&&Array.isArray(g.p)&&g.p.length>=6&&Array.isArray(g.s))ghost=g}catch(_e){}
+const GHOST_DT=.2,ghostRec={p:[],s:[],next:0};
+function ghostAt(t){if(!ghost)return null;let f=t/GHOST_DT,i=Math.floor(f),n=ghost.p.length/3-1;if(i>=n){i=n;f=n}let k=clamp(f-i,0,1),j=Math.min(i+1,n),a=i*3,b=j*3;return{x:mix(ghost.p[a],ghost.p[b],k),z:mix(ghost.p[a+1],ghost.p[b+1],k),h:ghost.p[a+2]+wrap(ghost.p[b+2]-ghost.p[a+2])*k}}
+const soloRace=()=>state.mode==='race'&&!room;
 const state={mode:'menu',paused:false,gate:0,elapsed:0,topSpeed:0,distance:0,charge:1,boosting:false,discovered:new Set(),lastCollision:-100,shoreHits:0,completed:false};
 const boat={x:START.x,z:START.z,h:START.h,speed:0,turn:0,eff:.8,heel:0,sailAngle:.7};
 const input={keys:new Set(),left:false,right:false,boost:false,drag:0,pointer:null,startX:0};
@@ -302,8 +309,9 @@ function step(dt){if(state.paused||state.mode==='finished')return;if(mpHold>0){m
  let desiredSail=.42+.68*Math.abs(Math.sin(wrap(boat.h-WIND_FROM)/2));let side=Math.sin(boat.h-WIND_FROM)>=0?1:-1;boat.sailAngle=mix(boat.sailAngle,desiredSail*side,1-Math.exp(-2.5*dt));
  if(state.mode==='race'){
   state.elapsed+=dt;let g=gates[state.gate];
+  if(state.elapsed>=ghostRec.next&&ghostRec.p.length<9000){ghostRec.next+=GHOST_DT;ghostRec.p.push(+boat.x.toFixed(1),+boat.z.toFixed(1),+boat.h.toFixed(2))}
   // Sweep the entire movement segment to avoid missed gates on slower frames.
-  if(g&&clearedGate(ox,oz,boat.x,boat.z,g)){state.gate++;state.charge=clamp(state.charge+.24,0,1);burst(g.x,g.z,34);sfx('gate');updateRoute();if(state.gate>=gates.length){finish();return}else{toast(`Gate ${state.gate} of 8`,`Next: ${gates[state.gate].name}`,2.5)}}
+  if(g&&clearedGate(ox,oz,boat.x,boat.z,g)){state.gate++;state.charge=clamp(state.charge+.24,0,1);burst(g.x,g.z,34);sfx('gate');updateRoute();ghostRec.s.push(+state.elapsed.toFixed(2));if(state.gate>=gates.length){finish();return}else{let split=soloRace()&&ghost&&Number.isFinite(ghost.s[state.gate-1])?state.elapsed-ghost.s[state.gate-1]:null;toast(`Gate ${state.gate} of 8`,`Next: ${gates[state.gate].name}`+(split==null?'':` · ${split<0?'−':'+'}${Math.abs(split).toFixed(1)} s`),2.5)}}
  }else if(state.mode==='explore'){
   for(let [i,d]of discoveries.entries())if(!state.discovered.has(i)&&Math.hypot(boat.x-d.x,boat.z-d.z)<d.r){state.discovered.add(i);toast(d.name,'',4);sfx('discover');updateRoute();break}
  }
@@ -312,10 +320,10 @@ function step(dt){if(state.paused||state.mode==='finished')return;if(mpHold>0){m
 let boostLocked=false;
 function updateRoute(){let race=state.mode==='race'||state.mode==='finished';$('routeEyebrow').textContent=race?'THE ISLAND LOOP':'FREE SAILING';$('gateCount').textContent=race?`${String(Math.min(state.gate+1,8)).padStart(2,'0')} / 08`:`${state.discovered.size} / 5`;$('gateName').textContent=race?(gates[Math.min(state.gate,7)].name):'Quiet corners';$('routeCaption').textContent=race?'Sail between the orange buoys.':'Find the five islands.';$('clockLabel').textContent='TIME';document.querySelector('.clock-panel').hidden=!race;$('progress').innerHTML=Array.from({length:race?8:5},(_,i)=>`<i class="${race?(i<state.gate?'done':i===state.gate?'active':''):(i<state.discovered.size?'done':'')}"></i>`).join('');$('worldMarker').classList.toggle('hidden',!race);$('restartBtn').textContent=race?'Restart':'Sail the loop';$('switchExploreBtn').classList.toggle('hidden',!race)}
 function closeModals(){for(let id of['pauseModal','helpModal','finishModal','onlineModal'])$(id).classList.remove('open')}
-function start(mode='race',keepPosition=false){closeModals();clearInput();state.mode=mode;state.paused=false;state.gate=0;state.elapsed=0;state.topSpeed=0;state.distance=0;state.charge=1;state.boosting=false;state.shoreHits=0;state.completed=false;state.lastCollision=-100;state.discovered.clear();boostLocked=false;wake.length=0;sparks.length=0;wakeClock=0;simTime=0;toastUntil=0;accumulator=0;
+function start(mode='race',keepPosition=false){closeModals();clearInput();state.mode=mode;state.paused=false;state.gate=0;state.elapsed=0;state.topSpeed=0;state.distance=0;state.charge=1;state.boosting=false;state.shoreHits=0;state.completed=false;state.lastCollision=-100;state.discovered.clear();boostLocked=false;ghostRec.p=[];ghostRec.s=[];ghostRec.next=0;wake.length=0;sparks.length=0;wakeClock=0;simTime=0;toastUntil=0;accumulator=0;
  if(!keepPosition){boat.x=START.x;boat.z=START.z;boat.h=START.h;boat.speed=3.1;boat.turn=0;boat.heel=0;boat.sailAngle=.7;boat.eff=efficiency(boat.h);camHeading=boat.h;eye=[boat.x,12.5,boat.z+28];target=[boat.x,2.2,boat.z-12]}else boat.speed=Math.max(boat.speed,3);
  document.body.classList.add('playing');document.body.classList.remove('photo-mode');photo=false;$('pauseBtn').classList.remove('hidden');$('cameraBtn').classList.remove('hidden');$('toast').classList.remove('show');$('tutorial').classList.remove('hidden');$('tutorial').innerHTML=(matchMedia('(pointer:coarse)').matches?'<strong>Hold the arrows</strong> or <strong>drag</strong> to steer. Your sail trims itself.':'<strong>A / D</strong> or <strong>← / →</strong> to steer. Your sail trims itself.');tutorialUntil=12;updateRoute();audioStart();sfx('start');canvas.focus({preventScroll:true});updateHUD();}
-function finish(){state.completed=true;state.mode='finished';state.boosting=false;clearInput();let isBest=best===null||state.elapsed<best;if(isBest){best=state.elapsed;try{localStorage.setItem('tack.best.v1',String(best))}catch(_e){}}
+function finish(){state.completed=true;state.mode='finished';state.boosting=false;clearInput();if(!room&&ghostRec.s.length===gates.length&&(!ghost||state.elapsed<ghost.t)){ghostRec.p.push(+boat.x.toFixed(1),+boat.z.toFixed(1),+boat.h.toFixed(2));ghost={v:1,t:+state.elapsed.toFixed(2),p:ghostRec.p,s:ghostRec.s};try{localStorage.setItem('tack.ghost.v1',JSON.stringify(ghost))}catch(_e){}}let isBest=best===null||state.elapsed<best;if(isBest){best=state.elapsed;try{localStorage.setItem('tack.best.v1',String(best))}catch(_e){}}
  $('resultTime').textContent=formatTime(state.elapsed);$('resultBest').textContent=formatTime(best);$('resultSpeed').textContent=(state.topSpeed*1.94384).toFixed(1);$('newBest').hidden=!isBest;$('medal').textContent=state.elapsed<150?'GOLD':state.elapsed<195?'SILVER':'BRONZE';lgBoard($('resultBoard'),'under-sail');mpOnFinish();openModal('finishModal',room?'stayBtn':'againBtn');sfx('finish');}
 function formatTime(t,tenths=false){let m=Math.floor(t/60),s=Math.floor(t%60);return`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}${tenths?'.'+Math.floor((t%1)*10):''}`}
 let previousFocus=null,helpWasPaused=false;
@@ -358,6 +366,7 @@ function audioStart(){if(!soundOn)return;try{if(!audio){const AC=window.AudioCon
 function toggleSound(){soundOn=!soundOn;soundUI();try{localStorage.setItem('tack.sound',soundOn?'1':'0')}catch(_e){}if(soundOn){audioStart();sfx('discover')}else if(audio&&audioGain)audioGain.gain.setTargetAtTime(0,audio.currentTime,.12)}
 $('soundBtn').onclick=toggleSound;soundUI();
 if(matchMedia('(pointer:coarse)').matches){document.body.classList.add('touch-device')}
+try{if(window.top===window&&!/\bElectron\//.test(navigator.userAgent))document.body.classList.add('has-back')}catch(_e){}
 function tone(freq,when,duration=.4,vol=.1){if(!audio||!soundOn)return;let osc=audio.createOscillator(),g=audio.createGain();osc.type='sine';osc.frequency.value=freq;g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(vol,when+.014);g.gain.exponentialRampToValueAtTime(.0001,when+duration);osc.connect(g);g.connect(audioGain);osc.start(when);osc.stop(when+duration+.03)}
 function sfx(type){if(!audio||!soundOn)return;let now=audio.currentTime;let notes=type==='finish'?[523.25,659.25,783.99,1046.5]:type==='gate'?[659.25,880,1046.5]:type==='bump'?[110]:type==='start'?[392,523.25]:[587.33,783.99];notes.forEach((f,i)=>tone(f,now+i*.12,type==='bump'?.16:.7,type==='bump'?.09:.14))}
 // ---- HUD, MAP & WAYFINDING -------------------------------------------------
@@ -369,6 +378,7 @@ function drawMap(){const size=336,center=168,s=.525;ctx.clearRect(0,0,size,size)
   ctx.beginPath();ctx.moveTo(px(START.x),pz(START.z));for(let g of gates)ctx.lineTo(px(g.x),pz(g.z));ctx.strokeStyle='rgba(245,242,218,.35)';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.stroke();ctx.setLineDash([]);
   for(let [i,g]of gates.entries()){let r=i===state.gate?5.2:3;ctx.beginPath();ctx.arc(px(g.x),pz(g.z),r,0,TAU);ctx.fillStyle=i<state.gate?'#e8a77f':i===state.gate?'#fff2bf':'rgba(231,238,218,.4)';ctx.fill();if(i===state.gate){ctx.beginPath();ctx.arc(px(g.x),pz(g.z),10+Math.sin(artTime*3)*1.7,0,TAU);ctx.strokeStyle='rgba(255,242,191,.6)';ctx.lineWidth=1.2;ctx.stroke()}}
  }else{for(let [i,d]of discoveries.entries()){ctx.beginPath();ctx.arc(px(d.x),pz(d.z),3.6,0,TAU);ctx.fillStyle=state.discovered.has(i)?'#f4c092':'rgba(230,235,201,.38)';ctx.fill()}}
+ if(soloRace()&&ghost){let g=ghostAt(state.elapsed);if(g){let x=px(g.x),y=pz(g.z),r=Math.hypot(x,y);if(r>148){x*=148/r;y*=148/r}ctx.beginPath();ctx.arc(x,y,3.4,0,TAU);ctx.fillStyle='rgba(156,195,224,.75)';ctx.fill()}}
  mpMapDots(ctx,px,pz);let bx=px(boat.x),bz=pz(boat.z),br=Math.hypot(bx,bz);if(br>148){bx*=148/br;bz*=148/br}ctx.translate(bx,bz);ctx.rotate(boat.h);ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(5.5,6.2);ctx.lineTo(0,3.7);ctx.lineTo(-5.5,6.2);ctx.closePath();ctx.shadowColor='rgba(18,57,51,.6)';ctx.shadowBlur=8;ctx.fillStyle='#fff9e6';ctx.fill();ctx.shadowBlur=0;ctx.restore();}
 function project(p){let x=vp[0]*p[0]+vp[4]*p[1]+vp[8]*p[2]+vp[12],y=vp[1]*p[0]+vp[5]*p[1]+vp[9]*p[2]+vp[13],w=vp[3]*p[0]+vp[7]*p[1]+vp[11]*p[2]+vp[15];return{x:(x/w*.5+.5)*W,y:(.5-y/w*.5)*H,w}}
 function updateMarker(){if(state.mode!=='race')return;let g=gates[state.gate];if(!g)return;let p=project([g.x,12.7,g.z]),mx=W<680?89:114,my=W<680?234:224,miny=Math.min(my,H*.41),maxy=H-(W<680?245:170);let off=p.w<.1||p.x<mx||p.x>W-mx||p.y<miny||p.y>maxy;
@@ -379,8 +389,11 @@ function updateHUD(){if(state.mode==='menu')return;$('speed').textContent=(boat.
  if(state.mode==='explore'){$('clock').textContent='No hurry.';$('clock').style.fontSize=W<680?'17px':'21px'}else{$('clock').style.fontSize='';let t=state.elapsed;$('clock').innerHTML=formatTime(t)+`<small>.${Math.floor((t%1)*10)}</small>`}
  $('tutorial').classList.toggle('hidden',simTime>tutorialUntil);if(simTime>toastUntil)$('toast').classList.remove('show');drawMap();}
 // ---- RENDERING ------------------------------------------------------------
-function renderBoat(x,z,h,s=1,main=mainSail,jib=jibSail,hero=false){let y=seaHeight(x,z)+.11;let bob=reducedMotion?0:Math.sin(artTime*1.37+x*.07)*.022,pitch=reducedMotion?0:Math.cos(artTime*1.05+z*.07)*.020;let roll=hero?boat.heel:Math.sin(artTime+x*.04)*.035;
- let base=pose(x,y,z,-h,pitch,roll+bob,s);draw(boatHull,base);let sa=hero?(state.mode==='menu'?-.48:boat.sailAngle):.4;let sailTransform=mul(base,mul(trans(0,0,-.42),mul(rotY(sa),trans(0,0,.42))));draw(main,sailTransform);draw(jib,base);draw(boom,sailTransform);draw(boatFlag,base);}
+function renderBoat(x,z,h,s=1,main=mainSail,jib=jibSail,hero=false,alpha=1){let y=seaHeight(x,z)+.11;let bob=reducedMotion?0:Math.sin(artTime*1.37+x*.07)*.022,pitch=reducedMotion?0:Math.cos(artTime*1.05+z*.07)*.020;let roll=hero?boat.heel:Math.sin(artTime+x*.04)*.035;
+ let base=pose(x,y,z,-h,pitch,roll+bob,s);draw(boatHull,base,0,alpha);let sa=hero?(state.mode==='menu'?-.48:boat.sailAngle):.4;
+ // Close to the wind the sail luffs: a visible flutter that says "turn across the wind".
+ if(hero&&state.mode!=='menu'&&!reducedMotion&&boat.eff<.5)sa+=Math.sin(artTime*23)*.05*(.5-boat.eff)/.26;
+ let sailTransform=mul(base,mul(trans(0,0,-.42),mul(rotY(sa),trans(0,0,.42))));draw(main,sailTransform,0,alpha);draw(jib,base,0,alpha);draw(boom,sailTransform,0,alpha);draw(boatFlag,base,0,alpha);}
 function updateWake(dt){let g=new Geometry();for(let p of wake)p.age=simTime-p.born;while(wake.length&&wake[wake.length-1].age>6.2)wake.pop();
  for(let i=0;i<wake.length-1;i++){let a=wake[i],b=wake[i+1];for(let side of[-1,1]){let wa=.75+a.age*.72,wb=.75+b.age*.72,alpha=Math.pow(clamp(1-a.age/6.2,0,1),1.8)*(.37+.16*Math.sin(i*2.9+a.age*3.4));let wide=.20+a.age*.21;let pa=[a.x+a.rx*wa*side,seaHeight(a.x,a.z)+.065,a.z+a.rz*wa*side],pb=[b.x+b.rx*wb*side,seaHeight(b.x,b.z)+.065,b.z+b.rz*wb*side],pc=[pb[0]+b.rx*side*wide,pb[1]+.007,pb[2]+b.rz*side*wide],pd=[pa[0]+a.rx*side*wide,pa[1]+.007,pa[2]+a.rz*side*wide];g.quad(pa,pb,pc,pd,[.86,.96,.87,alpha],[0,1,0])}
   if(i<24&&i%2===0){let y=seaHeight(a.x,a.z)+.10,w=.48+Math.random()*.10;g.quad([a.x-a.rx*w,y,a.z-a.rz*w],[b.x-b.rx*w,y,b.z-b.rz*w],[b.x+b.rx*w,y,b.z+b.rz*w],[a.x+a.rx*w,y,a.z+a.rz*w],[.83,.94,.83,.18*(1-i/24)],[0,1,0])}}
@@ -413,6 +426,7 @@ function render(dt){let frozen=state.paused||state.mode==='finished';if(!frozen)
  renderBoat(boat.x,boat.z,boat.h,1,mainSail,jibSail,true);mpRender(dt);
  for(let g of gulls){let a=g.a+artTime*g.s,x=g.x+Math.cos(a)*g.r,z=g.z+Math.sin(a)*g.r,y=g.y+Math.sin(artTime*.8+g.a)*1.4;draw(gullMesh,pose(x,y,z,-a,Math.sin(artTime*2.5+g.a)*.1,Math.sin(artTime*3+g.a)*.17,.52),2)}
  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+ if(soloRace()&&ghost&&mpHold<=0){let g=ghostAt(state.elapsed);if(g&&Math.hypot(g.x-boat.x,g.z-boat.z)>2.5)renderBoat(g.x,g.z,g.h,1,blueSail,creamJib,false,.42)}
  updateWake(animDt);draw(wakeMesh,ID,2);updateWind();draw(windMesh,ID,2);
  if(state.mode==='race'&&state.gate<8){let g=gates[state.gate],h=Math.atan2(g.fx,-g.fz),mat=pose(g.x,.06,g.z,-h);draw(gateArc,mat,2,.72+Math.sin(artTime*2)*.16);draw(gateGlow,trans(g.x,.03,g.z),2,.32);draw(chevrons,mul(mat,trans(0,0,18)),2,.42+Math.sin(artTime*2)*.12)}
  updateSparks(animDt);draw(sparkMesh,ID,2);gl.depthMask(true);gl.disable(gl.BLEND);

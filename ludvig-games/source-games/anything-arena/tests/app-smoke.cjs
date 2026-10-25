@@ -169,7 +169,8 @@ const hidden = (a, id) => a.byId[id].classList.contains('hidden');
   assert.equal(host.snap().phase, 'result'); assert.equal(guest.snap().phase, 'result');
   assert.equal(host.snap().fingerprint, guest.snap().fingerprint, 'online battle results differ');
   await wait(50); host.tick(1); guest.tick(1);
-  assert.match(text(host, 'verify'), /SAME RESULT ON 2 DEVICES/);
+  // Calm pass (23 Oct): matching results show nothing; only a mismatch shows a warning.
+  assert.equal(text(host, 'verify'), '');
   const scored = [...host.ctx.Ludvig.scores, ...guest.ctx.Ludvig.scores];
   const winner = host.snap().winner;
   assert.ok(winner === -1 || scored.length === 1 && scored[0][0] === 'anything-arena:wins' && scored[0][1] === 1, 'exactly the winner should submit 1 win');

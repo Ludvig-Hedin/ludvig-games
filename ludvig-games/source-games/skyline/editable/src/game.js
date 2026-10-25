@@ -26,7 +26,7 @@ function toggleSound(){audio.unlock();settings.muted=!settings.muted;audio.setMu
 function selectActivity(name){game.activity=name;for(const b of document.querySelectorAll('[data-activity]')){const selected=b.dataset.activity===name;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));}$('runwayBtn').hidden=name==='landing';$('flyBtn').innerHTML=(name==='landing'?'Practice landing':'Fly now')+' <svg><use href="#i-arrow"/></svg>';}
 function start(spawn='air'){
  if(!world)return;audio.unlock();clearInput();game.phase='playing';
- Object.assign(game,{gate:0,score:0,combo:1,comboTime:0,totalGates:0,nearMisses:0,elapsed:0,flightTime:0,crashes:0,particles:[],lowTime:0,lowPoints:0,previousBoost:false,landingDone:false,nextRadio:23,toastTime:0,radioTime:0,snapCamera:true});
+ Object.assign(game,{gatePulse:null,kick:0,gate:0,score:0,combo:1,comboTime:0,totalGates:0,nearMisses:0,elapsed:0,flightTime:0,crashes:0,particles:[],lowTime:0,lowPoints:0,previousBoost:false,landingDone:false,nextRadio:23,toastTime:0,radioTime:0,snapCamera:true});
  game.flight=S.createFlight(spawn);$('toast').classList.remove('show');for(const p of world.planes)p.nearCooldown=0;
  if(game.activity==='landing'){Object.assign(game.flight,{x:0,y:81,z:900,speed:51,throttle:.37,heading:0,pitch:0});}
  for(const id of['menu','pause','crash','finish'])$(id).hidden=true;document.body.classList.add('playing');$('touch').style.visibility='visible';
@@ -79,13 +79,13 @@ function update(dt){
  }
  if(s.crashed)return;
  if(game.landingDone&&s.grounded&&s.speed<2&&game.activity==='landing'){endFlight('Landed','');return;}
- if(s.boosting&&!game.previousBoost)audio.play('boost');game.previousBoost=s.boosting;
+ if(s.boosting&&!game.previousBoost){audio.play('boost');game.kick=Math.max(game.kick||0,2.5);}game.previousBoost=s.boosting;
  if(game.comboTime>0)game.comboTime-=dt;else game.combo=1;
  if(game.activity!=='landing'){
   const g=S.route[game.gate];
   if(S.crossedGate(s.previous,s,g)){
    const offset=Math.hypot(s.x-g.x,s.y-g.y,s.z-g.z),perfect=offset<15,points=(perfect?250:150)*game.combo;
-   award(points);audio.play(perfect?'perfect':'gate');sparks(s.x,s.y,s.z,18,1.25);game.totalGates++;game.gate=(game.gate+1)%S.route.length;game.combo=Math.min(5,game.combo+1);game.comboTime=13;
+   award(points);audio.play(perfect?'perfect':'gate');sparks(s.x,s.y,s.z,perfect?30:18,perfect?1.6:1.25);game.gatePulse={i:game.gate,t:game.worldTime,perfect};game.kick=Math.max(game.kick||0,perfect?5:3);game.totalGates++;game.gate=(game.gate+1)%S.route.length;game.combo=Math.min(5,game.combo+1);game.comboTime=13;
    toast(perfect?'Perfect':'Gate',`+${points} · COMBO ×${game.combo}`,1.65);
    if(game.gate===0){award(1500);if(game.activity==='coast'){endFlight('Coast complete',`All 20 gates · ${Math.max(0,Math.ceil(180-game.elapsed))} s left`);return;}else toast('Lap complete','+1,500',3);}
   }
@@ -109,7 +109,7 @@ function updateCamera(dt){
  }
  const k=game.camera===1?16:4.6;
  for(let j=0;j<3;j++){game.eye[j]=game.snapCamera?eye[j]:damp(game.eye[j],eye[j],k,dt);game.look[j]=game.snapCamera?look[j]:damp(game.look[j],look[j],7,dt);}
- game.snapCamera=false;game.fov=damp(game.fov,game.camera===1?74:61+(s.boosting?6:0)+clamp((s.speed-70)*.045,0,2),3,dt);
+ game.snapCamera=false;game.kick=damp(game.kick||0,0,4,dt);game.fov=damp(game.fov,game.camera===1?74:61+(s.boosting?6:0)+clamp((s.speed-70)*.045,0,2),3,dt);
 }
 const mapImage=document.createElement('canvas');mapImage.width=150;mapImage.height=150;
 function buildMap(){const c=mapImage.getContext('2d'),data=c.createImageData(150,150);for(let y=0;y<150;y++)for(let x=0;x<150;x++){const h=S.heightAt((x/150-.5)*3200,(y/150-.5)*3200),i=(y*150+x)*4;const col=h<1?[40,83,89]:h<10?[141,153,114]:h<70?[100,131,94]:[85+h*.1,114+h*.08,84+h*.09];for(let k=0;k<3;k++)data.data[i+k]=col[k];data.data[i+3]=255;}c.putImageData(data,0,0);}
@@ -169,7 +169,7 @@ function renderFrame(timestamp){
   accumulator+=dt;let steps=0;while(accumulator>=1/120&&steps<15){update(1/120);accumulator-=1/120;steps++;}
  }else accumulator=0;
  if(!document.hidden){
-  updateCamera(dt);renderer.begin(game.eye,game.look,game.fov,game.worldTime);world.draw(renderer,game.flight,game);updateLabels();game.renderedFrames++;
+  updateCamera(dt);renderer.begin(game.eye,game.look,game.fov+(game.kick||0),game.worldTime);world.draw(renderer,game.flight,game);updateLabels();game.renderedFrames++;
  }
  game.uiTime+=dt;if(game.uiTime>=.07){updateUI(game.uiTime);audio.update(game.flight,game.phase==='playing',game.uiTime,game.camera);game.uiTime=0;}
  game.frameCount++;

@@ -140,6 +140,40 @@ function makeWorld(renderer){
  world.gateActive=renderer.mesh(active,2);world.gateFuture=renderer.mesh(future,2);world.gateDecor=renderer.mesh(decor,2);
  world.shadow=renderer.mesh(new G().disk(0,0,0,6.8,4.3,0x183b3c,.25));
  const puff=new G().sphere(0,0,0,1,1,1,0xffda93,6,4);world.particleMesh=renderer.mesh(puff,2);
+ // Wingtip vapour trails: two ring buffers of points, drawn as camera-facing ribbons from one streaming buffer.
+ const TRAIL=56,TRAIL_LIFE=1.5;
+ world.trails=[-1,1].map(side=>({side,n:0,head:0,last:-1,pts:Array.from({length:TRAIL},()=>({x:0,y:0,z:0,t:0,k:0}))}));
+ world.trailMesh=renderer.dynamicMesh(2*(TRAIL-1)*6);world.trailSide=[0,0,0];
+ world.resetTrails=function(){for(const tr of this.trails){tr.n=0;tr.head=0;tr.last=-1;}};
+ world.drawTrails=function(r,flight,game){
+  const time=this.time,playing=game.phase==='playing'&&!flight.grounded&&!flight.crashed;
+  // Vapour shows in hard turns, pull-ups and boost, more at speed.
+  const pull=Math.max(Math.abs(flight.bank)-.22,0)/.4+Math.max(flight.vy-4,0)/14+(flight.boosting?.8:0);
+  const k=playing?clamp(pull,0,1)*clamp((flight.speed-38)/30,0,1):0;
+  const m=M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank),eye=r.eye,d=this.trailMesh.data,cap=d.length/10-6,a=this.trailSide;let v=0;
+  const put=(x,y,z,al)=>{const o=v*10;d[o]=x;d[o+1]=y;d[o+2]=z;d[o+3]=0;d[o+4]=1;d[o+5]=0;d[o+6]=.97;d[o+7]=.98;d[o+8]=1;d[o+9]=al;v++;};
+  for(const tr of this.trails){
+   const tip=S.transform(m,[tr.side*7.15,.3,1.05]);
+   const prev=tr.n?tr.pts[(tr.head+TRAIL-1)%TRAIL]:null;
+   if(prev&&Math.hypot(tip[0]-prev.x,tip[1]-prev.y,tip[2]-prev.z)>40)tr.n=0;
+   if(time-tr.last>=1/30||!tr.n){const p=tr.pts[tr.head];p.x=tip[0];p.y=tip[1];p.z=tip[2];p.t=time;p.k=k;tr.head=(tr.head+1)%TRAIL;tr.n=Math.min(TRAIL,tr.n+1);tr.last=time;}
+   else{const p=tr.pts[(tr.head+TRAIL-1)%TRAIL];p.x=tip[0];p.y=tip[1];p.z=tip[2];}
+   let has=false,ax=0,ay=0,az=0,aa=0;
+   for(let i=0;i<tr.n;i++){
+    const p=tr.pts[(tr.head-tr.n+i+TRAIL*2)%TRAIL],age=time-p.t;if(age>TRAIL_LIFE){has=false;continue;}
+    const q=tr.pts[(tr.head-tr.n+Math.min(i+1,tr.n-1)+TRAIL*2)%TRAIL],o=tr.pts[(tr.head-tr.n+Math.max(i-1,0)+TRAIL*2)%TRAIL];
+    const tx=q.x-o.x,ty=q.y-o.y,tz=q.z-o.z,vx=eye[0]-p.x,vy=eye[1]-p.y,vz=eye[2]-p.z;
+    let sx=ty*vz-tz*vy,sy=tz*vx-tx*vz,sz=tx*vy-ty*vx;const sl=Math.hypot(sx,sy,sz)||1,w=(.12+age*.28)/sl;sx*=w;sy*=w;sz*=w;
+    const near=Math.min(1,Math.max(0,(Math.hypot(vx,vy,vz)-8)/22)),alpha=p.k*(1-age/TRAIL_LIFE)*.42*near*Math.min(1,(tr.n-1-i)/2+.35);
+    if(has&&v<cap){
+     put(ax-a[0],ay-a[1],az-a[2],aa);put(ax+a[0],ay+a[1],az+a[2],aa);put(p.x+sx,p.y+sy,p.z+sz,alpha);
+     put(ax-a[0],ay-a[1],az-a[2],aa);put(p.x+sx,p.y+sy,p.z+sz,alpha);put(p.x-sx,p.y-sy,p.z-sz,alpha);
+    }
+    has=true;a[0]=sx;a[1]=sy;a[2]=sz;ax=p.x;ay=p.y;az=p.z;aa=alpha;
+   }
+  }
+  r.upload(this.trailMesh,v);if(v)r.draw(this.trailMesh,undefined,.98);
+ };
  world.update=function(dt,time){
   this.time=time;
   for(const p of this.planes){
@@ -176,6 +210,8 @@ function makeWorld(renderer){
    r.draw(j===0?this.gateActive:this.gateFuture,M(g.x,g.y,g.z,g.angle),j===0?1:.54);
    if(j===0)r.draw(this.gateDecor,M(g.x,g.y,g.z,g.angle,0,time*.3),.65);
   }
+  // The gate just flown through swells and fades, so every pass reads clearly.
+  if(game.gatePulse){const age=time-game.gatePulse.t,g=S.route[game.gatePulse.i];if(age>=0&&age<.7&&g)r.draw(this.gateActive,M(g.x,g.y,g.z,g.angle,0,0,1+age*.75),(1-age/.7)*(game.gatePulse.perfect?.9:.6));}
   const shadowY=S.groundAt(flight.x,flight.z)+.08,agl=Math.max(0,flight.y-shadowY);
   if(agl<150)r.draw(this.shadow,M(flight.x+agl*.3,shadowY,flight.z+agl*.12,flight.heading,0,0,1+agl*.012),clamp(1-agl/160,0,.8));
   if(game.camera!==1){r.draw(this.playerMesh,M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank));r.draw(this.propMesh,S.multiply(M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank),M(0,0,0,0,0,time*(35+flight.throttle*85))));}
@@ -184,6 +220,7 @@ function makeWorld(renderer){
    r.draw(this.playerMesh,M(flight.x,flight.y,flight.z,flight.heading,flight.pitch,flight.bank));
   }
   for(const p of game.particles){r.draw(this.particleMesh,M(p.x,p.y,p.z,0,0,0,p.size),p.life/p.max);}
+  if(game.camera!==1)this.drawTrails(r,flight,game);
  };
  return world;
 }

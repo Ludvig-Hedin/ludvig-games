@@ -81,6 +81,12 @@ body:not([data-input="keyboard"]) .comparison-card:focus-visible{outline:none}
 .card-receipt.correct{border:2px solid #598641;box-shadow:0 0 0 3px #90b27812}
 .card-receipt.wrong{border:2px solid #b45859;box-shadow:0 0 0 3px #b4585910}
 .card-receipt.wrong .receipt-tag{color:#963338;background:#fff1f1bd}
+.card-receipt.wrong.mine{animation:nope .48s cubic-bezier(.36,.07,.19,.97)}
+.card-receipt.correct.mine{animation:yes .5s cubic-bezier(.2,1.4,.4,1)}
+.card-receipt.mine .revealed-value{animation:valuepop .42s cubic-bezier(.2,1.4,.4,1)}
+@keyframes nope{15%,55%{transform:translateX(-9px) rotate(-1.2deg)}35%,75%{transform:translateX(9px) rotate(1.2deg)}}
+@keyframes yes{0%{transform:scale(1)}40%{transform:scale(1.035) translateY(-4px)}100%{transform:none}}
+@keyframes valuepop{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:none}}
 .card-receipt.correct .receipt-tag{color:#2d5925;background:#f5ffedbd}
 .interaction-area{display:flex;justify-content:center;align-items:center;min-height:134px;margin-top:20px;position:relative;z-index:0}
 .drop-zone{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;max-width:560px;width:100%;min-height:68px;padding:14px 20px;border:1.5px dashed #bac6ad;border-radius:20px;color:#56654b;background:#eef2e681;overflow:hidden;transition:background .18s,border-color .18s,color .18s,transform .18s;font-size:16px;font-weight:550}
@@ -134,7 +140,7 @@ dialog{border:1px solid #ffffffd9;border-radius:26px;padding:0;width:min(460px,c
 .result-score-label {font-size:12px; letter-spacing:.5px}
 .modal-button-row {margin-top:10px}
 
-@media(min-width:701px) and (max-height:800px){
+@media(min-width:701px) and (max-height:900px){
  .site-header{height:68px}.hero{padding:17px 0 27px}h1{font-size:40px;margin-top:13px}
  .card-slot{height:350px}.item-name{margin-top:23px;font-size:27px}.item-name.long-name{font-size:24px}.item-name.very-long{font-size:21px}
  .card-scene{top:60px;height:210px}.card-bottom{bottom:21px}.unknown-value{font-size:43px}.grip{margin-top:10px}
@@ -727,7 +733,9 @@ let calmHandle=null;
   function updateBest(){if(state.score>best()){saved.bests[bestKey()]=state.score;persist();}}
   function later(ms,fn){const e=epoch;jobs.push({remaining:ms,fn:()=>{if(e===epoch)fn();}});}
   function cancelTimers(){jobs=[];numberTween=null;epoch++;}
-  function draw(cat,except){
+  // Difficulty curve for classic runs: the first pairs are far apart, later ones get closer.
+  function pairGap(round){return round<3?1.6:round<6?1.3:round<10?1.12:1;}
+  function draw(cat,except,minRatio=1){
     let bag=state.bags[cat];
     if(!bag||!bag.some(x=>x.id!==except?.id&&x.value!==except?.value)){
       const recent=state.recent.slice(-Math.min(5,DATA[cat].length-2));
@@ -735,7 +743,10 @@ let calmHandle=null;
       if(!available.length) available=DATA[cat].filter(x=>x.id!==except?.id&&x.value!==except?.value);
       bag=state.bags[cat]=shuffle(available);
     }
-    const i=bag.findIndex(x=>x.id!==except?.id&&x.value!==except?.value), it=bag.splice(i,1)[0];
+    const fits=x=>x.id!==except?.id&&x.value!==except?.value;
+    let i=except&&minRatio>1?bag.findIndex(x=>fits(x)&&Math.max(x.value,except.value)/Math.min(x.value,except.value)>=minRatio):-1;
+    if(i<0)i=bag.findIndex(fits);
+    const it=bag.splice(i,1)[0];
     state.recent.push(cat+':'+it.id);
     return it;
   }
@@ -752,7 +763,7 @@ let calmHandle=null;
       state.recent=['searches:spotify','searches:netflix'];
     }else{
       if(selected==='mix') state.cat=categoryKeys[Math.floor(Math.random()*categoryKeys.length)];
-      state.left=draw(state.cat);state.right=draw(state.cat,state.left);
+      state.left=draw(state.cat);state.right=draw(state.cat,state.left,pairGap(0));
     }
     document.body.dataset.mode=mode;
     renderAll();
@@ -946,7 +957,7 @@ let calmHandle=null;
       const higher=it.value>opposite.value,isPick=s===state.pick;
       const el=$('#'+s+'Value');el.textContent=formatValue(it);el.title=fullValue(it);
       el.setAttribute('aria-label',fullValue(it)+' '+screenCopy[state.cat].unit);
-      if(isPick)receipt.classList.add(correct?'correct':'wrong');
+      if(isPick)receipt.classList.add(correct?'correct':'wrong','mine');
       else if(higher)receipt.classList.add('correct');
       $('#'+s+'Verdict').innerHTML=icon(equal?'check':higher?'up':'down')+(equal?'Equal':higher?'Higher':'Lower')+(isPick?' · your pick':'');
     }
@@ -981,7 +992,7 @@ let calmHandle=null;
         }
         // Draw two fresh hidden cards. Keeping the larger card forever would make
         // the game degenerate into comparing everything against the maximum.
-        state.left=draw(state.cat);state.right=draw(state.cat,state.left);
+        state.left=draw(state.cat);state.right=draw(state.cat,state.left,pairGap(state.round));
       }
       state.phase='playing';state.guess=null;state.pick=null;renderAll();
       $$('.comparison-card').forEach((el,i)=>motion(el,[{opacity:0,transform:`translateY(32px) rotate(${i?5:-5}deg) scale(.96)`},{opacity:1,transform:restTransform(el)}],{duration:310,delay:i*25,easing:'cubic-bezier(.15,.85,.2,1)'}));

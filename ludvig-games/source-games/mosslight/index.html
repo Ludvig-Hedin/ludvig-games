@@ -44,10 +44,17 @@ body.touch .craft-button{min-height:44px;min-width:56px;justify-content:center}
 #coop-back{justify-self:start;margin-top:6px}
 #coop-tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .coop-tag{position:absolute;transform:translate(-50%,-100%);padding:3px 8px;border-radius:3px;background:rgba(16,34,32,.72);color:#e7f6e4;font-size:11px;font-weight:800;white-space:nowrap}
+/* Leave room for the site's round All games button in the top-left corner. */
+body.has-back .vitals{margin-left:40px}
+/* A creature close by but out of view tints the screen edge it is coming from. */
+#threat{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;background:radial-gradient(ellipse 34% 40% at var(--tx,50%) var(--ty,100%),rgba(217,78,67,.62),rgba(217,78,67,0) 100%)}
+/* Last heart: the hearts pulse. */
+.hearts.low .heart{animation:heartlow .9s ease-in-out infinite}@keyframes heartlow{50%{filter:drop-shadow(0 3px 0 #663c39) brightness(1.45)}}
+@media(prefers-reduced-motion:reduce){.hearts.low .heart{animation:none}}
 </style>
 </head>
 <body>
-<canvas id="world" aria-label="Grove voxel game world"></canvas><div id="veil"></div><div id="underwater"></div><div id="hurt"></div><div id="flash"></div>
+<canvas id="world" aria-label="Grove voxel game world"></canvas><div id="veil"></div><div id="underwater"></div><div id="hurt"></div><div id="threat"></div><div id="flash"></div>
 <div id="start" class="screen">
  <div class="title-content"><h1>Grove</h1><p class="description solo">Find 12 crystals. Bring them to the beacon.</p><div class="start-actions solo"><button id="start-btn" class="primary" disabled><span class="loading-dot">Growing your world…</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button id="board-btn" class="secondary board-btn" aria-label="Leaderboard" title="Leaderboard" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M16 5.5h2.5v1A3.5 3.5 0 0 1 15.4 10"/><path d="M8 5.5H5.5v1A3.5 3.5 0 0 0 8.6 10"/><path d="M12 13v3.5"/><path d="M8.5 20h7"/><path d="M9.5 16.5h5V20h-5Z"/></svg></button></div><div id="start-best" class="start-best solo">BEST 0</div><button id="coop-btn" class="secondary coop-btn solo" hidden>Build with friends</button>
  <div id="coop-panel" class="coop hidden"><div id="coop-choose" class="coop-col"><button id="coop-quick" class="primary"><span>Quick match</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button id="coop-create" class="secondary">Create private room</button><form id="coop-join" class="coop-join"><input id="coop-code-input" maxlength="6" placeholder="Code" aria-label="Room code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="secondary" type="submit">Join</button></form></div><div id="coop-room" class="coop-col hidden"><div class="coop-code">Room <b id="coop-code"></b></div><ul id="coop-peers" class="coop-peers"></ul><button id="coop-enter" class="primary"><span>Enter world</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><button id="coop-invite" class="secondary">Copy invite link</button></div><p id="coop-msg" class="coop-msg" role="status"></p><button id="coop-back" class="secondary">Back</button></div>
@@ -644,7 +651,7 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
     function calmBoard(el, board) { const ui = window.Ludvig && window.Ludvig.ui; if (!el) return; if (el._calmBoard) { try { el._calmBoard.destroy(); } catch { } el._calmBoard = null; } if (!ui) { el.hidden = true; return; } el.hidden = false; el.textContent = ''; try { el._calmBoard = ui.board(el, { board, limit: 5 }); } catch { el.hidden = true; } }
     function calmOpenBoard(board) { try { window.Ludvig && window.Ludvig.ui && window.Ludvig.ui.open({ board }); } catch { } }
     function panels(mode) { for (const id of ['start', 'pause', 'craft', 'end'])
-        $(id).classList.toggle('hidden', mode !== id); $('hud').classList.toggle('hidden', mode === 'start' || mode === 'end'); }
+        $(id).classList.toggle('hidden', mode !== id); $('hud').classList.toggle('hidden', mode === 'start' || mode === 'end'); if (mode !== 'play') $('threat').style.opacity = '0'; }
     let pointerFallback = false, hadLock = false, pauseTime = 0;
     function requestLock() { if (touch)
         return; try {
@@ -1128,6 +1135,7 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
     function updateHotbar() { [...$('hotbar').children].forEach((b, i) => { b.classList.toggle('active', i === state.selected); b.querySelector('.count').textContent = state.free ? '∞' : state.inv[i]; b.setAttribute('aria-label', itemNames[i] + ': ' + (state.free ? 'unlimited' : state.inv[i])); b.setAttribute('aria-pressed', i === state.selected ? 'true' : 'false'); }); $('selected-name').textContent = itemNames[state.selected] + (state.selected === 4 ? ' · ' + (touch ? 'PLACE to eat' : 'F to eat') : ''); }
     function updateHUD() {
         [...$('hearts').children].forEach((h, i) => h.style.setProperty('--fill', clamp(player.hp - i, 0, 1) * 100 + '%'));
+        $('hearts').classList.toggle('low', !state.free && state.mode === 'play' && player.hp > 0 && player.hp <= 1.5);
         $('score').textContent = Math.floor(state.score + state.time * 3).toLocaleString();
         $('crystals').textContent = state.free ? 'Build anything' : Math.min(GOAL, state.crystals) + ' / ' + GOAL;
         $('crystal-progress').style.width = Math.min(1, state.crystals / GOAL) * 100 + '%';
@@ -1237,6 +1245,16 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
         bindMesh(handBuffer);
         gl.drawArrays(gl.TRIANGLES, 0, count);
     }
+    // Nearest creature within 7 m that is outside the view: tint the screen edge on its side.
+    let threatX = '', threatY = '';
+    function updateThreat() { let best = null, bestD = 7; if (!state.free) for (const e of creatures) {
+        if (e.spawn > 0) continue; const dx = e.x - player.x, dz = e.z - player.z, d = Math.hypot(dx, dz); if (d >= bestD || Math.abs(e.y - player.y) > 4) continue;
+        const rel = Math.atan2(Math.sin(Math.atan2(dx, -dz) - player.yaw), Math.cos(Math.atan2(dx, -dz) - player.yaw)), half = Math.atan(Math.tan(currentFov / 2) * canvas.clientWidth / Math.max(1, canvas.clientHeight)) * .85;
+        if (Math.abs(rel) < half && d > 1.6) continue; best = rel; bestD = d; }
+        const el = $('threat'), level = best === null ? 0 : Math.round(clamp((7 - bestD) / 5, .25, 1) * 20) / 20;
+        if (el.style.opacity !== String(level)) el.style.opacity = String(level);
+        if (best !== null) { const sx = Math.sin(best), sy = -Math.cos(best), k = 1 / Math.max(Math.abs(sx), Math.abs(sy), .001), x = (50 + 50 * sx * k).toFixed(0) + '%', y = (50 + 50 * sy * k).toFixed(0) + '%';
+            if (x !== threatX || y !== threatY) { threatX = x; threatY = y; el.style.setProperty('--tx', x); el.style.setProperty('--ty', y); } } }
     function updateMarker() { if (state.mode !== 'play' || state.free) {
         $('beacon-marker').style.display = 'none';
         return;
@@ -1256,7 +1274,9 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
             return;
         flushChunks();
         const title = state.mode === 'title', night = title ? .04 : state.night;
-        currentFov = lerp(currentFov, ((keys.has('ShiftLeft') || keys.has('ShiftRight')) && state.mode === 'play' ? 77 : 72) * Math.PI / 180, 1 - Math.exp(-dt * 7));
+        // Portrait phones get a taller view angle, so the sides of the world stay in sight.
+        const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight), baseFov = aspect < 1 ? Math.min(90, 72 + (1 - aspect) * 30) : 72;
+        currentFov = lerp(currentFov, ((keys.has('ShiftLeft') || keys.has('ShiftRight')) && state.mode === 'play' ? baseFov + 5 : baseFov) * Math.PI / 180, 1 - Math.exp(-dt * 7));
         perspective(projection, currentFov, canvas.clientWidth / canvas.clientHeight, .055, 180);
         if (title) {
             const a = .64 + (reduced ? 0 : Math.sin(visualTime * .035) * .18);
@@ -1325,6 +1345,7 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
         drawHand();
         if (state.mode === 'play') {
             $('hurt').style.opacity = Math.max(0, 1 - player.hitAgo * 2) * .7;
+            updateThreat();
             $('hitmarker').style.opacity = hitTimer > 0 ? '1' : '0';
             $('mine-progress').style.width = clamp(mineProgress, 0, 1) * 100 + '%';
             updateMarker();
@@ -1692,6 +1713,7 @@ float dist=distance(vPos,uEye);float fog=smoothstep(27.,83.,dist)*(1.-uHand);vec
     };
     if (coopInvite() && mpLib()) { coopOpen(); $('coop-code-input').value = coopInvite(); coopConnect('code', coopInvite()); }
     // </grove-coop>
+    try { if (window.top === window && !/\bElectron\//.test(navigator.userAgent)) document.body.classList.add('has-back'); } catch { }
     resize();
     setTimeout(() => { try {
         generate(Math.floor(Math.random() * 2147483646) + 1);

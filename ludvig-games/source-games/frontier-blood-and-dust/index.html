@@ -151,7 +151,12 @@ body.touch .kb-only{display:none!important}
 body.touch .hud-right{top:calc(66px + env(safe-area-inset-top))}
 body.touch .bottom-left{bottom:calc(166px + env(safe-area-inset-bottom));left:18px;right:auto;max-width:60%}
 body.touch #interaction{pointer-events:auto;top:auto;bottom:calc(240px + env(safe-area-inset-bottom))}
-@media(max-height:500px){#tc-stick{width:112px;height:112px}#tc-knob{left:31px;top:31px}body.touch .bottom-left{bottom:calc(140px + env(safe-area-inset-bottom))}body.touch #interaction{bottom:auto;top:58%}}
+/* Leave the corner free for the site's All games button; keep phone money and ammo readable over bright ground. */
+body.has-back .hud-left{left:76px}
+@media(max-width:850px){body.has-back .hud-left{left:62px}}
+body.touch .hud-right{background:rgba(36,27,19,.86);padding:7px 11px 8px;border-radius:10px}body.touch #ammo{margin-top:4px}
+body.touch #notifications{top:calc(158px + env(safe-area-inset-top))}
+@media(max-height:500px){#tc-stick{width:112px;height:112px}#tc-knob{left:31px;top:31px}body.touch .bottom-left{bottom:calc(140px + env(safe-area-inset-bottom))}body.touch #interaction{bottom:auto;top:58%}body.touch #notifications{top:calc(60px + env(safe-area-inset-top));width:52%}}
 </style>
 </head>
 <body>
@@ -1804,7 +1809,7 @@ class FrontierGame {
     this.mode='title';this.previousMode='play';this.time=0;this.realTime=0;
     this.dayTime=17.35;this.weather='clear';this.weatherTimer=105;this.wanted=0;this.bounty=0;
     this.wantedTimer=0;this.lawTimer=3;this.heatReason='';this.witnesses=[];
-    this.entities=[];this.particles=[];this.tracers=[];this.floaters=[];this.marks=[];
+    this.entities=[];this.particles=[];this.tracers=[];this.floaters=[];this.marks=[];this.hitMarks=[];this.hitTick=0;this.hitKill=false;this.hitStop=0;
     this.nextId=1;this.score=0;this.best=0;this.kills=0;this.playSeconds=0;
     this.shake=0;this.flash=0;this.shakeEnabled=true;this.deadeyeActive=false;
     this.tags=[];this.execution=[];this.executionTimer=0;this.wheel=false;this.wheelSelection='revolver';
@@ -1881,7 +1886,7 @@ class FrontierGame {
     $('start-button').onclick=()=>this.start(!!this.saved);
     $('new-button').onclick=()=>this.confirmNew();
     $('resume-button').onclick=()=>this.resume();
-    $('dialog-close').onclick=()=>this.closeDialog();
+    $('dialog-close').onclick=()=>{if(performance.now()-(this.dialogOpenedAt||0)<400)return;this.closeDialog();};
     $('save-title-button').onclick=()=>{this.save();this.showTitle();};
     $('retry-button').onclick=()=>this.retry();
     $('death-title-button').onclick=()=>this.showTitle();
@@ -1939,7 +1944,7 @@ class FrontierGame {
   }
   openDialog(data){
     if(this.mode==='death')return;
-    this.dialogReturn=this.mode==='title'?'title':'play';this.mode='dialog';this.deadeyeActive=false;
+    this.dialogReturn=this.mode==='title'?'title':'play';this.mode='dialog';this.dialogOpenedAt=performance.now();this.deadeyeActive=false;
     this.tags=[];this.input&&this.input.clear();this.wheel=false;
     $('modal-layer').classList.remove('hidden');$('dialog-eyebrow').textContent=data.eyebrow||'REDWATER';
     $('dialog-title').textContent=data.title;$('dialog-body').textContent=touchText(data.text||'');
@@ -1949,7 +1954,8 @@ class FrontierGame {
       const text=document.createElement('div'),strong=document.createElement('strong'),arrow=document.createElement('span');
       strong.textContent=o.label;text.append(strong);arrow.className='option-arrow';arrow.innerHTML=uiIco('right');
       if(o.detail){const small=document.createElement('small');small.textContent=o.detail;text.append(small);}
-      b.append(text,arrow);b.onclick=()=>{this.audio.select();o.action&&o.action();};box.append(b);
+      // Ignore the click a tap synthesises right after the dialog opened under the finger.
+      b.append(text,arrow);b.onclick=()=>{if(performance.now()-this.dialogOpenedAt<400)return;this.audio.select();o.action&&o.action();};box.append(b);
     });
     this.audio.select();
   }
@@ -2014,7 +2020,11 @@ class FrontierGame {
     this.mouseWorld.x=this.input.mouse.x+this.cam.x;this.mouseWorld.y=this.input.mouse.y+this.cam.y;
     if(this.deadeyeActive){this.tagTarget();return;}
     let near=null,best=56;
-    for(const e of this.entities){if(e.dead||e.captured||!['bandit','law','target','deer','rabbit','civilian'].includes(e.kind))continue;const d=Math.hypot(e.x-this.mouseWorld.x,e.y-12-this.mouseWorld.y);if(d<best){best=d;near=e;}}
+    // A tap never shoots peaceful townsfolk or the law while you are not wanted: on a phone a tap near a person usually means "talk", not murder.
+    for(const e of this.entities){if(e.dead||e.captured||e.surrendered||!['bandit','law','target','deer','rabbit','civilian'].includes(e.kind))continue;
+      if(e.kind==='civilian'&&!e.hostile)continue;if(e.kind==='law'&&this.wanted<=0&&!e.hostile)continue;
+      const d=Math.hypot(e.x-this.mouseWorld.x,e.y-12-this.mouseWorld.y);if(d<best){best=d;near=e;}}
+    if(!near&&this.interaction&&this.interaction.type==='talk'&&Math.hypot(this.interaction.e.x-this.mouseWorld.x,this.interaction.e.y-12-this.mouseWorld.y)<56){this.interact();return;}
     if(near){this.player.a=Math.atan2(near.y-this.player.y,near.x-this.player.x);this.fire();}
   }
   touchFire(){
@@ -2122,6 +2132,8 @@ class FrontierGame {
     if(hit){
       this.damage(hit,damage,shooter,a);
       this.burst(endX,endY,7,'#943e32',65,.28);
+      if(friendly&&hit.kind!=='coach'){const kill=!!hit.dead;this.hitMarks.push({x:endX,y:endY,life:kill?.34:.2,max:kill?.34:.2,kill});this.hitTick=kill?.3:.16;this.hitKill=kill;
+        if(kill){this.burst(hit.x,hit.y-6,10,'#cdb184',55,.5);}}
     }else this.burst(endX,endY,4,'#c9a473',40,.26);
   }
   damage(e,amount,from,a=0){
@@ -2151,7 +2163,7 @@ class FrontierGame {
       if(e.kind==='civilian'){this.changeHonor(-25);this.crime(60,'MURDER',e.x,e.y);this.notify('An innocent life. Honor −25.','bad');}
       else if(e.kind==='law'){this.changeHonor(-10);this.crime(40,'KILLING A LAWMAN',e.x,e.y,true);}
       else if(e.kind==='bandit'||e.kind==='target'){
-        this.kills++;this.rewardXP(20);if(e.surrendered){this.changeHonor(-20);this.notify('No honor in killing a surrendered man.','bad');}else this.player.deadeye=U.clamp(this.player.deadeye+7,0,100);
+        this.kills++;this.rewardXP(20);this.hitStop=.075;this.shake=Math.max(this.shake,4.2);if(e.surrendered){this.changeHonor(-20);this.notify('No honor in killing a surrendered man.','bad');}else this.player.deadeye=U.clamp(this.player.deadeye+7,0,100);
         this.audio.kill();
       }else if(e.kind==='deer'||e.kind==='rabbit')this.rewardXP(5);
     }
@@ -2693,7 +2705,8 @@ class FrontierGame {
   }
   updateEffects(dt){
     this.shake*=Math.exp(-dt*13);this.flash=Math.max(0,this.flash-dt*1.4);
-    for(const a of [this.particles,this.tracers,this.floaters,this.marks]){
+    this.hitTick=Math.max(0,this.hitTick-dt);
+    for(const a of [this.particles,this.tracers,this.floaters,this.marks,this.hitMarks]){
       for(let i=a.length-1;i>=0;i--){const e=a[i];e.life-=dt;if(e.life<=0){a.splice(i,1);continue;}
         if(e.vx!==undefined){e.x+=e.vx*dt;e.y+=e.vy*dt;e.vx*=Math.exp(-dt*3);e.vy*=Math.exp(-dt*2);}}
     }
@@ -2709,6 +2722,8 @@ class FrontierGame {
     this.cam.w=this.view.w;this.cam.h=this.view.h;
     this.vignette=this.ctx.createRadialGradient(this.view.w/2,this.view.h/2,this.view.h*.22,this.view.w/2,this.view.h/2,Math.max(this.view.w,this.view.h)*.72);
     this.vignette.addColorStop(0,'rgba(22,16,10,0)');this.vignette.addColorStop(1,'rgba(22,16,10,.44)');
+    this.hurtVignette=this.ctx.createRadialGradient(this.view.w/2,this.view.h/2,this.view.h*.3,this.view.w/2,this.view.h/2,Math.max(this.view.w,this.view.h)*.68);
+    this.hurtVignette.addColorStop(0,'rgba(120,22,14,0)');this.hurtVignette.addColorStop(1,'rgba(120,22,14,.55)');
     this.titleCache=null;
   }
   nightAmount(){
@@ -2723,7 +2738,9 @@ class FrontierGame {
     const realDt=Math.min(.05,Math.max(.001,(now-this.lastFrame)/1000));this.lastFrame=now;this.realTime+=realDt;
     this.updateEffects(realDt);
     if(this.mode==='play'){
-      const scale=this.deadeyeActive?.16:this.wheel?.06:this.execution.length?.38:1,dt=realDt*scale;
+      let scale=this.deadeyeActive?.16:this.wheel?.06:this.execution.length?.38:1;
+      if(this.hitStop>0){this.hitStop=Math.max(0,this.hitStop-realDt);scale*=.12;}
+      const dt=realDt*scale;
       this.time+=dt;this.playSeconds+=realDt;this.dayTime=(this.dayTime+dt*.038)%24;this.weatherTimer-=dt;
       if(this.weatherTimer<=0){const choices=['clear','dust','rain'];this.weather=choices[(choices.indexOf(this.weather)+1)%3];this.weatherTimer=U.rand(95,155);}
       this.updatePlayer(dt,realDt);
@@ -2834,33 +2851,67 @@ class FrontierGame {
       else g.lineTo(t.x2,t.y2);g.stroke();
     }
     for(const p of this.particles){g.globalAlpha=U.clamp(p.life/p.max,0,1);g.fillStyle=p.color;g.fillRect(Math.round(p.x),Math.round(p.y),Math.ceil(p.size),Math.ceil(p.size));}
+    for(const m of this.hitMarks){const k=1-m.life/m.max,r=(m.kill?5:3)+k*(m.kill?7:4);g.globalAlpha=U.clamp(m.life/m.max*1.4,0,1);g.strokeStyle=m.kill?'#e8794d':'#fff0c8';g.lineWidth=m.kill?2:1.5;g.beginPath();
+      for(let i=0;i<4;i++){const a=Math.PI/4+i*Math.PI/2;g.moveTo(m.x+Math.cos(a)*r,m.y+Math.sin(a)*r);g.lineTo(m.x+Math.cos(a)*(r+4),m.y+Math.sin(a)*(r+4));}g.stroke();}
+    g.globalAlpha=1;
     for(const f of this.floaters){g.globalAlpha=Math.min(1,f.life);g.fillStyle=f.color;g.font='bold 10px monospace';g.textAlign='center';g.fillText(f.text,f.x,f.y-(1.8-f.life)*15);}
     g.globalAlpha=1;
     this.drawTags(g);
     g.restore();
     const night=this.nightAmount();
-    if(night>0){g.fillStyle='rgba(27,38,58,'+(night*.38)+')';g.fillRect(0,0,w,h);}
     const sunset=Math.max(0,1-Math.abs(this.dayTime-18)/1.8);
     if(sunset>0){g.fillStyle='rgba(209,101,44,'+(sunset*.12)+')';g.fillRect(0,0,w,h);}
-    if(night>.15){
-      g.save();g.globalCompositeOperation='screen';
-      for(const prop of props)if(prop.glow){
-        const x=(prop.x-this.cam.x)*zoom,y=(prop.y-this.cam.y-(prop.kind==='lamp'?22:0))*zoom;
-        const glow=g.createRadialGradient(x,y,1,x,y,75*zoom);
-        glow.addColorStop(0,'rgba(244,168,65,'+(night*.16)+')');glow.addColorStop(1,'rgba(244,168,65,0)');
-        g.fillStyle=glow;g.fillRect(x-75*zoom,y-75*zoom,150*zoom,150*zoom);
-      }
-      g.restore();
-    }
+    if(night>.02)this.renderLights(g,props,night,zoom);
     if(this.deadeyeActive){g.fillStyle='rgba(126,50,20,.18)';g.fillRect(0,0,w,h);}
     this.drawWeather(g);
     g.fillStyle=this.vignette;g.fillRect(0,0,w,h);
     if(this.flash>0){g.fillStyle='rgba(126,32,24,'+(this.flash*.28)+')';g.fillRect(0,0,w,h);}
+    if(this.mode==='play'&&this.player.hp<35&&this.player.hp>0){const k=(35-this.player.hp)/35;g.globalAlpha=U.clamp(.35+k*.5+Math.sin(this.realTime*(4+k*3))*.15,0,1);g.fillStyle=this.hurtVignette;g.fillRect(0,0,w,h);g.globalAlpha=1;}
     if(this.mode==='play'){
       this.drawDirection(g);
       if(this.wheel)this.drawWheel(g);
       else this.drawCrosshair(g);
     }
+  }
+  // Night lighting: a darkness layer with soft holes for the rider's lantern,
+  // street lamps, campfires, lit windows and muzzle flashes, then a warm glow.
+  lightSprites(){
+    if(this.lightSprite)return;
+    const make=(stops)=>{const c=document.createElement('canvas');c.width=c.height=128;const t=c.getContext('2d'),gr=t.createRadialGradient(64,64,0,64,64,64);
+      stops.forEach(s=>gr.addColorStop(s[0],s[1]));t.fillStyle=gr;t.fillRect(0,0,128,128);return c;};
+    this.lightSprite=make([[0,'rgba(255,255,255,1)'],[.45,'rgba(255,255,255,.7)'],[1,'rgba(255,255,255,0)']]);
+    this.warmSprite=make([[0,'rgba(255,190,96,.9)'],[.35,'rgba(240,150,60,.35)'],[1,'rgba(240,150,60,0)']]);
+  }
+  lightAt(lg,sprite,wx,wy,r,a,zoom){
+    const R=r*zoom,x=(wx-this.cam.x)*zoom,y=(wy-this.cam.y)*zoom;
+    if(x<-R||y<-R||x>this.view.w+R||y>this.view.h+R||a<=0)return;
+    lg.globalAlpha=Math.min(1,a);lg.drawImage(sprite,x-R,y-R,R*2,R*2);
+  }
+  renderLights(g,props,night,zoom){
+    this.lightSprites();
+    const w=this.view.w,h=this.view.h,t=this.realTime,p=this.player;
+    if(!this.lightCanvas||this.lightCanvas.width!==w||this.lightCanvas.height!==h){this.lightCanvas=document.createElement('canvas');this.lightCanvas.width=w;this.lightCanvas.height=h;this.lightCtx=this.lightCanvas.getContext('2d');}
+    const lg=this.lightCtx,L=this.lightSprite,W=this.warmSprite;
+    lg.globalCompositeOperation='source-over';lg.globalAlpha=1;lg.fillStyle='#121a2e';lg.fillRect(0,0,w,h);
+    lg.globalCompositeOperation='destination-out';
+    const flick=Math.sin(t*11.3)*.04+Math.sin(t*23.1)*.03;
+    this.lightAt(lg,L,p.x,p.y-12,p.mounted?165:145,.78+flick,zoom);
+    for(const prop of props){
+      if(prop.kind==='lamp')this.lightAt(lg,L,prop.x,prop.y-22,100,.92+flick,zoom);
+      else if(prop.kind==='campfire')this.lightAt(lg,L,prop.x,prop.y-4,150,.95+flick*2,zoom);
+      else if(prop.kind==='building'&&prop.title){const fy=prop.y+prop.h-36;this.lightAt(lg,L,prop.x+prop.w*.26,fy,46,.55,zoom);this.lightAt(lg,L,prop.x+prop.w*.74,fy,46,.55,zoom);}
+    }
+    if(p.muzzle>0)this.lightAt(lg,L,p.x+Math.cos(p.a)*22,p.y-12+Math.sin(p.a)*22,230,p.muzzle*12,zoom);
+    for(const e of this.entities)if(e.muzzle>0&&!e.dead)this.lightAt(lg,L,e.x+Math.cos(e.a)*22,e.y-12+Math.sin(e.a)*22,180,e.muzzle*12,zoom);
+    g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=Math.min(.74,night*.74);g.drawImage(this.lightCanvas,0,0);
+    g.globalCompositeOperation='lighter';
+    for(const prop of props){
+      if(prop.kind==='lamp')this.lightAt(g,W,prop.x,prop.y-22,70,night*.34,zoom);
+      else if(prop.kind==='campfire')this.lightAt(g,W,prop.x,prop.y-4,95,night*(.42+flick*2),zoom);
+      else if(prop.kind==='building'&&prop.title){const fy=prop.y+prop.h-36;this.lightAt(g,W,prop.x+prop.w*.26,fy,30,night*.22,zoom);this.lightAt(g,W,prop.x+prop.w*.74,fy,30,night*.22,zoom);}
+    }
+    if(p.muzzle>0)this.lightAt(g,W,p.x+Math.cos(p.a)*22,p.y-12+Math.sin(p.a)*22,120,p.muzzle*6*Math.max(.35,night),zoom);
+    g.restore();
   }
   inView(e,pad=0){return e.x>this.cam.x-pad&&e.y>this.cam.y-pad&&e.x<this.cam.x+this.cam.w+pad&&e.y<this.cam.y+this.cam.h+pad;}
   drawActorMarker(g,e,color,label){
@@ -2908,6 +2959,8 @@ class FrontierGame {
     g.strokeStyle=hot?'#e4a078':this.deadeyeActive?'#f2c589':'#f3e6c6';g.lineWidth=1;
     g.beginPath();g.moveTo(x-gap-4,y);g.lineTo(x-gap,y);g.moveTo(x+gap,y);g.lineTo(x+gap+4,y);g.moveTo(x,y-gap-4);g.lineTo(x,y-gap);g.moveTo(x,y+gap);g.lineTo(x,y+gap+4);g.stroke();
     g.fillStyle=g.strokeStyle;g.fillRect(x,y,1,1);
+    if(this.hitTick>0){const r=gap+3+(1-this.hitTick/.3)*3;g.globalAlpha=Math.min(1,this.hitTick*6);g.strokeStyle=this.hitKill?'#e8794d':'#fff0c8';g.lineWidth=this.hitKill?2:1.5;g.beginPath();
+      for(let i=0;i<4;i++){const a=Math.PI/4+i*Math.PI/2;g.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r);g.lineTo(x+Math.cos(a)*(r+4),y+Math.sin(a)*(r+4));}g.stroke();g.globalAlpha=1;g.fillStyle=g.strokeStyle;}
     if(this.deadeyeActive){g.font='8px monospace';g.textAlign='center';g.fillText(this.tags.length+(TOUCH.on?' TAGGED · EYE TO FIRE':' TAGGED · Q TO FIRE'),x,y+24);}
   }
   drawDirection(g){
@@ -3026,7 +3079,7 @@ class FrontierGame {
       for(const x of [770,840,910]){t.fillStyle='#766042';t.fillRect(x,420,2,27);t.fillRect(x-4,423,10,2);}
       this.titleCache=c;
     }
-    const s=Math.max(w/1200,h/720),dx=(w-1200*s)/2,dy=(h-720*s)/2;
+    const s=Math.max(w/1200,h/720),dx=U.clamp(w*.64-940*s,w-1200*s,0),dy=(h-720*s)/2;
     g.drawImage(this.titleCache,dx,dy,1200*s,720*s);
     g.fillStyle='rgba(244,218,156,.26)';for(let i=0;i<20;i++){const x=(i*83.73+this.realTime*12)%w,y=h*.4+(i*47.77)%Math.max(1,h*.5);g.fillRect(Math.round(x),Math.round(y+Math.sin(this.realTime+i)*8),1+i%2,1);}
     for(let i=0;i<3;i++){const x=w*.66+i*24+Math.sin(this.realTime*.13+i)*12,y=h*.22+Math.sin(this.realTime*.2+i)*6;
@@ -3072,6 +3125,7 @@ const game=new FrontierGame();
   let mode='';(function watch(){const m=game.mode==='play';if(m!==mode){mode=m;body.classList.toggle('tc-play',m);if(!m)releaseStick();}requestAnimationFrame(watch);})();
 })();
 if(new URLSearchParams(location.search).has('test'))window.__dust=game;
+{const backCheck=()=>document.body.classList.toggle('has-back',!!document.querySelector('a[aria-label="All games"]'));addEventListener('load',backCheck);setTimeout(backCheck,1500);}
 // A small read-only status hook is useful when inspecting a saved trail in
 // DevTools. It does not alter gameplay or add dependencies.
 window.Frontier=Object.freeze({version:'1.0.0',getStatus:()=>({mode:game.mode,region:game.world.sampleBiome(game.player.x,game.player.y),health:Math.round(game.player.hp),cash:game.player.cash,honor:game.player.honor,mission:game.missions.active&&game.missions.active.id,stories:game.storyCount(),entities:game.entities.length,score:game.score})});

@@ -126,12 +126,15 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
 @media(max-height:500px) and (min-width:651px){.menu .menu-sub{grid-column:1/-1;margin:0}}
 /* Live race */
 #race-btn[hidden],#race-join[hidden],#race-room[hidden],.race-list[hidden],.race-count[hidden],.race-pos[hidden],#race-start[hidden],#race-wait[hidden],#share-btn[hidden]{display:none!important}.race-card{text-align:left}.race-card .primary{margin-top:8px}.race-wide{width:100%;justify-content:center;margin-top:10px}.race-code{display:grid;grid-template-columns:1fr 92px;gap:10px;margin-top:10px}.race-code .daily-btn{justify-content:center}#race-code{min-height:46px;min-width:0;border-radius:12px;border:1px solid var(--line);background:#fffdf4;font:inherit;font-size:17px;font-weight:700;letter-spacing:6px;text-align:center;text-transform:uppercase;color:var(--ink);user-select:text;-webkit-user-select:text}#race-code::placeholder{letter-spacing:1px;font-weight:500;text-transform:none;color:#8b9a88}.race-note{font-size:13px;color:var(--sub);margin:12px 0 0;min-height:18px}.race-note:empty{margin:0;min-height:0}.race-list{list-style:none;margin:6px 0 14px;padding:0;display:grid;gap:6px;text-align:left}.race-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#20473e0d;font-size:14px;font-weight:600;color:var(--ink);min-width:0}.race-list li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.race-list li.me{background:#e7764024}.race-list small{flex:none;font-size:12px;font-weight:500;color:var(--sub)}.race-count{position:fixed;inset:0;display:grid;place-items:center;font-size:120px;font-weight:800;letter-spacing:-4px;color:#fffcf2;text-shadow:0 8px 40px #1d463355;pointer-events:none;z-index:6}.race-pos{display:block;margin-top:4px;font-size:12px;font-weight:750;letter-spacing:.4px;color:var(--orange)}
+/* 2026-10-25: edge glow when the bird is above or below the next gap; results ignore taps for a moment so a late flap cannot hit Menu. */
+#gap-warn{position:fixed;inset:0;pointer-events:none;z-index:9}#gap-warn i{position:absolute;left:0;right:0;height:24vh;opacity:0}.gw-top{top:0;background:linear-gradient(#e8703a80,#e8703a00)}.gw-bot{bottom:0;background:linear-gradient(0deg,#e8703a80,#e8703a00)}#results.arming{pointer-events:none}
 </style>
 </head>
 <body>
 <canvas id="world" aria-label="First person flying game: flap to fly through the gaps between green pipes."></canvas>
 <div class="edge-shade" aria-hidden="true"></div>
 <div id="flash" aria-hidden="true"></div>
+<div id="gap-warn" aria-hidden="true"><i class="gw-top" id="gw-top"></i><i class="gw-bot" id="gw-bot"></i></div>
 <header class="topbar">
   <button class="brand" id="brand" aria-label="Flap home">
     <svg class="bird-logo" viewBox="0 0 40 34" fill="none" aria-hidden="true"><path d="M9 25C1 19 4 8 15 7c3-7 13-4 14 4l8 5-8 4c-1 8-13 12-20 5Z" fill="currentColor"/><path d="M9 15c0 7 6 8 10 5" stroke="#fff7e1" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="12" r="1.8" fill="#244c42"/></svg>
@@ -602,7 +605,7 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
   let mode = store.get('mode', 'classic') === 'chill' ? 'chill' : 'classic';
   let muted = store.get('muted', 'false') === 'true';
   let state = 'menu', age = 0, frameTime = 0, worldTime = 0, wingKick = 0, deathAge = 0;
-  let flash = 0, accumulator = 0, resultShown = false, toastLife = 0, sceneryDistance = 0;
+  let flash = 0, accumulator = 0, resultShown = false, toastLife = 0, sceneryDistance = 0, passKick = 0, revealAt = 0, gwTop = 0, gwBot = 0;
   let width = innerWidth, height = innerHeight, mobile = width <= 650;
   const game = new FlightPhysics(mode, 4421);
 
@@ -1221,7 +1224,7 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
   addEventListener('resize',resize);resize();
   let renderEye=[0,6.1,0],renderPitch=0,renderRoll=0;
   function render(dt){
-    const menu=state==='menu',fov=(mobile?76:65)*Math.PI/180;
+    const menu=state==='menu',fov=((mobile?76:65)+(reduced?0:passKick*3))*Math.PI/180;
     let eye,pitch,roll;
     if(menu){eye=[mobile?-10.5:-13,7.25+Math.sin(worldTime*.7)*.16,mobile?3:0];pitch=.005;roll=reduced?0:Math.sin(worldTime*.25)*.002;}
     else{
@@ -1274,11 +1277,20 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
     }
     beak.draw(transform([0,mobile?-.69:-.53,-.63],[1,1,1],[.04,0,0]));
   }
+  // Edge glow: the next gap is close and the bird would clip its top or bottom lip.
+  function gapWarn(next){
+    let top=0,bot=0;
+    if(next){const d=-next.z,near=d<0?1:clamp((16-d)/10,0,1),r=game.radius;
+      top=near*clamp((game.y+r-(next.high-.45))/.9,0,1);bot=near*clamp(((next.low+.45)-(game.y-r))/.9,0,1);}
+    if(Math.abs(top-gwTop)>.02||(top===0&&gwTop!==0)){gwTop=top;$('gw-top').style.opacity=top.toFixed(2);}
+    if(Math.abs(bot-gwBot)>.02||(bot===0&&gwBot!==0)){gwBot=bot;$('gw-bot').style.opacity=bot.toFixed(2);}
+  }
   let last=performance.now();
   function frame(now){
     requestAnimationFrame(frame);
     const raw=(now-last)/1000;last=now;const dt=clamp(raw,0,.07);frameTime=dt;
-    if(state!=='paused'){worldTime+=dt;age+=dt;wingKick=Math.max(0,wingKick-dt*3.8);}
+    if(state!=='paused'){worldTime+=dt;age+=dt;wingKick=Math.max(0,wingKick-dt*3.8);passKick=Math.max(0,passKick-dt*2.6);}
+    gapWarn(state==='playing'?game.pipes.filter(p=>!p.scored).sort((a,b)=>b.z-a.z)[0]:null);
     if(state==='playing'){
       accumulator+=dt;
       while(accumulator>=1/120&&state==='playing'){
@@ -1286,8 +1298,8 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
         for(const e of game.takeEvents()){
           if(e.type==='crash'){crashed(e.reason);accumulator=0;break;}
           if(e.type==='score'){
-            $('score').textContent=game.score;$('score').classList.add('bump');setTimeout(()=>$('score').classList.remove('bump'),150);audio.score(e.perfect);
-            if(e.perfect)toast('PERFECT');
+            $('score').textContent=game.score;$('score').classList.add('bump');setTimeout(()=>$('score').classList.remove('bump'),150);audio.score(e.perfect);passKick=1;
+            if(e.perfect){toast('PERFECT');flash=Math.max(flash,.12);}
             if(game.score===1)$('hint-text').textContent='Anywhere in the gap counts';
             if(game.score>=3)$('hint').style.opacity='0';
           }
@@ -1300,7 +1312,8 @@ body.world-dark .modes,body.world-dark .daily-btn{background:#fefbeacc}
     }
     if(state==='dead'){
       deathAge+=dt;
-      if(deathAge>.48&&!resultShown){resultShown=true;if(R.inRace)$('result-board').hidden=true;else lgBoard($('result-board'),boardId(),daily?['7d']:undefined);hide('results',false);hide('hud');$('retry-btn').focus({preventScroll:true});}
+      if(resultShown&&deathAge>revealAt+.45)$('results').classList.remove('arming');
+      if(deathAge>.48&&!resultShown){resultShown=true;revealAt=deathAge;$('results').classList.add('arming');if(R.inRace)$('result-board').hidden=true;else lgBoard($('result-board'),boardId(),daily?['7d']:undefined);hide('results',false);hide('hud');$('retry-btn').focus({preventScroll:true});}
     }
     if(toastLife>0&&state!=='paused'){toastLife-=dt;if(toastLife<=0)$('toast').classList.remove('show');}
     if(flash>0){flash=Math.max(0,flash-dt*1.8);$('flash').style.opacity=String(flash);}

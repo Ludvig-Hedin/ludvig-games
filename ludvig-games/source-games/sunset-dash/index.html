@@ -17,7 +17,7 @@ button{font:inherit;cursor:pointer;touch-action:manipulation;border:0}button:foc
 #world{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 #vignette{position:fixed;inset:0;pointer-events:none;background:linear-gradient(0deg,#193e492b,transparent 25%,transparent 83%,#183d4820)}
 #flash{position:fixed;inset:0;background:#fff3d1;opacity:0;pointer-events:none;z-index:20}
-header{position:fixed;top:max(24px,env(safe-area-inset-top));left:max(28px,env(safe-area-inset-left));right:max(28px,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;z-index:10;pointer-events:none}
+header{position:fixed;top:max(24px,env(safe-area-inset-top));left:max(64px,calc(env(safe-area-inset-left) + 52px));right:max(28px,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;z-index:10;pointer-events:none}
 .brand{display:flex;gap:10px;align-items:center;text-shadow:0 2px 10px #173d4350;font-size:13px;font-weight:900;letter-spacing:1.6px;line-height:1.1}.brandmark{display:grid;place-items:center;width:38px;height:38px;color:var(--ink);background:var(--cream);border-radius:12px;box-shadow:0 3px 0 #173d4320;transform:rotate(-6deg)}
 svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.brandmark svg{fill:currentColor;stroke:none}
 .header-actions{display:flex;gap:9px;pointer-events:auto}.icon-button{width:43px;height:43px;display:grid;place-items:center;border-radius:50%;background:#173d4399;backdrop-filter:blur(12px);color:var(--cream);transition:background .2s,transform .15s}.icon-button:hover{background:#173d43}.icon-button:active{transform:scale(.91)}[hidden]{display:none!important}
@@ -37,7 +37,7 @@ h1{font-family:Impact,"Arial Black",Haettenschweiler,sans-serif;font-size:clamp(
 @media(max-height:680px) and (max-width:700px){.hero{padding-top:80px}h1{font-size:clamp(48px,15.5vw,65px);margin-bottom:13px}.tagline{display:none}.controls{margin-top:15px}.touch-help{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:24px;right:24px;margin:0}.best{margin-top:14px}.start-foot{display:none}}
 @media(max-height:450px) and (min-width:701px){.hero{margin-top:38px}h1{font-size:66px;margin-bottom:14px}.hero .eyebrow{margin-bottom:8px}.tagline{font-size:12px;margin-bottom:14px}.play{min-height:43px;font-size:15px;padding:10px 24px}.best{font-size:10px;margin-top:12px}.controls{font-size:10px;margin-top:13px}.keyline{margin-bottom:3px}}
 .panel{max-height:calc(100% - 32px);overflow:auto;overscroll-behavior:contain;touch-action:pan-y}.end-board{max-width:300px;margin:0 auto 18px;text-align:left;font-size:13px;font-weight:600}.pause-help{margin-top:18px;font-size:12px;line-height:1.8;font-weight:600;opacity:.8}.pause-help .keyline{justify-content:center}.pause-help kbd{color:var(--ink);background:#173d430d;border-color:#173d4340}.pause-help .touch-help{background:none;border:0;padding:0}
-@media(max-width:700px){.brand{display:none}#hud{top:max(18px,env(safe-area-inset-top));left:max(17px,env(safe-area-inset-left));transform:none;gap:14px}.score{text-align:left;min-width:0}.score-number{font-size:28px}.coin-count{font-size:16px;min-width:0}.hero{padding-top:max(84px,10vh)}}
+@media(max-width:700px){.brand{display:none}#hud{top:max(18px,env(safe-area-inset-top));left:max(62px,calc(env(safe-area-inset-left) + 50px));transform:none;gap:14px}.score{text-align:left;min-width:0}.score-number{font-size:28px}.coin-count{font-size:16px;min-width:0}.hero{padding-top:max(84px,10vh)}}
 /* meta layer: styles */
 #meta-button{position:relative}.meta-dot{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px #173d43}
 .daily-button{display:flex;align-items:center;gap:10px;width:fit-content;min-height:46px;margin-top:14px;padding:0 18px;border-radius:14px;background:#173d4399;backdrop-filter:blur(12px);color:var(--cream);font-size:15px;font-weight:900;letter-spacing:.3px;transition:background .2s,transform .15s}.daily-button:hover{background:#173d43}.daily-button:active{transform:scale(.96)}.daily-button svg{width:20px;height:20px}#daily-best{font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}#daily-best:before{content:'·';margin-right:9px;opacity:.6}
@@ -455,7 +455,8 @@ function drawRunner(){
  const title=state==='title',dead=state==='crashing'||state==='over',onBoard=boardTime>0;
  const slideAmount=title?0:player.slideVisual;
  const y=title?0:player.y;
- cylinder(player.x,.095,0,1.1+y*.08,.013,.85,C.shadow);
+ const shadowFloor=title?0:player.ground,lift=clamp(y-shadowFloor,0,3)/3;
+ cylinder(player.x,shadowFloor+.095,0,1.1-lift*.42,.013,.85-lift*.32,C.shadow);
  if(invulnerable>0&&Math.sin(visualTime*48)<-.1)return;
  const run=title?0:Math.sin(visualTime*(onBoard?5:19)),bob=title?Math.sin(visualTime*2.7)*.045:Math.abs(run)*.07*(1-slideAmount);
  const tumble=dead?Math.min(deathTime*2.2,1):0;
@@ -488,14 +489,23 @@ function drawRunner(){
 }
 function draw(){
  if(gl.isContextLost())return;for(const m of meshList)m.count=0;
- const mobile=aspect<.85,portrait=clamp((.9-aspect)*2,0,1),camZ=lerp(10,14.5,portrait),camY=lerp(5.7,7.1,portrait),fov=lerp(54,72,portrait)*Math.PI/180;
+ const mobile=aspect<.85,portrait=clamp((.9-aspect)*2,0,1),camZ=lerp(10,14.5,portrait),camY=lerp(5.7,7.1,portrait),speedFeel=state==='playing'||state==='paused'?clamp((speed-22)/24,0,1):0,fov=(lerp(54,72,portrait)+speedFeel*(reduceMotion?0:6))*Math.PI/180;
  const camFollow=state==='title'?0:player.y*.35;
  const shaking=reduceMotion?0:shake*.18;
  const eye=[(state==='title'?0:player.x*.09)+Math.sin(visualTime*89)*shaking,camY+camFollow+Math.cos(visualTime*71)*shaking,camZ];
  cameraMatrix(eye,[0,lerp(1.0,2.2,portrait)+camFollow,-20],aspect,fov);gl.uniform1f(loc.uShift,sceneShift);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- drawCity();for(const o of obstacles)drawObstacle(o);for(const p of pickups)drawPickup(p);drawMetaMark();drawRunner();
+ drawCity();for(const o of obstacles)drawObstacle(o);for(const p of pickups)drawPickup(p);drawMetaMark();drawRunner();drawStreaks(speedFeel);
  for(const p of particles){const s=p.size*Math.min(1,p.life*4);box(p.x,p.y,p.z,s,s,s,p.c,p.spin,p.spin*.7,0,.12);}
  drawBatches();drawGhostPass();
+}
+// Wind streaks beside the track once the run is fast. Positions come from distance, so nothing is allocated.
+function drawStreaks(k){
+ if(k<.3||reduceMotion||state!=='playing')return;
+ const n=Math.round(4+k*6),len=2+k*4;
+ for(let i=0;i<n;i++){
+  const side=i%2?1:-1,z=6-((i*13.7+distance*1.35)%70),x=side*(4.4+hash(i)*2.2),y=.6+hash(i+9)*3.2;
+  box(x,y,z,.035,.035,len,C.cream,0,0,0,1);
+ }
 }
 // Pointer gestures work on touchscreens AND mice. No pointer lock is necessary.
 let gesture=null;

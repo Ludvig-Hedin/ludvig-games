@@ -93,6 +93,8 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
 .opps{display:grid;gap:10px;margin-top:4px}.opp{display:grid;gap:3px;justify-items:start;transition:opacity .3s}.opp canvas{display:block;border-radius:4px;background:#0c1420;box-shadow:0 0 0 1px #afc9ef26}
 .opp span{font-size:9px;letter-spacing:.08em;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.opp.out{opacity:.35}
 .app.vs .level-stat,.app.vs .lines-stat{display:none}
+@media(max-width:680px){body:has(> a[aria-label="All games"]) .controls{padding-left:46px}}
+.best-stat.beat .value{animation:beat .9s ease-out}@keyframes beat{0%{transform:scale(1)}18%{transform:scale(1.22);text-shadow:0 0 18px #f6c67bcc}100%{transform:scale(1);text-shadow:none}}.best-stat .value{transform-origin:left center}
 .vs-meter{position:absolute;left:-7px;bottom:0;width:4px;height:100%;border-radius:2px;overflow:hidden;pointer-events:none}.vs-meter i{position:absolute;left:0;right:0;bottom:0;height:0;background:#ef6e75;border-radius:2px;transition:height .2s}
 .vs-status{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:850;letter-spacing:.18em;color:#f3f5fb;text-shadow:0 2px 20px #000;pointer-events:none;z-index:3}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -225,7 +227,7 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
  let best=Math.max(0,Number(storage.get('best',0))||0), recordAtStart=best;
  let clearing=null, rowOffsets=Array(ROWS).fill(0), particles=[], trails=[], rings=[], lockFlashes=[], callout=null;
  let cell=28, dpr=1, sprites=[], clock=0, shake=0, deathTime=0, warningTime=0, wasDanger=false;
- let lastFrame=0, resizePending=false, drag=null;
+ let lastFrame=0, resizePending=false, drag=null, beatBest=false;
  const heldInput={left:new Set(),right:new Set(),soft:new Set()};
  let direction=0, repeatTimer=0, softTimer=0;
 
@@ -378,7 +380,7 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
   grid=next;rowOffsets=offsets;clearing=null;
   if(grid.slice(0,HIDDEN).some(row=>row.some(Boolean)))lose();else spawn();
  }
- function addScore(n){score+=n;if(score>best&&!vsLive()){best=score;storage.set('best',best);}$('best').textContent=fmt(best);}
+ function addScore(n){score+=n;if(score>best&&!vsLive()){best=score;storage.set('best',best);if(!beatBest&&recordAtStart>0&&score>recordAtStart){beatBest=true;const el=document.querySelector('.best-stat');el.classList.remove('beat');void el.offsetWidth;el.classList.add('beat');audio.effect('level');}}$('best').textContent=fmt(best);}
  function updateHUD(){
   $('level').textContent=String(level).padStart(2,'0');$('lines').textContent=lines;$('best').textContent=fmt(best);
   [...$('progress').children].forEach((el,i)=>el.classList.toggle('on',i<lines%5));
@@ -388,7 +390,7 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
  function start(seed){
   bagRand=typeof seed==='number'&&window.StacksVersus?StacksVersus.rng(seed):Math.random;
   clearInput();grid=blank();queue=[];piece=null;held=null;holdUsed=false;clearing=null;
-  score=shownScore=lines=elapsed=0;level=1;combo=-1;backToBack=false;recordAtStart=best;
+  score=shownScore=lines=elapsed=0;level=1;combo=-1;backToBack=false;recordAtStart=best;beatBest=false;
   particles=[];trails=[];rings=[];lockFlashes=[];rowOffsets.fill(0);callout=null;shake=0;warningTime=0;wasDanger=false;
   audio.beat=0;audio.step=0;state='playing';hideOverlay();audio.unlock();audio.effect('start');updateHUD();spawn();
  }
@@ -719,7 +721,7 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
   resizePending=false;const stage=$('stage'),compact=matchMedia('(max-height:490px) and (min-width:600px)').matches;
   const mobile=matchMedia('(max-width:680px)').matches&&!compact;
   const availableH=stage.clientHeight-(mobile?84:compact?16:32),availableW=stage.clientWidth-(mobile?75:compact?228:302);
-  cell=Math.max(8,Math.min(34,Math.floor(Math.min(availableH/VISIBLE,availableW/COLS))));dpr=Math.min(3,window.devicePixelRatio||1);
+  cell=Math.max(8,Math.min(34,Math.floor(Math.min(availableH/VISIBLE,availableW/COLS))));dpr=Math.min(2,window.devicePixelRatio||1);
   document.documentElement.style.setProperty('--cell',cell+'px');sizeCanvas(canvas,cell*COLS,cell*VISIBLE);
   // Preview sizes follow the board rather than overflowing in landscape.
   const previewCell=Math.min(compact?13:mobile?13:19,cell*(compact?.9:.65)),nextHeight=(previewCell*(compact?2:3)+(compact?8:16))*3;
@@ -752,7 +754,7 @@ h1 span{color:var(--gold)}h2{font-size:48px;letter-spacing:-.05em}
    if(clearing){clearing.t+=dt;if(clearing.t>=clearing.life)finishClear();}
    else if(piece){
     piece.age+=dt;piece.gravity+=dt;
-    const speed=Math.max(.065,.85*Math.pow(.74,level-1));
+    const speed=Math.max(.065,.85*Math.pow(.8,level-1));
     while(piece&&piece.gravity>=speed){piece.gravity-=speed;if(!move(0,1,false)){piece.gravity=0;break;}}
     if(piece){
      if(grounded()){piece.lock+=dt;if(piece.lock>=Math.max(.28,.48-(level-1)*.012))lockPiece();}else piece.lock=0;

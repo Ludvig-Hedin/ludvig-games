@@ -23,14 +23,17 @@ export function makeRunnerScene(canvas, horse, objects) {
     if (!context) return makeCanvasScene(canvas, horse, objects);
     renderer = new THREE.WebGLRenderer({ canvas, context, antialias: true, alpha: false, powerPreference: 'high-performance' });
   } catch (_) { return makeCanvasScene(canvas, horse, objects); }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+  const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let pixelRatio = Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 1.75);
+  renderer.setPixelRatio(pixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#d7c1b4'); scene.fog = new THREE.Fog('#e4c5ac', 35, 145);
   const camera = new THREE.PerspectiveCamera(48, 1, .1, 400);
   const sun = new THREE.DirectionalLight('#ffddb0', 3.1); sun.position.set(-18, 28, -12); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -19; sun.shadow.camera.right = 19; sun.shadow.camera.top = 22; sun.shadow.camera.bottom = -17; sun.shadow.camera.near = 1; sun.shadow.camera.far = 65; sun.shadow.bias = -.0003; sun.shadow.normalBias = .035;
+  sun.shadow.mapSize.set(coarse ? 1024 : 2048, coarse ? 1024 : 2048); sun.shadow.camera.left = -19; sun.shadow.camera.right = 19; sun.shadow.camera.top = 22; sun.shadow.camera.bottom = -17; sun.shadow.camera.near = 1; sun.shadow.camera.far = 65; sun.shadow.bias = -.0003; sun.shadow.normalBias = .035;
   sun.shadow.camera.updateProjectionMatrix();
   sun.target.position.set(0, 0, -10); scene.add(sun, sun.target, new THREE.HemisphereLight('#e6f0ff', '#7b8051', 2.05));
   const rim = new THREE.DirectionalLight('#f2bca3', .65); rim.position.set(15, 8, 12); scene.add(rim);
@@ -118,31 +121,42 @@ export function makeRunnerScene(canvas, horse, objects) {
   const shadowTexture = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const ctx = c.getContext('2d'), g = ctx.createRadialGradient(32, 32, 1, 32, 32, 30); g.addColorStop(0, 'rgba(46,38,31,.36)'); g.addColorStop(1, 'rgba(46,38,31,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
   function contactShadow() { const m = mesh(new THREE.PlaneGeometry(2.2, 3.5), new THREE.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }), 0, .027, 0, false); m.rotation.x = -Math.PI / 2; return m; }
   const shadow = contactShadow(), partnerShadow = contactShadow(); partnerShadow.scale.setScalar(.8);
-  const particles = [], particleGeometry = new THREE.IcosahedronGeometry(.055, 0), particleMat = new THREE.MeshBasicMaterial({ color: '#ffe4a5' });
+  const particles = [], particleGeometry = new THREE.IcosahedronGeometry(.055, 0), particleMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+  // Fixed palette so spawning a burst never allocates colours: gold and pink sparks for hearts, wood chips for a bump, dust for landings.
+  const sparkColors = { heart: [new THREE.Color('#ffe4a5'), new THREE.Color('#ff9fb5'), new THREE.Color('#fff4dc')], chip: [new THREE.Color('#8a5a36'), new THREE.Color('#c49a6c'), new THREE.Color('#5f3f27')], dust: [new THREE.Color('#e9d4b0'), new THREE.Color('#d8bf96')] };
   const particleMesh = new THREE.InstancedMesh(particleGeometry, particleMat, 120); particleMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); particleMesh.frustumCulled = false; scene.add(particleMesh);
-  for (let i = 0; i < 120; i++) { temp.scale.setScalar(0); temp.updateMatrix(); particleMesh.setMatrixAt(i, temp.matrix); }
+  for (let i = 0; i < 120; i++) { temp.scale.setScalar(0); temp.updateMatrix(); particleMesh.setMatrixAt(i, temp.matrix); particleMesh.setColorAt(i, sparkColors.heart[0]); }
   const followingHistory = [];
-  let clock = 0, previousX = 0, companionX = .93, companionY = 0, hitLife = 0, renderWidth = 0, renderHeight = 0, disposed = false;
+  let clock = 0, previousX = 0, companionX = NaN, companionY = 0, hitLife = 0, renderWidth = 0, renderHeight = 0, disposed = false;
+  let shake = 0, fovKick = 0, slowTime = 0, sampleTime = 0, sampleFrames = 0, playerX = 0, playerY = 0;
+  function spark(x, y, z, palette, count, speed, lift, size = 1) {
+    for (let i = 0; i < count; i++) {
+      if (particles.length >= 120) particles.shift();
+      const angle = random() * Math.PI * 2, velocity = speed * (.55 + random() * .9);
+      particles.push({ x, y, z, vx: Math.cos(angle) * velocity, vy: lift * (.6 + random() * .8), vz: Math.sin(angle) * velocity, life: .5 + random() * .3, size: size * (.7 + random() * .6), color: palette[i % palette.length] });
+    }
+  }
   function resize() {
     if (disposed) return;
     const rect = canvas.getBoundingClientRect(), w = Math.max(200, Math.round(rect.width || 800)), h = Math.max(240, Math.round(rect.height || 570));
     if (w !== renderWidth || h !== renderHeight) { renderWidth = w; renderHeight = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = camera.aspect < .85 ? 64 : 48; camera.updateProjectionMatrix(); }
   }
   function event(e) {
-    if (e.type === 'hit') hitLife = .5;
-    if (e.type === 'collect') for (let i = 0; i < 8; i++) {
-      if (particles.length >= 120) particles.shift();
-      const angle = random() * Math.PI * 2, velocity = 1 + random() * 1.9;
-      particles.push({ x: e.x, y: e.y, z: e.z, vx: Math.cos(angle) * velocity, vy: 1.8 + random() * 2, vz: Math.sin(angle) * velocity, life: .55 + random() * .25 });
-    }
+    if (e.type === 'hit') { hitLife = .5; shake = calm ? 0 : .55; spark(playerX, .45, -.4, sparkColors.chip, 14, 2.6, 3.2, 1.5); }
+    if (e.type === 'collect') { spark(e.x, e.y, e.z, sparkColors.heart, e.combo && e.combo % 9 === 0 ? 18 : 10, 1.5, 2.6); if (e.combo && e.combo % 9 === 0 && !calm) fovKick = 1; }
+    if (e.type === 'land') spark(playerX, .06, .35, sparkColors.dust, 6, 1.1, .9, 1.2);
+    if (e.type === 'jump') spark(playerX, .06, .4, sparkColors.dust, 4, .8, .6, 1);
   }
   function render(state, dt = 0) {
     if (disposed) return; resize();
     const activeDt = state.phase === 'paused' ? 0 : Math.min(dt, .05); clock += activeDt; hitLife = Math.max(0, hitLife - activeDt);
     const turn = Math.max(-1, Math.min(1, (state.x - previousX) * 3)); previousX = state.x;
+    playerX = state.x; playerY = state.y;
     player.root.position.set(state.x, state.y, 0); player.animate({ time: clock, speed: state.speed, airborne: state.airborne, jump: state.y, turn, idle: state.phase === 'countdown', hit: hitLife });
     // The partner follows behind, entirely within the player's lane; it never acts as a phantom collider.
-    const follow = followingSample(followingHistory, state); companionX = lerp(companionX, state.x + .89, 1 - Math.exp(-activeDt * 13)); companionY = follow.y;
+    // On wide screens the camera sits to the right, so the partner runs on the left where it never hides the player or the log ahead.
+    const partnerSide = camera.aspect < .85 ? .89 : -.95;
+    const follow = followingSample(followingHistory, state); companionX = Number.isFinite(companionX) ? lerp(companionX, state.x + partnerSide, 1 - Math.exp(-activeDt * 13)) : state.x + partnerSide; companionY = follow.y;
     companion.root.position.set(companionX, companionY, 2.6); companion.animate({ time: clock + .17, speed: state.speed, airborne: companionY > .04, jump: companionY, turn, idle: state.phase === 'countdown' });
     marker.position.x = state.x; marker.material.opacity = .48 + .08 * Math.sin(clock * 3);
     shadow.position.x = state.x; shadow.material.opacity = Math.max(.25, 1 - state.y * .35); shadow.scale.setScalar(1 + state.y * .1);
@@ -159,11 +173,18 @@ export function makeRunnerScene(canvas, horse, objects) {
       if (object.type === 'heart') { view.position.y = 1.58 + .1 * Math.sin(clock * 3.2 + object.time); view.rotation.y = Math.sin(clock * 1.7 + object.time) * .45; view.rotation.z = Math.sin(clock * 2 + object.time) * .07; }
     }
     for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.life -= activeDt; if (p.life <= 0) { particles.splice(i, 1); continue; } p.x += p.vx * activeDt; p.y += p.vy * activeDt; p.z += (p.vz + state.speed * .3) * activeDt; p.vy -= activeDt * 7; }
-    for (let i = 0; i < 120; i++) { const p = particles[i]; if (p) { temp.position.set(p.x, p.y, p.z); temp.rotation.set(clock, clock * 2, i); temp.scale.setScalar(Math.min(1, p.life * 3)); } else temp.scale.setScalar(0); temp.updateMatrix(); particleMesh.setMatrixAt(i, temp.matrix); }
-    particleMesh.instanceMatrix.needsUpdate = true;
+    for (let i = 0; i < 120; i++) { const p = particles[i]; if (p) { temp.position.set(p.x, p.y, p.z); temp.rotation.set(clock, clock * 2, i); temp.scale.setScalar(Math.min(1, p.life * 3) * (p.size || 1)); particleMesh.setColorAt(i, p.color || sparkColors.heart[0]); } else temp.scale.setScalar(0); temp.updateMatrix(); particleMesh.setMatrixAt(i, temp.matrix); }
+    particleMesh.instanceMatrix.needsUpdate = true; if (particleMesh.instanceColor) particleMesh.instanceColor.needsUpdate = true;
     const portrait = camera.aspect < .85, targetCameraX = portrait ? state.x * .85 : state.x * .2 + 1.65;
     camera.position.set(portrait ? targetCameraX : lerp(camera.position.x || targetCameraX, targetCameraX, 1 - Math.exp(-Math.max(activeDt, .016) * 4)), portrait ? 6.35 : 5.65, portrait ? 12.7 : 11.3);
     camera.lookAt(state.x * (portrait ? .85 : .12), .9, -12);
+    // A short, decaying shake on a bump and a small zoom kick on every ninth heart in a row.
+    shake = Math.max(0, shake - activeDt * 1.6); fovKick = Math.max(0, fovKick - activeDt * 2.2);
+    if (shake > 0) { const k = shake * shake * .5; camera.position.x += Math.sin(clock * 71) * k; camera.position.y += Math.sin(clock * 53 + 1.3) * k * .7; camera.rotation.z += Math.sin(clock * 37) * k * .05; }
+    const baseFov = portrait ? 64 : 48, fov = baseFov - fovKick * fovKick * 4;
+    if (Math.abs(camera.fov - fov) > .01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    // Adaptive quality: if frames stay slow for two seconds, render fewer pixels instead of stuttering.
+    if (activeDt > 0) { sampleTime += activeDt; sampleFrames++; if (sampleTime >= 2) { const avg = sampleTime / sampleFrames; if (avg > 1 / 38 && pixelRatio > 1) { pixelRatio = Math.max(1, pixelRatio - .5); renderer.setPixelRatio(pixelRatio); renderer.setSize(renderWidth, renderHeight, false); } sampleTime = 0; sampleFrames = 0; } }
     renderer.render(scene, camera);
   }
   function dispose() {

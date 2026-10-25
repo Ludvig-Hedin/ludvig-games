@@ -96,3 +96,7 @@ body.is-online #restart{display:none}
 .menu-links:has(#online-open:not(.hidden)) button:first-child{grid-column:auto}
 .room-players .team-dot{display:block;flex:0 0 4px;width:4px;height:16px;margin:0}
 body.is-online #results-board{display:none}
+
+/* 2026-10-25: the HUD never widens the page. The kickoff number pops in at 1.3x across the full width; on phones
+   that overflow widened the layout viewport, which pushed the fixed canvas and touch buttons off the bottom-right edge. */
+.hud,body.touch.is-playing .touch-controls{overflow:hidden}

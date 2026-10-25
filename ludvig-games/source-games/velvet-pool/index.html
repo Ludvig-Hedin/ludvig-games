@@ -464,8 +464,8 @@ let wins = {}; try { wins = JSON.parse(store.get('wins', '{}')) || {}; } catch {
 let aim = 0, pull = 0, shot = null, sinks = [], aiJob = null, nextBreaker = 0;
 let drag = null, touchMode = matchMedia('(pointer: coarse)').matches, spaceCharge = -1;
 let view = { s: 1, port: false, dpr: 1, w: 0, h: 0, T: [1, 0, 0, 1, 0, 0] };
-let tableLayer = null, sprites = [], spriteSize = 0;
-let resultTimer = 0;
+let tableLayer = null, sprites = [], spriteSize = 0, feltTile = null;
+let resultTimer = 0, stroke = null;
 
 const net = { room: null, code: '', again: [false, false], lastSend: 0, sentAim: '', remoteAim: null, waitTimer: 0, pending: null, offs: [] };
 
@@ -534,6 +534,20 @@ function buildTable() {
   c.fillStyle = '#165640'; c.fillRect(-14, -14, W + 28, H + 28);
   const cloth = c.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * 0.62); cloth.addColorStop(0, '#24795b'); cloth.addColorStop(1, '#1a5f47');
   c.fillStyle = cloth; c.fillRect(0, 0, W, H);
+  // Felt grain at device-pixel scale and a soft shadow under the cushions (cached with the table).
+  if (!feltTile) {
+    feltTile = document.createElement('canvas'); feltTile.width = feltTile.height = 96;
+    const f = feltTile.getContext('2d'), im = f.createImageData(96, 96);
+    for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() < 0.5 ? 0 : 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 10 + Math.random() * 16; }
+    f.putImageData(im, 0, 0);
+  }
+  const grain = c.createPattern(feltTile, 'repeat');
+  if (grain && grain.setTransform && window.DOMMatrix) { const k = 1 / (view.s * view.dpr); grain.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0])); }
+  if (grain) { c.fillStyle = grain; c.fillRect(0, 0, W, H); }
+  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of [[0, 0, 0, 16, 0, 0, W, 16], [0, H, 0, H - 16, 0, H - 16, W, 16], [0, 0, 16, 0, 0, 0, 16, H], [W, 0, W - 16, 0, W - 16, 0, 16, H]]) {
+    const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, 'rgba(0,0,0,.22)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(rx, ry, rw, rh);
+  }
   c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 3; c.strokeRect(-1.5, -1.5, W + 3, H + 3);
   c.strokeStyle = 'rgba(240,230,200,.09)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(HEAD_X, 0); c.lineTo(HEAD_X, H); c.stroke();
   c.fillStyle = 'rgba(240,230,200,.22)'; c.beginPath(); c.arc(FOOT_X, H / 2, 2.6, 0, 6.283); c.fill(); c.beginPath(); c.arc(HEAD_X, H / 2, 2.6, 0, 6.283); c.fill();
@@ -553,31 +567,85 @@ function buildTable() {
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r + 3, 0, 6.283); c.fill();
   }
 }
-function buildSprites() {
-  const px = D * view.s * view.dpr, size = Math.ceil(px) + 4;
-  spriteSize = size; sprites = [];
-  for (let n = 0; n < 16; n++) {
-    const cv = document.createElement('canvas'); cv.width = cv.height = size;
-    const c = cv.getContext('2d'), r = px / 2;
-    c.translate(size / 2, size / 2);
-    c.save(); c.beginPath(); c.arc(0, 0, r, 0, 6.283); c.clip();
-    c.fillStyle = n > 8 ? '#f2eee2' : colorOf(n); c.fillRect(-r, -r, 2 * r, 2 * r);
-    if (n > 8) { c.fillStyle = colorOf(n); c.fillRect(-r, -r * 0.52, 2 * r, r * 1.04); }
-    if (n) {
-      c.fillStyle = '#f7f3e8'; c.beginPath(); c.arc(0, 0, r * 0.47, 0, 6.283); c.fill();
-      c.fillStyle = '#161616'; c.font = `700 ${Math.max(6, r * (n > 9 ? 0.52 : 0.6))}px system-ui,Arial,sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(n), 0, r * 0.04);
-    }
-    const sh = c.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r * 1.05);
-    sh.addColorStop(0, 'rgba(255,255,255,.28)'); sh.addColorStop(0.45, 'rgba(255,255,255,0)'); sh.addColorStop(0.8, 'rgba(0,0,0,.12)'); sh.addColorStop(1, 'rgba(0,0,0,.42)');
-    c.fillStyle = sh; c.fillRect(-r, -r, 2 * r, 2 * r);
-    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(-r * 0.36, -r * 0.42, r * 0.2, r * 0.12, -0.6, 0, 6.283); c.fill();
-    c.restore();
-    sprites.push(cv);
-  }
+/* Balls are small shaded spheres that really roll: each keeps an orientation (table frame, z toward the
+   viewer) that turns with its spin, and is re-rendered per pixel only when it turned. Purely visual:
+   physics, rules and online messages never see it. */
+const ORIENT = [], BALLCV = [];
+const LIGHT = (() => { const l = [-0.38, -0.48, 0.79], k = Math.hypot(...l); return l.map(v => v / k); })();
+const HALF = (() => { const h = [LIGHT[0], LIGHT[1], LIGHT[2] + 1], k = Math.hypot(...h); return h.map(v => v / k); })();
+const RGB = COLORS.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+const GLYPHS = [];
+for (let n = 0; n < 16; n++) { const a = Math.random() * 6.2832, c = Math.cos(a), s = Math.sin(a); ORIENT.push(new Float64Array([c, -s, 0, s, c, 0, 0, 0, 1])); BALLCV.push({ cv: null, size: 0, dirty: true, turns: 0 }); }
+function glyph(n) {
+  if (GLYPHS[n]) return GLYPHS[n];
+  const s = 48, cv = document.createElement('canvas'); cv.width = cv.height = s;
+  const c = cv.getContext('2d'); c.fillStyle = '#000'; c.font = `700 ${n > 9 ? 26 : 31}px system-ui,Arial,sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(n), s / 2, s / 2 + 1.5);
+  const d = c.getImageData(0, 0, s, s).data, a = new Float32Array(s * s);
+  for (let i = 0; i < s * s; i++) a[i] = d[i * 4 + 3] / 255;
+  return (GLYPHS[n] = { s, a });
 }
+function rollBall(n, wx, wy, t) {
+  const sp = Math.sqrt(wx * wx + wy * wy), ang = sp * t / R;
+  if (ang < 0.004) return;
+  const kx = -wy / sp, ky = wx / sp, c = Math.cos(ang), s = Math.sin(ang), C = 1 - c;
+  const r0 = c + kx * kx * C, r1 = kx * ky * C, r2 = ky * s, r4 = c + ky * ky * C, r5 = -kx * s, r6 = -ky * s, r7 = kx * s;
+  const m = ORIENT[n], e = BALLCV[n];
+  for (let j = 0; j < 3; j++) {
+    const a = m[j], b = m[3 + j], d = m[6 + j];
+    m[j] = r0 * a + r1 * b + r2 * d; m[3 + j] = r1 * a + r4 * b + r5 * d; m[6 + j] = r6 * a + r7 * b + c * d;
+  }
+  if (++e.turns > 120) { // keep the matrix orthonormal
+    e.turns = 0;
+    let ax = m[0], ay = m[3], az = m[6], l = Math.hypot(ax, ay, az); ax /= l; ay /= l; az /= l;
+    let bx = m[1], by = m[4], bz = m[7]; const dp = ax * bx + ay * by + az * bz; bx -= dp * ax; by -= dp * ay; bz -= dp * az; l = Math.hypot(bx, by, bz); bx /= l; by /= l; bz /= l;
+    m[0] = ax; m[3] = ay; m[6] = az; m[1] = bx; m[4] = by; m[7] = bz; m[2] = ay * bz - az * by; m[5] = az * bx - ax * bz; m[8] = ax * by - ay * bx;
+  }
+  e.dirty = true;
+}
+function renderBall(n) {
+  const e = BALLCV[n], px = D * view.s * view.dpr, ss = px < 44 ? 2 : 1, size = Math.ceil(px * ss) + 2;
+  if (!e.cv || e.size !== size) { e.cv = document.createElement('canvas'); e.cv.width = e.cv.height = size; e.c = e.cv.getContext('2d'); e.img = e.c.createImageData(size, size); e.size = size; e.ss = ss; e.dirty = true; }
+  if (!e.dirty) return e;
+  e.dirty = false;
+  const m = ORIENT[n], data = e.img.data, rad = px * ss / 2, c0 = size / 2, port = view.port, aa = 1.4 / rad;
+  const base = RGB[n > 8 ? n - 8 : n], white = RGB[0], stripe = n > 8, G = n ? glyph(n) : null, gs = G ? G.s : 0;
+  const DISC = 0.47, DCOS = Math.sqrt(1 - DISC * DISC);
+  for (let y = 0, i = 0; y < size; y++) {
+    const v = (y + 0.5 - c0) / rad;
+    for (let x = 0; x < size; x++, i += 4) {
+      const u = (x + 0.5 - c0) / rad, r2 = u * u + v * v;
+      const cover = Math.max(0, Math.min(1, (1 - Math.sqrt(r2)) * rad + 0.5));
+      if (cover <= 0) { data[i + 3] = 0; continue; }
+      const z = Math.sqrt(Math.max(0, 1 - r2)), tx = port ? -v : u, ty = port ? u : v;
+      const qx = m[0] * tx + m[3] * ty + m[6] * z, qy = m[1] * tx + m[4] * ty + m[7] * z, qz = m[2] * tx + m[5] * ty + m[8] * z;
+      let cr = base[0], cg = base[1], cb = base[2];
+      if (stripe) { const k = Math.max(0, Math.min(1, (Math.abs(qy) - 0.52) / aa + 0.5)); cr += (white[0] - cr) * k; cg += (white[1] - cg) * k; cb += (white[2] - cb) * k; }
+      if (G) {
+        const az = Math.abs(qz), k = Math.max(0, Math.min(1, (az - DCOS) / (aa * 0.6) + 0.5));
+        if (k > 0) {
+          let gr = 247, gg = 243, gb = 232;
+          const gu = ((qz > 0 ? qx : -qx) / DISC * 0.5 + 0.5) * gs - 0.5, gv = (qy / DISC * 0.5 + 0.5) * gs - 0.5;
+          const ix = Math.floor(gu), iy = Math.floor(gv);
+          if (ix >= 0 && iy >= 0 && ix < gs - 1 && iy < gs - 1) {
+            const fx = gu - ix, fy = gv - iy, A = G.a, o = iy * gs + ix;
+            const ink = (A[o] * (1 - fx) + A[o + 1] * fx) * (1 - fy) + (A[o + gs] * (1 - fx) + A[o + gs + 1] * fx) * fy;
+            gr += (22 - gr) * ink; gg += (22 - gg) * ink; gb += (22 - gb) * ink;
+          }
+          cr += (gr - cr) * k; cg += (gg - cg) * k; cb += (gb - cb) * k;
+        }
+      }
+      const dif = Math.max(0, u * LIGHT[0] + v * LIGHT[1] + z * LIGHT[2]), sh = 0.38 + 0.7 * dif;
+      const hs = Math.max(0, u * HALF[0] + v * HALF[1] + z * HALF[2]), h2 = hs * hs, h4 = h2 * h2, h8 = h4 * h4, spec = h8 * h8 * h8 * 230 + h4 * 18;
+      data[i] = Math.min(255, cr * sh + spec); data[i + 1] = Math.min(255, cg * sh + spec); data[i + 2] = Math.min(255, cb * sh + spec); data[i + 3] = cover * 255;
+    }
+  }
+  e.c.putImageData(e.img, 0, 0);
+  return e;
+}
+function buildSprites() { for (const e of BALLCV) e.dirty = true; spriteSize = D * view.s * view.dpr; sprites = BALLCV; }
 function drawBall(n, x, y, scale) {
-  const [sx, sy] = toScreen(x, y), sz = spriteSize * (scale || 1);
-  ctx.drawImage(sprites[n], sx - sz / 2, sy - sz / 2, sz, sz);
+  const e = renderBall(n), [sx, sy] = toScreen(x, y), sz = e.size / e.ss * (scale || 1);
+  ctx.drawImage(e.cv, sx - sz / 2, sy - sz / 2, sz, sz);
 }
 function aimInfo() {
   const q = S.balls[0], ux = Math.cos(aim), uy = Math.sin(aim);
@@ -614,10 +682,9 @@ function drawGuide() {
     if (tl > 0.02) { tx /= tl; ty /= tl; const len = 15 + 80 * (1 - cos); ctx.strokeStyle = 'rgba(248,240,214,.35)'; ctx.beginPath(); ctx.moveTo(a.gx, a.gy); ctx.lineTo(a.gx + tx * len, a.gy + ty * len); ctx.stroke(); }
   }
 }
-function drawCue() {
-  const q = S.balls[0], ux = Math.cos(aim), uy = Math.sin(aim), s = view.s;
-  const start = R + 5 + pull * 85, len = 400;
-  const p = k => [q.x - ux * (start + k), q.y - uy * (start + k)];
+function drawCue(ox, oy, a, start) {
+  const ux = Math.cos(a), uy = Math.sin(a), s = view.s, len = 400;
+  const p = k => [ox - ux * (start + k), oy - uy * (start + k)];
   ctx.lineCap = 'butt';
   const seg = (a, b, w, col) => { const [x1, y1] = p(a), [x2, y2] = p(b); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
   ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 9; ctx.beginPath(); const [a1, b1] = p(4), [a2, b2] = p(len); ctx.moveTo(a1 + 4, b1 + 6); ctx.lineTo(a2 + 4, b2 + 6); ctx.stroke();
@@ -638,6 +705,7 @@ function frame(now) {
     shot.acc += dt; let n = 0;
     while (shot.acc >= DT && n < 60 && shot.steps < MAX_STEPS) { step(S.balls, shot.ev, liveFx); shot.acc -= DT; shot.steps++; n++; }
     if (n === 60) shot.acc = 0;
+    if (n) for (const b of S.balls) if (b.live && (b.wx || b.wy)) rollBall(b.n, b.wx, b.wy, n * DT);
     if (shot.steps >= MAX_STEPS || !anyMoving(S.balls)) endShot();
   }
   if (aiJob) runAi(now);
@@ -665,7 +733,19 @@ function draw(dt) {
     drawBall(k.n, k.x + (k.px - k.x) * k.t, k.y + (k.py - k.y) * k.t, 1 - k.t * 0.6);
   }
   for (const b of S.balls) if (b.live) drawBall(b.n, b.x, b.y);
-  if (showAim) { setT(ctx); ctx.save(); rr(ctx, -RAIL, -RAIL, W + 2 * RAIL, H + 2 * RAIL, 26); ctx.clip(); drawCue(); ctx.restore(); }
+  if (showAim) { setT(ctx); ctx.save(); rr(ctx, -RAIL, -RAIL, W + 2 * RAIL, H + 2 * RAIL, 26); ctx.clip(); drawCue(q.x, q.y, aim, R + 5 + pull * 85); ctx.restore(); }
+  else if (stroke) {
+    // The cue drives through the white and fades, so every shot reads as a strike.
+    stroke.t += dt;
+    const t = stroke.t, k = Math.min(1, t / 0.07), from = R + 5 + stroke.p * 85;
+    if (t > 0.34 || mode === 'menu') stroke = null;
+    else {
+      setT(ctx); ctx.save(); rr(ctx, -RAIL, -RAIL, W + 2 * RAIL, H + 2 * RAIL, 26); ctx.clip();
+      ctx.globalAlpha = t < 0.1 ? 1 : Math.max(0, 1 - (t - 0.1) / 0.24);
+      drawCue(stroke.x, stroke.y, stroke.a, from + (R - 6 - from) * k * k - Math.min(1, t / 0.2) * 4);
+      ctx.restore();
+    }
+  }
 }
 
 /* ---------- HUD and power bar ---------- */
@@ -729,6 +809,7 @@ function startShot(vx, vy, mine) {
   shot = { ev: newEvents(g ? remainingOf(S.balls, g) : 7), mine, acc: 0, steps: 0 };
   if (isOnline() && mine && net.room) net.room.send({ t: 'shot', seq: S.seq, b: pack(S.balls), v: [vx, vy] });
   const q = S.balls[0]; q.live = true; q.vx = vx; q.vy = vy; q.wx = 0; q.wy = 0;
+  stroke = { x: q.x, y: q.y, a: Math.atan2(vy, vx), p: Math.max(pull, Math.min(1, Math.hypot(vx, vy) / VMAX * 0.8)), t: 0 };
   S.placing = false; S.msg = ''; phase = 'rolling'; pull = 0; setPowerUI(0); net.remoteAim = null;
   snd.play('cue', Math.hypot(vx, vy) / VMAX + 0.15);
   hud();

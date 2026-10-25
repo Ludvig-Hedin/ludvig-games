@@ -96,6 +96,9 @@ html,body{overflow-x:hidden}
  body.touch #toastTitle{font-size:21px}body.touch #toastText{font-size:9px;margin-top:4px}
 }
 @media(max-width:480px){body.touch #compass,body.touch #headingName{display:none}}
+#splashMark{position:absolute;left:0;top:0;width:30px;height:12px;margin:-6px 0 0 -15px;border:2px solid #ffe6a5;border-radius:50%;box-shadow:0 0 0 1px #0d2e3399,0 0 8px #ffcf7a88,inset 0 0 0 1px #0d2e3366;pointer-events:none;display:none;will-change:transform}
+body:has(>a[aria-label="All games"]) .top-left{margin-left:38px}
+.gw-warn{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid #ff8f6b;border-radius:50%;box-shadow:0 0 0 1px #2a0f0a66,0 0 10px #ff6a4a88;pointer-events:none;display:none;will-change:transform,opacity}
 </style>
 </head>
 <body>
@@ -116,7 +119,7 @@ html,body{overflow-x:hidden}
  <div id="speed-block"><div id="windControl"><div id="windTrack"><div id="windFill"></div></div><span id="windLabel">SHIFT · CATCH WIND</span></div><span class="speed-number" id="speedNumber">0</span><small id="speedUnit">KNOTS</small><div id="sailLabel">SAILS FURLED</div><div class="sail-meter" id="sailMeter"><i></i><i></i><i></i><i></i><i></i></div></div>
  <div id="cannonStatus"><div id="broadsideStatus"><div><span>Q · LEFT</span><div><i id="leftReload"></i></div></div><div><span>F · RIGHT</span><div><i id="rightReload"></i></div></div></div><strong id="cannonLabel">CANNONS READY</strong><div id="reloadTrack"><div id="reloadFill"></div></div><span id="cannonHint">CLICK / SPACE · FIRE</span></div>
  <button id="repairBtn" title="Repair your hull using one supply crate"><span class="desktop-only">R · </span>REPAIR <span id="repairCount">3</span></button>
- <div id="sightFrame"></div><div id="reticle"></div><div id="aimReadout" hidden></div><div id="hitReadout" hidden></div><div id="lockRing"><i id="enemyHull"></i></div><div id="worldMarker"><div class="marker-icon"></div><span id="markerName"></span><small id="markerDistance"></small></div>
+ <div id="sightFrame"></div><div id="splashMark" aria-hidden="true"></div><i class="gw-warn" aria-hidden="true"></i><i class="gw-warn" aria-hidden="true"></i><i class="gw-warn" aria-hidden="true"></i><div id="reticle"></div><div id="aimReadout" hidden></div><div id="hitReadout" hidden></div><div id="lockRing"><i id="enemyHull"></i></div><div id="worldMarker"><div class="marker-icon"></div><span id="markerName"></span><small id="markerDistance"></small></div>
  <div id="actionWrap" hidden><button id="actionBtn"><kbd class="desktop-only">E</kbd><span id="actionText">Go ashore</span><div id="actionProgress"></div></button><div id="actionHelp"></div></div>
  <div id="toast"><div id="toastTitle"></div><div id="toastText"></div></div><div id="tip" class="desktop-only">W / S · Sails &nbsp;&nbsp; A / D · Steer &nbsp;&nbsp; E · Interact &nbsp;&nbsp; C · View</div><div id="lookHint" hidden>Click the sea to look around</div>
 </div>
@@ -2655,7 +2658,7 @@ const keys=new Set(),stick={x:0,y:0,pointer:null},lookTouch={pointer:null,x:0,y:
 let renderTime=0,aiming=false,aimPitch=.07,deckRecoil=0,digCycle=-1,digImpacted=false,collectTimer=0,shotCount=0,hitCount=0,hitText='',hitTextTime=0;
 let randomSeed=17853;
 function random(){randomSeed=(Math.imul(randomSeed,1664525)+1013904223)>>>0;return randomSeed/4294967296;}
-const cameraPos=new T.Vector3(),cameraTarget=new T.Vector3(),temp=new T.Vector3(),temp2=new T.Vector3(),aiSteer={x:0,z:0};
+const warnEls=[...document.querySelectorAll('.gw-warn')],warnPos=new T.Vector3(),splashPos=new T.Vector3(),splashVel=new T.Vector3(),cameraPos=new T.Vector3(),cameraTarget=new T.Vector3(),temp=new T.Vector3(),temp2=new T.Vector3(),aiSteer={x:0,z:0};
 const centerScreen=new T.Vector3();
 const headingWords=['N','NE','E','SE','S','SW','W','NW'];
 
@@ -3004,7 +3007,7 @@ function present(dt,alpha=1){
  env.update(renderTime,dt,renderPlayer,ratio);
  shovel.update(renderTime,foot.walk,digCycle<0?-1:digCycle/DIG_DURATION,onLand&&(state==='playing'||state==='paused'||state==='chart'));
  audio.update(dt,{speed:player.speed/32,combat:Math.min(1,near/4),onLand,storm:0});
- if(state==='playing'){updateMarker();drawCompass();uiClock-=dt;if(uiClock<=0){uiClock=.125;updateHUD();}}
+ if(state==='playing'){updateMarker();updateWarnings();drawCompass();uiClock-=dt;if(uiClock<=0){uiClock=.125;updateHUD();}}
 }
 
 function updateHUD(){
@@ -3035,10 +3038,33 @@ function updateMarker(){
   rx=clamp((p.x*.5+.5)*width,25,width-25);ry=clamp((-p.y*.5+.5)*height,50,height-100);
  }
  $('reticle').style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%) ${hitFlash>0?'rotate(45deg)':''}`;
+ updateSplash();
  $('aimReadout').hidden=onLand||!aiming;setText('aimReadout',`${(aimPitch*180/Math.PI).toFixed(1)}°   ·   ${fireCooldown>.01?'LOADING':'READY'}`);
  $('hitReadout').hidden=hitTextTime<=0;setText('hitReadout',hitText);$('lockRing').style.display='none';
 }
 
+// A closing ring over each hunter that is about to fire, so a volley can be read and dodged.
+function updateWarnings(){
+ let n=0;
+ if(!onLand)for(const e of enemies){if(n>=warnEls.length)break;if(!e.active||e.dying||e.warning<=0)continue;
+  warnPos.set(e.visual.pos.x,7.5*(e.scale||1),e.visual.pos.z);if(warnPos.distanceTo(camera.position)>320)continue;
+  const ahead=temp2.copy(warnPos).sub(camera.position).dot(camera.getWorldDirection(centerScreen))>0;if(!ahead)continue;warnPos.project(camera);
+  const sx=(warnPos.x*.5+.5)*width,sy=(-warnPos.y*.5+.5)*height;if(sx<-20||sx>width+20||sy<-20||sy>height+20)continue;
+  const el=warnEls[n++],k=.45+clamp(e.warning/1.05,0,1)*.9;el.style.display='block';el.style.opacity=(.55+.45*(1-e.warning/1.05)).toFixed(2);el.style.transform=`translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scale(${k.toFixed(2)})`;}
+ for(let i=n;i<warnEls.length;i++)if(warnEls[i].style.display!=='none')warnEls[i].style.display='none';
+}
+// In cannon sights a ring on the water shows where a deck-gun round lands (same ballistics as fire()).
+function updateSplash(){
+ const el=$('splashMark');if(onLand||!aiming){if(el.style.display!=='none')el.style.display='none';return;}
+ getGunRay();splashVel.copy(gunDirection).multiplyScalar(SHOT_SPEED);splashVel.x-=Math.sin(player.heading)*player.speed;splashVel.z-=Math.cos(player.heading)*player.speed;
+ const y0=gunOrigin.y,vy=splashVel.y,t=(vy+Math.sqrt(vy*vy+2*GRAVITY*Math.max(0,y0)))/GRAVITY;
+ if(!(t>0)||t>7){el.style.display='none';return;}
+ splashPos.set(gunOrigin.x+splashVel.x*t,0,gunOrigin.z+splashVel.z*t);splashPos.y=waveHeight(splashPos.x,splashPos.z,renderTime)*.5;
+ const ahead=splashVel.x*(splashPos.x-camera.position.x)+splashVel.z*(splashPos.z-camera.position.z)>0;splashPos.project(camera);
+ const sx=(splashPos.x*.5+.5)*width,sy=(-splashPos.y*.5+.5)*height;
+ if(!ahead||splashPos.z>1||sx<0||sx>width||sy<0||sy>height){el.style.display='none';return;}
+ el.style.display='block';const k=clamp(1.4-t*.12,.55,1.2);el.style.transform=`translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scale(${k.toFixed(2)})`;
+}
 function drawCompass(){const c=$('compass'),ctx=c.getContext('2d'),w=c.width/uiRatio,h=c.height/uiRatio;if(!w)return;ctx.setTransform(uiRatio,0,0,uiRatio,0,0);ctx.clearRect(0,0,w,h);const bearing=((-((onLand?foot.yaw:renderPlayer.heading+lookYaw)*180/Math.PI)%360)+360)%360;const range=140,px=w/range;
  for(let deg=-360;deg<=720;deg+=15){let off=deg-bearing;if(Math.abs(off)>range/2)continue;const x=w/2+off*px,major=((deg%90)+90)%90===0;ctx.strokeStyle=major?'#fff0c6':'#ffedbd72';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,21);ctx.lineTo(x,major?30:26);ctx.stroke();if(major){ctx.font='11px Georgia';ctx.textAlign='center';ctx.fillStyle='#fff3d5';ctx.fillText(headingWords[((deg%360)+360)%360/45],x,14);}}
  ctx.fillStyle='#f5cf7a';ctx.beginPath();ctx.moveTo(w/2-3,35);ctx.lineTo(w/2+3,35);ctx.lineTo(w/2,30);ctx.fill();$('headingName').textContent=headingWords[Math.round(bearing/45)%8];}

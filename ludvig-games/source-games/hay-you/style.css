@@ -594,6 +594,19 @@ kbd{font-family:var(--sans);font-size:10px;min-width:20px;line-height:20px;text-
   .date-intro .date-skip{margin-top:0}
   .date-mobile-hint{margin-top:4px!important;font-size:11px!important}
 }
+
+/* Round 2026-10-25: mood icons and date feedback. */
+.vibe-option .vibe-icon{width:15px;height:15px;flex:none;display:inline-grid}
+.vibe-option .vibe-icon svg{width:100%;height:100%}
+.date-live-score.pop>[data-icon]{animation:heart-pop .32s cubic-bezier(.2,.9,.3,1.4)}
+.date-live-score.pop>strong{animation:count-pop .32s ease-out}
+@keyframes heart-pop{0%{transform:scale(1)}45%{transform:scale(1.45)}100%{transform:scale(1)}}
+@keyframes count-pop{0%{transform:translateY(0)}40%{transform:translateY(-3px);color:#fff4c3}100%{transform:translateY(0)}}
+.date-canvas-wrap:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 90px 18px #c4424a80;z-index:2}
+.date-canvas-wrap.bumped:after{animation:bump-flash .45s ease-out}
+/* Keep the date controls and key hints clear of the hub's round back button (bottom left). */
+.date-bottom{padding-left:max(64px,env(safe-area-inset-left))!important}
+@keyframes bump-flash{0%{opacity:1}100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
   .confetti-bit{display:none}

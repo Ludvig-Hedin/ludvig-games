@@ -120,7 +120,8 @@ function makeHub() {
   const hub = {
     rooms, sent, clock: null,
     client: name => ({
-      async join({room}) { const r = rooms.get(room); if (!r) throw Object.assign(new Error('nf'), {code: 'not-found'}); return enter(r, name); },
+      // Quick match like the real client: the fullest open public room, or a new public one.
+      async join({room, quick, max = 8}) { if (quick) { const open = [...rooms.values()].filter(r => r.public && r.peers.length < r.max).sort((x, y) => y.peers.length - x.peers.length)[0]; return open ? enter(open, name) : this.create({max, visible: true}); } const r = rooms.get(room); if (!r) throw Object.assign(new Error('nf'), {code: 'not-found'}); return enter(r, name); },
       async create({max, visible}) { const code = 'AB' + String(rooms.size + 2).padStart(2, '2').replace(/[01]/g, '3'); const r = {code, max, public: Boolean(visible), meta: {}, peers: []}; rooms.set(code, r); return enter(r, name); },
       async list() { return [...rooms.values()].filter(r => r.public && r.peers.length < r.max).map(r => ({code: r.code, players: r.peers.length, max: r.max, meta: clone(r.meta)})); }
     })

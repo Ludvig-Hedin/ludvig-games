@@ -22,6 +22,9 @@ const icons = {
   pause:'<path d="M8 5v14M16 5v14" stroke-width="3"/>',
   play:'<path d="m8 4 12 8-12 8V4Z"/>',
   trophy:'<path d="M8 3h8v6a4 4 0 0 1-8 0V3Zm0 2H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 1v6m-4 2h8m-9 0h10"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+  flower:'<circle cx="12" cy="12" r="2.2"/><path d="M12 9.8C10 6 10.8 3 12 3s2 3 0 6.8Zm0 4.4c2 3.8 1.2 6.8 0 6.8s-2-3 0-6.8ZM9.8 12C6 14 3 13.2 3 12s3-2 6.8 0Zm4.4 0c3.8-2 6.8-1.2 6.8 0s-3 2-6.8 0Z"/>',
+  sparkles:'<path d="m10 3 1.8 5.2L17 10l-5.2 1.8L10 17l-1.8-5.2L3 10l5.2-1.8L10 3Zm8 10 .9 2.1L21 16l-2.1.9L18 19l-.9-2.1L15 16l2.1-.9L18 13Z"/>',
   horse:'<path fill="currentColor" stroke="none" d="M4 23V13L9 3l3 3 5-2 3 10-4 3-5-3-2 9H4Zm6-17-3-4-3 7-2 5 3-2 5-6Z"/><circle cx="15" cy="9" r=".9" fill="#f8f5ed" stroke="none"/>',
 };
 const svg=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.spark}</svg>`;
@@ -56,8 +59,7 @@ function sound(event){startAudio();audio.play(event);}
 function updateSound(){document.querySelectorAll('[data-action="sound"]').forEach(button=>{button.innerHTML=icon(audio.muted?'muted':'sound');button.setAttribute('aria-pressed',String(!audio.muted));button.setAttribute('aria-label',audio.muted?'Turn sound on':'Mute sound');});}
 function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').classList.add('visible');toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3000);}
 function renderMood(){
-  const glyph={wild:'↗',soft:'✿',fancy:'✧'};
-  $('vibeOptions').innerHTML=MOODS.map(m=>`<button class="vibe-option ${m.id===run.mood?'active':''}" data-action="mood" data-mood="${m.id}" aria-pressed="${m.id===run.mood}" ${run.index>0?'disabled':''}>${glyph[m.id]} ${m.name}</button>`).join('');
+  $('vibeOptions').innerHTML=MOODS.map(m=>`<button class="vibe-option ${m.id===run.mood?'active':''}" data-action="mood" data-mood="${m.id}" aria-pressed="${m.id===run.mood}" ${run.index>0?'disabled':''}>${icon(m.icon,'vibe-icon')}${m.name}</button>`).join('');
 }
 function renderStats(){
   const good=goodDates();
@@ -207,7 +209,11 @@ function launchDate(){
   isolateOverlay();$('dateCanvas').focus({preventScroll:true});
   activeMatch.stage='playing';run.pending=activeMatch;save();
   try{
+    let shownHearts=0,shownHits=0;
     runner=startDateGame({canvas:$('dateCanvas'),horse:getHorse(activeMatch.id),onSound:(e)=>audio.play(e),onUpdate:(s)=>{
+      if(s.hearts>shownHearts)retrigger(document.querySelector('.date-live-score'),'pop');
+      if(s.hits>shownHits)retrigger($('dateCanvasWrap'),'bumped');
+      shownHearts=s.hearts;shownHits=s.hits;
       $('dateProgress').style.width=`${s.progress*100}%`;$('dateHearts').textContent=s.hearts;$('dateCombo').textContent=s.combo>1?`×${s.combo}`:'';
       if($('dateFeedback').textContent!==(s.message||''))$('dateFeedback').textContent=s.message||'';
       $('dateTime').textContent=`0:${String(Math.max(0,Math.ceil(s.remaining??30))).padStart(2,'0')}`;
@@ -220,6 +226,7 @@ function launchDate(){
     },onComplete:finishDate});
   }catch(error){console.error(error);runner=null;uiMode='date';$('dateIntro').hidden=false;$('dateCountdown').hidden=true;$('dateCanvas').style.opacity='0';$('pauseButton').disabled=true;isolateOverlay();$('dateIntro').querySelector('button').focus();toast('3D graphics could not start. Try a browser with hardware acceleration enabled.');}
 }
+function retrigger(el,cls){if(!el)return;el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);}
 function pauseDate(reason=''){if(!runner||paused)return;paused=true;runner.pause();$('pausePanel').hidden=false;$('pausePanel').querySelector('.pause-reason').textContent=reason;$('pauseButton').innerHTML=icon('play');$('pauseButton').setAttribute('aria-label','Resume date');isolateOverlay();$('pausePanel').querySelector('button').focus();}
 function resumeDate(){if(!runner||!paused)return;runner.resume();paused=false;$('pausePanel').hidden=true;$('pauseButton').innerHTML=icon('pause');$('pauseButton').setAttribute('aria-label','Pause date');isolateOverlay();$('dateCanvas').focus({preventScroll:true});}
 function dateChemistry(runnerChemistry){const base=38+(activeMatch?.flirt?.chemistry||0)+(activeMatch?.boosted?12:0);return Math.max(5,Math.min(99,Math.round(base*.4+runnerChemistry*.6)));}

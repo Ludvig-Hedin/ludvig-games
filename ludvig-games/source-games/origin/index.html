@@ -212,6 +212,24 @@ h1{font-family:var(--serif);font-size:37px;font-weight:400;line-height:1.15;lett
 @media(max-width:360px){.page{padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}.brand{font-size:24px;gap:5px}.brandmark{width:18px;height:18px}.nav-item{padding:9px 10px}.header-actions{gap:4px}.game-status{margin-top:18px}h1{font-size:25px}.journey-step{width:14px}.round-meta{gap:8px}.clue-caption{gap:8px}.clue-copy{padding:11px 12px}.hint-btn{max-width:78px}.guess-area{padding:12px}.primary-btn{padding:13px 12px;font-size:12px!important;gap:8px}.summary-actions>.text-btn{width:100%;justify-content:center;margin-left:0}.map-search{width:calc(100% - 72px);left:10px}.map-tools{right:9px}}
 @media(hover:none) and (pointer:coarse){.keyboard-guide{display:none}}
 @media(max-width:740px){.header{height:56px}.game-status{margin:10px 0 10px}h1{font-size:22px;margin:0 0 6px}.art-wrap{height:clamp(140px,22svh,210px)}.map-stage{height:clamp(240px,calc(100svh - 470px),460px)}.page{padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}}
+/* Fill the screen: the clue and the map take the height that is left. */
+.page{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+#main{flex:1 0 auto;display:flex;flex-direction:column}
+.game-grid{flex:1 0 auto}
+@media(min-width:741px){.game-grid{min-height:min(513px,calc(100dvh - 280px))}.origin-app.has-back .page{padding-bottom:max(64px,env(safe-area-inset-bottom,0px))}}
+@media(max-width:740px){.game-grid{display:flex;flex-direction:column}.map-card{flex:1 0 auto}.map-stage{flex:1 0 0;height:auto;min-height:200px}.origin-app.has-back .guess-area{padding-left:46px}}
+@media(max-width:740px) and (max-height:700px){.art-wrap{height:clamp(96px,17svh,150px)}.map-stage{min-height:160px}.clue-caption{min-height:0}}
+/* Result feedback */
+.guess-area.result .guess-detail strong{font-variant-numeric:tabular-nums}
+.pop{animation:origin-pop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes origin-pop{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+.points strong{display:inline-block;transform-origin:right bottom}.guess-detail strong{display:inline-block;transform-origin:left center}
+.journey-step{transition:background .3s}
+.summary{width:100%}
+.origin-app.has-back.in-summary .page{padding-bottom:max(64px,env(safe-area-inset-bottom,0px))}
+.summary-map{display:block;width:100%;aspect-ratio:2;background:var(--sea);border-radius:12px;overflow:hidden;margin:0 0 20px}
+.summary-map svg{display:block;width:100%;height:100%}
+.summary-number{color:#ffffff;font-weight:600}
 @media(prefers-reduced-motion:reduce){.origin-app *,.origin-app *::before,.origin-app *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -479,18 +497,63 @@ function toast(message){$('toast').textContent=message;$('toast').classList.add(
 function announce(s){$('live-announcer').textContent=s;}
 function setBusy(on){busy=on;['daily-nav','practice-nav','hint-btn','guess-btn'].forEach(id=>$(id).disabled=on);if(!on){$('guess-btn').disabled=phase==='guess'&&!pin;$('hint-btn').disabled=phase!=='guess'||!!run?.hints[index];}}
 function showError(e){toast(e.message||'Something went wrong. Please try again.');console.warn('Origin:',e.message);}
-function playTone(type='pin'){if(!sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const notes=type==='reveal'?[523.25,659.25,783.99]:[440];notes.forEach((hz,i)=>{const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*.1;o.type='sine';o.frequency.value=hz;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+.015);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.25);});}catch{}}
+// Result quality 0 (great) to 3 (far off) drives colors and the reveal sound.
+function quality(points){return points>=4000?0:points>=2500?1:points>=1000?2:3;}
+const Q_COLOR=['#286043','#5d6d1d','#a0620f','#b74424'];
+const REVEAL_NOTES=[[523.25,659.25,783.99,1046.5],[523.25,659.25,783.99],[440,523.25],[392,329.63]];
+function playTone(type='pin',q=1){if(!sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const notes=type==='reveal'?REVEAL_NOTES[q]||REVEAL_NOTES[1]:[440];notes.forEach((hz,i)=>{const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*.1;o.type='sine';o.frequency.value=hz;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+.015);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.25);});}catch{}}
 
 // All projection, panning and scoring use the same geographic coordinates.
 function project(p){return{x:500+p.lon*2.61*(.85+.15*Math.cos(p.lat*Math.PI/180)),y:263-p.lat*2.72};}
 function unproject(p){const lat=(263-p.y)/2.72,lon=(p.x-500)/(2.61*(.85+.15*Math.cos(lat*Math.PI/180)));return{lat,lon};}
 function zoom(){return 1000/view.w;}
-function clampView(){view.w=Math.max(1000/12,Math.min(1000,view.w));view.h=view.w*.53;view.x=Math.max(0,Math.min(1000-view.w,view.x));view.y=Math.max(0,Math.min(530-view.h,view.y));}
+function clampV(v){const w=Math.max(1000/12,Math.min(1000,v.w)),h=w*.53;return{w,h,x:Math.max(0,Math.min(1000-w,v.x)),y:Math.max(0,Math.min(530-h,v.y))};}
+function clampView(){view=clampV(view);}
 function setView(v){view={...v};clampView();$('world-map').setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);drawLabels();drawPins();}
 function zoomTo(z,point={x:view.x+view.w/2,y:view.y+view.h/2}){z=Math.max(1,Math.min(12,z));const u=(point.x-view.x)/view.w,v=(point.y-view.y)/view.h,w=1000/z,h=530/z;setView({x:point.x-u*w,y:point.y-v*h,w,h});}
 function resetMap(){setView({x:0,y:0,w:1000,h:530});}
 function centerMap(p,z=3){const xy=project(p),w=1000/z;setView({x:xy.x-w/2,y:xy.y-w*.53/2,w,h:w*.53});}
-function fitResult(r){const a=project(r.guess),b=project(r.answer),z=Math.max(1,Math.min(4,850/(Math.abs(a.x-b.x)+150),425/(Math.abs(a.y-b.y)+110)));const w=1000/z;setView({x:(a.x+b.x-w)/2,y:(a.y+b.y-w*.53)/2,w,h:w*.53});}
+function resultView(r){const a=project(r.guess),b=project(r.answer),z=Math.max(1,Math.min(4,850/(Math.abs(a.x-b.x)+150),425/(Math.abs(a.y-b.y)+110)));const w=1000/z;return clampV({x:(a.x+b.x-w)/2,y:(a.y+b.y-w*.53)/2,w});}
+function fitResult(r){setView(resultView(r));}
+// Reveal: the camera glides to both pins, the route draws, the answer pops in and the points count up.
+const ease=t=>1-Math.pow(1-Math.max(0,Math.min(1,t)),3);
+const easeBack=t=>{t=Math.max(0,Math.min(1,t));const c=1.9;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+const reducedMotion=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+const REVEAL={line:[250,1000],pop:[950,1300],ring:[950,1900],count:[300,1300],end:1950};
+let reveal=null,pinDrop=null,revealNext=false;
+function lerpView(a,b,k){const w=a.w*Math.pow(b.w/a.w,k),cx=a.x+a.w/2+(b.x+b.w/2-a.x-a.w/2)*k,cy=a.y+a.h/2+(b.y+b.h/2-a.y-a.h/2)*k;return{x:cx-w/2,y:cy-w*.53/2,w};}
+function stopReveal(){if(reveal){cancelAnimationFrame(reveal.raf);reveal=null;}}
+function stopCamera(){if(reveal)reveal.cam=false;}
+function setCount(t){
+ const r=reveal.r,k=ease((t-REVEAL.count[0])/(REVEAL.count[1]-REVEAL.count[0]));
+ $('guess-place').textContent='+'+fmt(r.points*k)+' pts';
+ $('total-points').textContent=fmt(reveal.before+r.points*k);
+ if(k>=1&&!reveal.counted){reveal.counted=true;for(const el of[$('guess-place'),$('total-points')]){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}}
+}
+function startReveal(r){
+ stopReveal();
+ const q=quality(r.points);
+ if(reducedMotion()){fitResult(r);playTone('reveal',q);return;}
+ const from={...view},to=resultView(r);
+ reveal={start:performance.now(),from,to,r,cam:true,raf:0,before:total()-r.points,counted:false,sounded:false};
+ const step=now=>{
+  if(!reveal)return;
+  const t=now-reveal.start;
+  reveal.t=t;
+  if(reveal.cam){setView(lerpView(from,to,ease(t/700)));if(t>=700)reveal.cam=false;}else drawPins();
+  setCount(t);
+  if(!reveal.sounded&&t>=REVEAL.pop[0]){reveal.sounded=true;playTone('reveal',q);}
+  if(t<REVEAL.end)reveal.raf=requestAnimationFrame(step);else{reveal=null;drawPins();}
+ };
+ reveal.t=0;setCount(0);reveal.raf=requestAnimationFrame(step);
+}
+function dropPin(){
+ if(reducedMotion())return;
+ if(pinDrop)cancelAnimationFrame(pinDrop.raf);
+ pinDrop={start:performance.now(),raf:0,k:0};
+ const step=now=>{if(!pinDrop)return;pinDrop.k=Math.min(1,(now-pinDrop.start)/420);drawPins();if(pinDrop.k<1)pinDrop.raf=requestAnimationFrame(step);else{pinDrop=null;drawPins();}};
+ pinDrop.raf=requestAnimationFrame(step);
+}
 // SVG sizes are converted to CSS pixels so pins and labels stay readable at any zoom.
 function mapScale(){
  const rect=$('world-map').getBoundingClientRect();
@@ -503,6 +566,7 @@ function initMap(){
  setupMapInteraction();
  const observer=new ResizeObserver(()=>{if(!$('game').hidden){drawLabels();drawPins();}});
  observer.observe($('map-stage'));
+ new ResizeObserver(()=>{if(!$('game').hidden)fitArt();}).observe(document.querySelector('.art-wrap'));
  drawLabels();
 }
 function drawLabels(){
@@ -536,22 +600,31 @@ function drawLabels(){
  }
  $('map-labels').innerHTML=output;
 }
-function marker(p,color,label,kind='pin'){
- const xy=project(p),s=1/mapScale();
+function marker(p,color,label,kind='pin',grow=1,lift=0){
+ if(grow<=0)return'';
+ const xy=project(p),s=grow/mapScale();xy.y-=lift/mapScale();
  const shape=kind==='answer'?`<circle cy="-11" r="13" fill="white"/><circle cy="-11" r="10" fill="${color}"/><path d="m-4-11 3 3 6-6" fill="none" stroke="white" stroke-width="2"/>`:`<path d="M0 0C-4-6-12-11-12-20a12 12 0 0 1 24 0C12-11 4-6 0 0Z" fill="${color}" stroke="#ffffff" stroke-width="2.5"/><circle cy="-20" r="4" fill="#ffffff"/>`;
  const width=Math.min(220,label.length*6.4+20);
  const text=label?`<rect x="${-width/2}" y="${kind==='answer'?8:-61}" width="${width}" height="25" rx="5" fill="#ffffff" stroke="#bdcbbd"/><text x="0" y="${kind==='answer'?25:-44}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="500" fill="#283d2e">${esc(label)}</text>`:'';
  return`<g transform="translate(${xy.x} ${xy.y}) scale(${s})" filter="url(#pin-shadow)">${shape}${text}</g>`;
 }
-function routePath(a,b){const r=Math.PI/180,toVec=p=>[Math.cos(p.lat*r)*Math.cos(p.lon*r),Math.cos(p.lat*r)*Math.sin(p.lon*r),Math.sin(p.lat*r)],va=toVec(a),vb=toVec(b);const omega=Math.acos(Math.max(-1,Math.min(1,va.reduce((s,v,i)=>s+v*vb[i],0)))),sin=Math.sin(omega);if(omega<1e-7)return'';let d='',prev=null;for(let i=0;i<=60;i++){const t=i/60;let pos;if(Math.abs(sin)<1e-7){pos={lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+mod(b.lon-a.lon+180,360)*t-180*t};}else{const v=va.map((v,j)=>(Math.sin((1-t)*omega)*v+Math.sin(t*omega)*vb[j])/sin);pos={lat:Math.atan2(v[2],Math.hypot(v[0],v[1]))/r,lon:Math.atan2(v[1],v[0])/r};}const p=project(pos);d+=(!prev||Math.abs(p.x-prev.x)>400?'M':'L')+p.x+','+p.y;prev=p;}return d;}
+function routePath(a,b,upto=1){const r=Math.PI/180,toVec=p=>[Math.cos(p.lat*r)*Math.cos(p.lon*r),Math.cos(p.lat*r)*Math.sin(p.lon*r),Math.sin(p.lat*r)],va=toVec(a),vb=toVec(b);const omega=Math.acos(Math.max(-1,Math.min(1,va.reduce((s,v,i)=>s+v*vb[i],0)))),sin=Math.sin(omega);if(omega<1e-7||upto<=0)return'';let d='',prev=null;for(let i=0;i<=60;i++){const t=i/60*Math.min(1,upto);let pos;if(Math.abs(sin)<1e-7){pos={lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+mod(b.lon-a.lon+180,360)*t-180*t};}else{const v=va.map((v,j)=>(Math.sin((1-t)*omega)*v+Math.sin(t*omega)*vb[j])/sin);pos={lat:Math.atan2(v[2],Math.hypot(v[0],v[1]))/r,lon:Math.atan2(v[1],v[0])/r};}const p=project(pos);d+=(!prev||Math.abs(p.x-prev.x)>400?'M':'L')+p.x+','+p.y;prev=p;}return d;}
 function drawPins(){
  if(!mapReady||$('game').hidden)return;
  let pins='',lines='';
  if(phase==='result'&&run?.results[index]){
-  const r=run.results[index],k=mapScale();
-  lines=`<path d="${routePath(r.guess,r.answer)}" stroke="#4d6b55" stroke-width="${1.7/k}" fill="none" stroke-dasharray="${5/k} ${5/k}"/>`;
-  pins=marker(r.guess,'#c54b28','Your pin')+marker(r.answer,'#286043',r.answer.city,'answer');
- }else if(pin)pins=marker(pin,'#c54b28','');
+  const r=run.results[index],k=mapScale(),t=reveal&&reveal.r===r?reveal.t:Infinity;
+  const span=([a,b])=>(t-a)/(b-a);
+  const d=routePath(r.guess,r.answer,ease(span(REVEAL.line)));
+  if(d)lines=`<path d="${d}" stroke="#4d6b55" stroke-width="${1.7/k}" fill="none" stroke-dasharray="${5/k} ${5/k}"/>`;
+  const ring=span(REVEAL.ring);
+  if(ring>0&&ring<1){const a=project(r.answer);lines+=`<circle cx="${a.x}" cy="${a.y-11/k}" r="${(12+46*ease(ring))/k}" fill="none" stroke="${Q_COLOR[quality(r.points)]}" stroke-width="${2.5*(1-ring)/k}" opacity="${(1-ring)*.8}"/>`;}
+  pins=marker(r.guess,'#c54b28','Your pin')+marker(r.answer,'#286043',r.answer.city,'answer',t===Infinity?1:easeBack(span(REVEAL.pop)));
+ }else if(pin){
+  const k=pinDrop?pinDrop.k:1,fall=Math.min(1,k/.55),bounce=k<.55?0:Math.sin((k-.55)/.45*Math.PI)*5*(1-k);
+  if(pinDrop&&k<1){const p=project(pin),s=mapScale(),g=(k-.5)/.5;if(g>0)lines=`<ellipse cx="${p.x}" cy="${p.y}" rx="${(4+16*g)/s}" ry="${(1.5+6*g)/s}" fill="none" stroke="#c54b28" stroke-width="${1.6/s}" opacity="${(1-g)*.7}"/>`;}
+  pins=marker(pin,'#c54b28','','pin',1,(1-fall*fall)*26+bounce);
+ }
  $('map-pins').innerHTML=pins;
  $('map-lines').innerHTML=lines;
 }
@@ -571,17 +644,17 @@ function placePin(p,name,quiet=false){
  document.querySelector('.guess-area').classList.add('has-pin');
  $('world-map').setAttribute('aria-label',`World map. Selected ${coords(p)}. Arrow keys adjust your pin. Enter submits your guess.`);
  drawPins();
- if(!quiet)playTone();
+ if(!quiet){playTone();dropPin();}
  announce(`${label}. ${coords(p)}. Submit guess is ready.`);
 }
 function setupMapInteraction(){const svg=$('world-map');const pointers=new Map();let panStart=null,pinchStart=null,moved=false,wasPinch=false;const point=(x,y)=>new DOMPoint(x,y).matrixTransform(svg.getScreenCTM().inverse());
- svg.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;svg.focus({preventScroll:true});pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});svg.setPointerCapture(e.pointerId);moved=false;wasPinch=pointers.size>1;if(pointers.size===1){panStart={x:e.clientX,y:e.clientY,view:{...view},scale:svg.getScreenCTM().a};}else if(pointers.size===2){const[a,b]=[...pointers.values()];pinchStart={dist:Math.hypot(a.x-b.x,a.y-b.y),z:zoom(),point:point((a.x+b.x)/2,(a.y+b.y)/2)};}});
+ svg.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;stopCamera();svg.focus({preventScroll:true});pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});svg.setPointerCapture(e.pointerId);moved=false;wasPinch=pointers.size>1;if(pointers.size===1){panStart={x:e.clientX,y:e.clientY,view:{...view},scale:svg.getScreenCTM().a};}else if(pointers.size===2){const[a,b]=[...pointers.values()];pinchStart={dist:Math.hypot(a.x-b.x,a.y-b.y),z:zoom(),point:point((a.x+b.x)/2,(a.y+b.y)/2)};}});
  svg.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2&&pinchStart){const[a,b]=[...pointers.values()];zoomTo(pinchStart.z*Math.hypot(a.x-b.x,a.y-b.y)/pinchStart.dist,pinchStart.point);moved=true;wasPinch=true;}else if(panStart&&!wasPinch){const dx=e.clientX-panStart.x,dy=e.clientY-panStart.y;if(Math.hypot(dx,dy)>5)moved=true;if(moved)setView({...panStart.view,x:panStart.view.x-dx/panStart.scale,y:panStart.view.y-dy/panStart.scale});}});
  svg.addEventListener('pointerup',e=>{if(!moved&&!wasPinch&&panStart&&phase==='guess'){const p=point(e.clientX,e.clientY);placePin(unproject(p));hideSearch();}pointers.delete(e.pointerId);if(!pointers.size){panStart=null;pinchStart=null;wasPinch=false;}});
  svg.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);panStart=null;pinchStart=null;wasPinch=false;});
- svg.addEventListener('wheel',e=>{e.preventDefault();const p=point(e.clientX,e.clientY);zoomTo(zoom()*Math.exp(-e.deltaY*.0015),p);},{passive:false});
- svg.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoomTo(zoom()*1.4);return;}if(e.key==='-'){e.preventDefault();zoomTo(zoom()/1.4);return;}if(e.key==='0'||e.key==='Home'){e.preventDefault();resetMap();return;}if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)||phase!=='guess')return;e.preventDefault();const p={...(pin||{lat:20,lon:10})},s=(e.shiftKey?10:2.5)/zoom();if(e.key==='ArrowUp')p.lat+=s;if(e.key==='ArrowDown')p.lat-=s;if(e.key==='ArrowLeft')p.lon-=s;if(e.key==='ArrowRight')p.lon+=s;p.lat=Math.max(-80,Math.min(83,p.lat));p.lon=Math.max(-180,Math.min(180,p.lon));placePin(p,null,true);});
- $('zoom-in').onclick=()=>zoomTo(zoom()*1.5);$('zoom-out').onclick=()=>zoomTo(zoom()/1.5);$('zoom-reset').onclick=resetMap;
+ svg.addEventListener('wheel',e=>{e.preventDefault();stopCamera();const p=point(e.clientX,e.clientY);zoomTo(zoom()*Math.exp(-e.deltaY*.0015),p);},{passive:false});
+ svg.addEventListener('keydown',e=>{if(['+','=','-','0','Home'].includes(e.key))stopCamera();if(e.key==='+'||e.key==='='){e.preventDefault();zoomTo(zoom()*1.4);return;}if(e.key==='-'){e.preventDefault();zoomTo(zoom()/1.4);return;}if(e.key==='0'||e.key==='Home'){e.preventDefault();resetMap();return;}if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)||phase!=='guess')return;e.preventDefault();const p={...(pin||{lat:20,lon:10})},s=(e.shiftKey?10:2.5)/zoom();if(e.key==='ArrowUp')p.lat+=s;if(e.key==='ArrowDown')p.lat-=s;if(e.key==='ArrowLeft')p.lon-=s;if(e.key==='ArrowRight')p.lon+=s;p.lat=Math.max(-80,Math.min(83,p.lat));p.lon=Math.max(-180,Math.min(180,p.lon));placePin(p,null,true);});
+ $('zoom-in').onclick=()=>{stopCamera();zoomTo(zoom()*1.5);};$('zoom-out').onclick=()=>{stopCamera();zoomTo(zoom()/1.5);};$('zoom-reset').onclick=()=>{stopCamera();resetMap();};
 }
 const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 function hideSearch(){$('search-results').hidden=true;$('city-search').setAttribute('aria-expanded','false');$('city-search').removeAttribute('aria-activedescendant');searchIndex=-1;}
@@ -605,6 +678,7 @@ async function start(mode='daily',fresh=false){
 }
 function render(){
  if(!run)return;
+ stopReveal();
  const isDaily=run.mode==='daily',isResult=phase==='result',isSummary=phase==='summary';
  for(const [id,active]of[['daily-nav',isDaily],['practice-nav',!isDaily]]){
   $(id).classList.toggle('active',active);
@@ -614,11 +688,12 @@ function render(){
  document.querySelector('.points').hidden=isSummary;
  $('round-label').textContent=isSummary?dateLabel(run.date,true):`Round ${index+1} of 5`;
  $('game').hidden=isSummary;
+ document.querySelector('.origin-app').classList.toggle('in-summary',isSummary);
  $('summary').hidden=!isSummary;
  $('journey').hidden=isSummary;
  if(isSummary){$('question').textContent=isDaily?'Daily complete.':'Practice complete.';renderSummary();return;}
  const clue=run.clues[index],cat=CAT[clue.category];
- $('art').innerHTML=clueArt(clue);
+ $('art').innerHTML=clueArt(clue);fitArt();
  $('art').setAttribute('role','img');$('art').setAttribute('aria-label',clue.description);
  // Preserve the whole illustration on small screens; match any letterboxing to its own paper.
  document.querySelector('.art-wrap').style.background=$('art').querySelector('svg>rect')?.getAttribute('fill')||'#eddfc6';
@@ -640,6 +715,7 @@ function render(){
   $('clue-description').textContent=SHORT_CLUES[clue.id]||clue.description;
   $('guess-place').textContent=matchMedia('(pointer:coarse)').matches?'Tap map to place a pin':'Click map to place a pin';
   $('guess-coords').textContent='';$('guess-coords').hidden=true;
+  $('guess-place').style.color='';
   $('guess-btn-text').textContent='Submit guess';$('guess-btn').disabled=!pin;
   $('hint-btn').disabled=!!run.hints[index];
   $('hint-btn').setAttribute('aria-expanded',String(!!run.hints[index]));
@@ -660,14 +736,20 @@ function render(){
   $('guess-coords').hidden=false;
   $('guess-btn-text').textContent=index===4?'See results':'Next round';$('guess-btn').disabled=false;
   $('world-map').setAttribute('aria-label',`Result map. Your guess and ${a.city}, ${a.country}. ${fmt(r.distance)} kilometers away. Zoom or pan to inspect.`);
-  fitResult(r);
+  $('guess-place').style.color=Q_COLOR[quality(r.points)];
+  if(revealNext){revealNext=false;startReveal(r);}else fitResult(r);
  }
  renderJourney();icons();drawPins();
+}
+// A tall clue panel crops food and landmark scenes a little instead of showing empty bands; signs always show whole.
+function fitArt(){
+ const svg=$('art').querySelector('svg'),w=$('art').clientWidth,h=$('art').clientHeight,cat=run?.clues[index]?.category;
+ if(svg)svg.setAttribute('preserveAspectRatio',h>0&&w/h<1.24&&cat!=='street'?'xMidYMid slice':'xMidYMid meet');
 }
 function renderJourney(){
  $('journey').innerHTML=run.clues.map((c,i)=>{
   const r=run.results[i],current=i===index;
-  return`<span class="journey-step ${r?'complete':current?'current':''}" ${current?'aria-current="step"':''} aria-label="Round ${i+1}${r?', '+fmt(r.points)+' points':current?', current':', not played'}"></span>`;
+  return`<span class="journey-step ${r?'complete':current?'current':''}" ${r?`style="background:${Q_COLOR[quality(r.points)]}"`:''} ${current?'aria-current="step"':''} aria-label="Round ${i+1}${r?', '+fmt(r.points)+' points':current?', current':', not played'}"></span>`;
  }).join('');
 }
 async function revealHint(){
@@ -696,7 +778,7 @@ async function submitGuess(){
  setBusy(true);$('guess-btn-text').textContent='Checking…';
  try{
   const r=backend?await api('guess',{runId:run.id,index,lat:pin.lat,lon:pin.lon}):resultLocal(offlineClues.find(c=>c.id===run.ids[index]),pin,run.hints[index]);
-  run.results[index]=r;phase='result';persist();render();playTone('reveal');
+  run.results[index]=r;phase='result';persist();revealNext=true;render();
   announce(`${r.answer.name}. ${r.answer.city}, ${r.answer.country}. ${fmt(r.distance)} kilometers away. ${fmt(r.points)} points.`);
   // Keep the map and next action in place rather than jumping the page after a guess.
   $('guess-btn').focus({preventScroll:true});
@@ -704,16 +786,29 @@ async function submitGuess(){
 }
 function resultColor(points){return points>=4000?'#7f9970':points>=2500?'#a9b487':points>=1000?'#d3b77e':'#d29573';}
 function resultEmoji(points){return points>=4000?'🟩':points>=2500?'🟨':points>=1000?'🟧':'🟥';}
-function miniMap(){const countries=WORLD.map(f=>`<path d="${f.path}" fill="#d2dcc5" stroke="#edf0e4" stroke-width=".9"/>`).join('');const pins=run.results.map((r,i)=>{const p=project(r.answer);return`<circle cx="${p.x}" cy="${p.y}" r="10" fill="#dd7046" stroke="#f7f6e9" stroke-width="2"/><text x="${p.x}" y="${p.y+3.5}" text-anchor="middle" fill="#fffaf0" font-family="Arial" font-size="10">${i+1}</text>`;}).join('');return`<svg viewBox="0 0 1000 530" aria-hidden="true">${countries}${pins}</svg>`;}
+// Results map: every guess, its route and the numbered answer, framed around the five places.
+function summaryMap(px){
+ if(!run.results.length||!px)return'';
+ const pts=run.results.flatMap(r=>[project(r.guess),project(r.answer)]),xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+ let w=Math.max(380,Math.max(...xs)-Math.min(...xs)+140,(Math.max(...ys)-Math.min(...ys)+110)*2);w=Math.min(1000,w);const h=w/2;
+ const x=Math.max(0,Math.min(1000-w,(Math.max(...xs)+Math.min(...xs)-w)/2)),y=Math.max(0,Math.min(530-h,(Math.max(...ys)+Math.min(...ys)-h)/2)),u=w/px;
+ const countries=WORLD.map(f=>`<path d="${f.path}"/>`).join('');
+ const routes=run.results.map(r=>`<path d="${routePath(r.guess,r.answer)}" fill="none" stroke="#4d6b55" stroke-width="${1.3*u}" stroke-dasharray="${3*u} ${3*u}" opacity=".7"/>`).join('');
+ const dots=run.results.map(r=>{const p=project(r.guess);return`<circle cx="${p.x}" cy="${p.y}" r="${3.5*u}" fill="#c54b28" stroke="#ffffff" stroke-width="${1.2*u}"/>`;}).join('');
+ const answers=run.results.map((r,i)=>{const p=project(r.answer);return`<circle cx="${p.x}" cy="${p.y}" r="${10*u}" fill="${Q_COLOR[quality(r.points)]}" stroke="#ffffff" stroke-width="${2*u}"/><text x="${p.x}" y="${p.y+3.8*u}" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-weight="700" font-size="${11*u}">${i+1}</text>`;}).join('');
+ return`<svg viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect x="0" y="0" width="1000" height="530" fill="#eaf0ee"/><g fill="#c6d3c6" stroke="#f8fbf6" stroke-width="${.8*u}">${countries}</g>${routes}${dots}${answers}</svg>`;
+}
 function renderSummary(){
  const sum=total(),savedName=readStore('name','');
  $('summary').innerHTML=`<div class="summary-panel">
  <div class="summary-score">${fmt(sum)}<small>/ 25,000</small></div>
  <p class="summary-caption">${run.hints.filter(Boolean).length?run.hints.filter(Boolean).length+' hint'+(run.hints.filter(Boolean).length===1?'':'s')+' used':'No hints used'}</p>
- <div>${run.results.map((r,i)=>`<div class="summary-row"><span class="summary-number">${i+1}</span><div><strong>${esc(r.answer.city)}, ${esc(r.answer.country)}</strong><small>${esc(r.answer.name)} · ${r.distance<1?'&lt; 1':fmt(r.distance)} km</small></div><span>${fmt(r.points)}</span></div>`).join('')}</div>
+ <div id="summary-map" class="summary-map"></div>
+ <div>${run.results.map((r,i)=>`<div class="summary-row"><span class="summary-number" style="background:${Q_COLOR[quality(r.points)]}">${i+1}</span><div><strong>${esc(r.answer.city)}, ${esc(r.answer.country)}</strong><small>${esc(r.answer.name)} · ${r.distance<1?'&lt; 1':fmt(r.distance)} km</small></div><span>${fmt(r.points)}</span></div>`).join('')}</div>
  <div class="summary-actions"><button id="share-results" class="primary-btn">${icon('share')}Share result</button><button id="download-card" class="secondary-btn" aria-label="Save result image" title="Save result image">${icon('download')}</button><button id="another-round" class="text-btn">${run.mode==='daily'?'Play practice':'Play again'} ${icon('arrow')}</button></div>
  ${run.mode==='daily'?(run.submitted?`<p class="form-note">${icon('check')} Saved as <strong>${esc(run.displayName)}</strong>.</p><button class="secondary-btn" id="summary-board">${icon('trophy')}Leaderboard</button>`:`<details class="save-details" id="save-details"><summary>Save to leaderboard</summary><form class="score-form" id="score-form"><label><span class="visually-hidden">Your name, 2 to 20 characters</span><input id="player-name" type="text" maxlength="20" minlength="2" placeholder="Your name" value="${esc(savedName)}" required autocomplete="nickname"></label><button type="submit" class="secondary-btn">Save score ${icon('arrow')}</button></form><p class="form-note">${backend?'Shared on this server.':'Local scores only. Stored in this browser.'} One entry per day.</p></details>`):''}
  </div>${run.mode==='daily'?'<p class="countdown-note">Next daily in <span id="countdown" class="countdown"></span></p>':''}`;
+ $('summary-map').innerHTML=summaryMap($('summary-map').clientWidth);
  $('score-form')?.addEventListener('submit',saveScore);
  $('summary-board')?.addEventListener('click',showLeaderboard);
  $('share-results').onclick=shareResults;$('download-card').onclick=downloadCard;
@@ -830,6 +925,10 @@ function bind(){
   if(e.key==='Enter'&&phase!=='summary'&&!$('guess-btn').disabled){e.preventDefault();submitGuess();}
   if(e.key.toLowerCase()==='h'&&phase==='guess')revealHint();
  });
+ // Leave room for the platform's "All games" corner button when the page shows one.
+ const markBack=()=>document.querySelector('.origin-app').classList.toggle('has-back',!!document.querySelector('body>a[aria-label="All games"]'));
+ addEventListener('DOMContentLoaded',markBack);addEventListener('load',markBack);markBack();
+ addEventListener('resize',()=>{const m=$('summary-map');if(m&&!$('summary').hidden)m.innerHTML=summaryMap(m.clientWidth);});
  sound=readStore('sound',false);updateSound();
  $('sound-btn').onclick=()=>{sound=!sound;writeStore('sound',sound);updateSound();if(sound)playTone('reveal');};
 }

@@ -28,7 +28,8 @@
     }
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; max-width: 100%; overflow-x: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-text-size-adjust: 100%; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; max-width: 100%; overflow-x: hidden; overflow-x: clip; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-text-size-adjust: 100%; }
   body { min-height: 100dvh; }
   button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -56,6 +57,10 @@
   .pip.used { background: var(--bad); }
   .pip.win { background: var(--good); transform: scaleY(1.4); }
   .pip.now { background: var(--ink); }
+  .pip.pop { animation: pip .45s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes pip { 0% { transform: scaleY(1); } 40% { transform: scale(1.25, 2.2); } 100% { transform: none; } }
+  .pip.win.pop { animation-name: pipwin; }
+  @keyframes pipwin { 0% { transform: scaleY(1); } 40% { transform: scale(1.3, 2.6); } 100% { transform: scaleY(1.4); } }
 
   /* Clues */
   main { padding-bottom: calc(var(--dock) + env(safe-area-inset-bottom) + 24px); }
@@ -73,6 +78,12 @@
   .clue.locked .clue-label { color: var(--faint); margin: 7px 0 0; }
   .clue.extra { opacity: .62; box-shadow: none; }
   .clue.current .clue-num { background: var(--ink); color: var(--bg); }
+  .clue.solved { border-color: var(--good); box-shadow: 0 0 0 3px var(--good-soft), var(--shadow); }
+  .clue.solved .clue-num { background: var(--good); color: #fff; }
+  .clue.solved.just { animation: solved .7s cubic-bezier(.2, 1.3, .4, 1); }
+  @keyframes solved { 0% { transform: scale(1); } 35% { transform: scale(1.025); } 100% { transform: none; } }
+  .clue-guess.just { animation: chip .5s cubic-bezier(.36, .07, .19, .97); }
+  @keyframes chip { 0% { opacity: 0; transform: translateY(-4px) scale(.9); } 30% { opacity: 1; transform: translateX(-4px); } 50% { transform: translateX(4px); } 70% { transform: translateX(-2px); } 100% { transform: none; } }
   .clue.reveal { animation: reveal .62s cubic-bezier(.2, .85, .25, 1) both; }
   .clue.reveal .clue-text { animation: ink .9s .12s ease both; }
   @keyframes reveal { from { opacity: 0; transform: rotateX(-68deg) translateY(-6px); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
@@ -144,8 +155,10 @@
   .day[disabled] { cursor: default; opacity: .55; }
   .note { font-size: 14px; color: var(--muted); }
 
-  .toast { position: fixed; left: 50%; top: 72px; transform: translate(-50%, -12px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s; z-index: 50; max-width: calc(100vw - 32px); text-align: center; }
+  .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 150px); transform: translate(-50%, 12px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s; z-index: 50; max-width: calc(100vw - 32px); text-align: center; }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .dock[hidden] ~ .toast { bottom: calc(env(safe-area-inset-bottom) + 24px); }
+  .toast.bad { background: var(--bad); color: #fff; }
   canvas.fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .error { margin: 40px 0; text-align: center; color: var(--muted); }
@@ -158,6 +171,16 @@
   .dlg-head .icon + .icon { margin-left: -4px; }
   .dlg-head .tools { display: flex; align-items: center; }
   @media (max-width: 480px) { .modes { margin: 10px 0 8px; } .meta { margin-bottom: 10px; } }
+  @media (max-width: 680px) {
+    body:has(> a[aria-label="All games"]) .bar { padding-left: 56px; gap: 0; }
+    body:has(> a[aria-label="All games"]) .brand { font-size: 17px; letter-spacing: .06em; }
+    body:has(> a[aria-label="All games"]) .icon { width: 42px; flex-shrink: 0; }
+  }
+  @media (max-width: 380px) {
+    body:has(> a[aria-label="All games"]) .bar { padding-left: 52px; }
+    body:has(> a[aria-label="All games"]) .brand { font-size: 15px; letter-spacing: .03em; }
+    body:has(> a[aria-label="All games"]) .icon { width: 38px; }
+  }
   @media (max-width: 380px) {
     .bar { gap: 2px; }
     .brand { font-size: 16px; letter-spacing: .06em; }
@@ -331,7 +354,7 @@
     $('btnGuess').textContent = t().guess;
   }
 
-  var lastShown = { key: '', count: 0 };
+  var lastShown = { key: '', count: 0, pips: null, guesses: 0 };
   function render(opts) {
     opts = opts || {};
     renderChrome();
@@ -344,11 +367,13 @@
     if (opts.instant) animateFrom = Infinity;
     $('metaText').textContent = mode === 'daily' ? t().meta(n, dateLabel(n)) : t().practiceMeta;
 
-    var pips = '';
+    var pips = '', pipCls = [], fresh = isFinite(animateFrom);
     for (var i = 0; i < 6; i++) {
       var cls = 'pip';
       if (i < r.guesses.length) cls += r.guesses[i] === r.answer ? ' win' : ' used';
       else if (!done && i === r.revealed - 1) cls += ' now';
+      pipCls.push(cls);
+      if (fresh && lastShown.pips && lastShown.pips[i] !== cls && cls !== 'pip') cls += ' pop';
       pips += '<span class="' + cls + '"></span>';
     }
     $('pips').innerHTML = pips;
@@ -357,18 +382,19 @@
     for (var k = 0; k < 6; k++) {
       var open = k < r.revealed, extra = done && !open;
       var g = k < r.guesses.length ? r.guesses[k] : undefined;
-      var cls2 = 'clue' + (open ? '' : extra ? ' extra' : ' locked') + (!done && k === r.revealed - 1 ? ' current' : '') + ((open && k >= animateFrom) ? ' reveal' : '');
+      var won = g !== undefined && g === r.answer, justNow = fresh && k === r.guesses.length - 1 && r.guesses.length > (lastShown.guesses || 0);
+      var cls2 = 'clue' + (open ? '' : extra ? ' extra' : ' locked') + (!done && k === r.revealed - 1 ? ' current' : '') + ((open && k >= animateFrom) ? ' reveal' : '') + (won ? ' solved' + (justNow ? ' just' : '') : '');
       html += '<li class="' + cls2 + '"><div class="clue-num">' + (k + 1) + '</div><div class="clue-body"><div class="clue-label">' + esc(t().labels[k]) + (extra ? ' · ' + esc(t().notNeeded) : '') + '</div>';
       if (open || extra) html += '<p class="clue-text">' + esc(texts[k]) + '</p>';
       if (g !== undefined) {
         if (g === null) html += '<span class="clue-guess">' + esc(t().skipped) + '</span>';
         else if (g === r.answer) html += '<span class="clue-guess good">' + ICON.check + esc(S.name(S.byIso[g], lang)) + '</span>';
-        else html += '<span class="clue-guess bad">' + ICON.cross + esc(S.name(S.byIso[g], lang)) + '</span>';
+        else html += '<span class="clue-guess bad' + (justNow ? ' just' : '') + '">' + ICON.cross + esc(S.name(S.byIso[g], lang)) + '</span>';
       }
       html += '</div></li>';
     }
     $('clues').innerHTML = html;
-    lastShown = { key: key, count: r.revealed };
+    lastShown = { key: key, count: r.revealed, pips: pipCls, guesses: r.guesses.length };
 
     $('dock').hidden = done;
     $('main').classList.toggle('done', done);
@@ -456,7 +482,7 @@
     $('guess').value = '';
     hideSuggestions();
     setRound(out.round);
-    if (out.result === 'wrong') { shake(); toast(t().notIt(S.name(country, lang))); }
+    if (out.result === 'wrong') { shake(); toast(t().notIt(S.name(country, lang)), true); }
     afterMove(out);
   }
   function skip() {
@@ -573,8 +599,8 @@
 
   // ---------- little effects ----------
   var toastTimer = null;
-  function toast(msg) {
-    var el = $('toast'); el.textContent = msg; el.classList.add('show');
+  function toast(msg, bad) {
+    var el = $('toast'); el.textContent = msg; el.classList.toggle('bad', !!bad); el.classList.add('show');
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
   }
   function shake() { var f = $('form'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }

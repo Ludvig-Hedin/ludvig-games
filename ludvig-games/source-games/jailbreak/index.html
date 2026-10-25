@@ -49,6 +49,9 @@ svg.ico{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .toast{top:calc(var(--safe-top) + 160px)}
 .joystick{width:104px;height:104px}}
 @media(max-height:500px) and (orientation:landscape){body.playing .brand{visibility:hidden}.objective{top:max(10px,var(--safe-top))}.stats{top:max(62px,calc(var(--safe-top) + 52px))}.minimap-wrap{top:max(62px,calc(var(--safe-top) + 52px))}}
+/* 2026-10-25: keep clear of the site's back button in the top-left corner. */
+.brand{padding-left:30px}
+@media(max-width:700px){.objective{left:calc(max(12px,var(--safe-left)) + 50px)}}
 </style>
 </head>
 <body>
@@ -293,7 +296,7 @@ let player, guards=[], walls=[], doors=[], props=[], items=[], peels=[], particl
 let hasKey=false,powerOff=false,gateOpen=false,slips=0,alarms=0,peelsUsed=0;
 let stateTime=0,toastUntil=0,lastHud=0,contextAction=null,screenShake=0,flash=0,globalAlert=0;
 let cam={x:11,y:8,z:1}, view={x:0,y:0,z:1}, navVersion=0;
-let bestImproved=false,hadChase=false,lastMini=0;
+let bestImproved=false,hadChase=false,lastMini=0,darkLv=0,lightCv=null,lc=null;
 let moveKeys=new Set(), joy={x:0,y:0,active:false}, sneakToggle=false;
 let best=0;try{best=+localStorage.getItem('jailbreak.best.v1')||0;escapes=+localStorage.getItem('jailbreak.escapes.v1')||0;}catch{}
 // Night ladder: every escape makes the next night harder (faster, sharper guards; a fourth guard from night 3).
@@ -344,7 +347,7 @@ function buildWorld(){
  {const tier=Math.min(night-1,8);for(const [i,g] of guards.entries()){g.mul=1+tier*.06;g.view=1+Math.min(tier,5)*.045;g.alert=1+tier*.07;if(night>=5&&i<3)g.patrol=(night+i)%g.path.length;}}
  for(const g of guards)g.viewAngle=g.angle;
  hasKey=false;powerOff=false;gateOpen=false;slips=0;alarms=0;peelsUsed=0;elapsed=0;globalAlert=0;stateTime=0;navVersion++;bestImproved=false;hadChase=false;lastFoot=clock;contextAction=null;renderAlpha=1;
- screenShake=0;flash=0;resetInput();sneakToggle=false;
+ screenShake=0;flash=0;darkLv=0;resetInput();sneakToggle=false;
  cam.x=10.5;cam.y=7.6;cam.z=1;
  refreshInventory();updateHUD(true);
 }
@@ -701,7 +704,7 @@ function drawPerson(e,isGuard=false,npc=false){
  ctx.save();ctx.translate(10,-22);ctx.rotate(move?-Math.sin(e.walk)*.4:0);rr(-2,-1,5,13,2,isGuard?'#4c6870':'#f78348');ell(.5,12,2.7,3,C.skin);if(isGuard){rr(-1,11,4,8,1,'#263e3d');rr(-2,11,6,3,1,'#aabb9d');}ctx.restore();
  ctx.restore();
  if(isGuard&&e.stun>0){for(let i=0;i<3;i++){const a=clock*3+i*TAU/3,q=iso(e.x,e.y,24);drawStar(q.x+Math.cos(a)*14,q.y+Math.sin(a)*6,3.5,'#f1d577');}}
- if(isGuard&&e.stun<=0&&e.suspicion>.1){const a=iso(e.x,e.y,61);ell(a.x,a.y,8,8,e.state==='chase'?'#f36d39':'#f1cc69');ctx.font='900 12px sans-serif';ctx.fillStyle='#344c39';ctx.textAlign='center';ctx.fillText(e.state==='chase'?'!':'?',a.x,a.y+4);}
+ if(isGuard&&e.stun<=0&&e.suspicion>.1){const a=iso(e.x,e.y,61);if(e.state!=='chase'){const f=iso(e.x,e.y,1);ctx.lineCap='round';ctx.lineWidth=3;ctx.strokeStyle='#17312d66';ctx.beginPath();ctx.ellipse(f.x,f.y,17,8.5,0,0,TAU);ctx.stroke();ctx.strokeStyle=e.suspicion>.7?'#f36d39':'#f1cc69';ctx.beginPath();ctx.ellipse(f.x,f.y,17,8.5,0,-Math.PI/2,-Math.PI/2+e.suspicion*TAU);ctx.stroke();}ell(a.x,a.y,8,8,e.state==='chase'?'#f36d39':'#f1cc69');ctx.font='900 12px sans-serif';ctx.fillStyle='#344c39';ctx.textAlign='center';ctx.fillText(e.state==='chase'?'!':'?',a.x,a.y+4);}
  if(!isGuard&&!npc){const a=iso(e.x,e.y,1),ready=clamp(1-e.dashCd/1.65,0,1);ctx.strokeStyle='#f9ca8533';ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(a.x,a.y,14,7,0,0,TAU);ctx.stroke();ctx.strokeStyle=ready===1?'#f9ca8580':'#f9ca85b0';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(a.x,a.y,14,7,0,-Math.PI/2,-Math.PI/2+ready*TAU);ctx.stroke();}
 
 }
@@ -713,6 +716,22 @@ function visionPolygon(g){
 function drawVision(g){
  if(g.stun>0)return;const p=iso(g.x,g.y,1),chase=g.state==='chase',gradient=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,170);
  gradient.addColorStop(0,chase?'#f16e4560':'#f5dda152');gradient.addColorStop(1,chase?'#f16e4522':'#f5dda11a');poly(visionPolygon(g),gradient,chase?'#fd9c6550':'#f6e2b133',.65);
+}
+// Lights out: after the power cut a half-resolution darkness layer is cut open by the player's glow,
+// the guards' flashlight cones, the next objective and (once open) the van's headlights.
+function drawDarkness(){
+ const sc=.5,w=Math.max(1,Math.round(sw*sc)),h=Math.max(1,Math.round(sh*sc));
+ if(!lightCv){lightCv=document.createElement('canvas');lc=lightCv.getContext('2d');}
+ if(lightCv.width!==w||lightCv.height!==h){lightCv.width=w;lightCv.height=h;}
+ lc.globalCompositeOperation='source-over';lc.setTransform(1,0,0,1,0,0);lc.clearRect(0,0,w,h);
+ lc.fillStyle=`rgba(5,17,27,${(.62*darkLv).toFixed(3)})`;lc.fillRect(0,0,w,h);
+ lc.globalCompositeOperation='destination-out';lc.setTransform(sc*view.z,0,0,sc*view.z,sc*view.x,sc*view.y);
+ const glow=(x,y,r,a,z=6)=>{const p=iso(x,y,z),g=lc.createRadialGradient(p.x,p.y,0,p.x,p.y,r);g.addColorStop(0,`rgba(0,0,0,${a})`);g.addColorStop(1,'rgba(0,0,0,0)');lc.fillStyle=g;lc.beginPath();lc.ellipse(p.x,p.y,r,r*.66,0,0,TAU);lc.fill();};
+ glow(renderPlayer.x,renderPlayer.y,100,.9,10);
+ for(const g of renderGuards){glow(g.x,g.y,44,.75,20);if(g.stun>0)continue;const pts=visionPolygon(g),o=iso(g.x,g.y,1),gr=lc.createRadialGradient(o.x,o.y,0,o.x,o.y,175);gr.addColorStop(0,'rgba(0,0,0,.96)');gr.addColorStop(1,'rgba(0,0,0,.5)');lc.fillStyle=gr;lc.beginPath();for(let i=0;i<pts.length;i++)i?lc.lineTo(pts[i].x,pts[i].y):lc.moveTo(pts[i].x,pts[i].y);lc.closePath();lc.fill();}
+ const t=targetForStage();glow(t.x,t.y,70,.7);
+ if(gateOpen){glow(18.9,17.6,110,.85,1);glow(18.85,14.4,60,.6,1);}
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.drawImage(lightCv,0,0,sw,sh);
 }
 function drawLamp(x,y){const a=iso(x,y,0),b=iso(x,y,76);line3(x,y,0,x,y,76,'#416b56',3.5);line3(x,y,76,x+.4,y,76,'#8fa890',3);const q=iso(x+.4,y,76);ell(q.x,q.y,8,4,'#667e68');ell(q.x,q.y+3,6,2,powerOff?'#6b8268':'#ffe0a0');if(!powerOff){const p=iso(x+.4,y,1);ell(p.x,p.y,43,24,'#fff0bc0d');}}
 function drawObjective(){
@@ -801,7 +820,8 @@ function render(dt,alpha=1){
  add({x:18,y:15.2,w:1.7,h:2.1,z:49},35.1,drawVan);
  for(const l of [{x:10.25,y:1.8},{x:20.5,y:8.4}])add({x:l.x-.03,y:l.y-.03,w:.06,h:.06,z:82},l.x+l.y,()=>drawLamp(l.x,l.y));
  for(const d of depthOrder(drawables))d.draw();
- if(powerOff){ctx.globalCompositeOperation='source-atop';quad(0,0,W,H,0,'#153e4c0a');ctx.globalCompositeOperation='source-over';}
+ if(dt>0)darkLv=lerp(darkLv,powerOff&&!introLike?1:0,1-Math.exp(-dt*2.2));
+ if(darkLv>.01){drawDarkness();ctx.setTransform(dpr*view.z,0,0,dpr*view.z,dpr*view.x,dpr*view.y);}
  drawObjective();
  for(const p of particles){let q=iso(p.x,p.y,Math.max(1,p.z));ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.fillRect(q.x,q.y,p.size,p.size);ctx.globalAlpha=1;}
  drawBubbles();

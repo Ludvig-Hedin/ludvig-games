@@ -74,6 +74,10 @@ body.night #hud{color:#f4f1e6}body.night #hud:before{background:linear-gradient(
 body.night .score-caption,body.night .journey,body.night .speed-mode,body.night .bottom-hint,body.night #callout span{color:#d5dce8}
 body.night .journey-track{background:#ffffff38}body.night .multiplier{border-color:#ffffff55}body.night #callout{filter:drop-shadow(0 2px 8px #1b2840)}
 body.night:has(#hud.visible) .brand{color:#f4f1e6}
+
+/* 2026-10-25: keep the bottom-left HUD clear of the site's back button (bottom-left, about 48 px). */
+@media (min-width:701px){#hint{left:max(72px,calc(env(safe-area-inset-left) + 60px))}}
+@media (max-width:700px),(pointer:coarse){#speed-wrap{left:max(68px,calc(env(safe-area-inset-left) + 56px))}}
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%23f1f3ef%27/%3E%3Cpath d=%27M10 46 26 22l8 12 6-8 14 20z%27 fill=%27none%27 stroke=%27%231f3a40%27 stroke-width=%275%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
 </head>

@@ -584,7 +584,7 @@ function updatePlayer(dt){
   if(speed>.2){
     const desired=Math.atan2(-player.vx,-player.vz),delta=Math.atan2(Math.sin(desired-player.yaw),Math.cos(desired-player.yaw));player.yaw+=delta*(1-Math.exp(-16*dt));
   }
-  if(player.ground&&speed>2){footstep+=dt;if(footstep>.28){footstep=0;sound.tone(135+Math.sin(player.walk)*20,75,.055,'sine',.028);}}
+  if(player.ground&&speed>2){footstep+=dt;if(footstep>.28){footstep=0;sound.tone(135+Math.sin(player.walk)*20,75,.055,'sine',.028);if(!reducedMotion)burst(player.x-player.vx*.04,player.y+.06,player.z-player.vz*.04,'#f4f8ff',3,.55);}}
   for(const p of platforms){
     if(Math.abs(p.z-player.z)>5)continue;
     if(!p.collected&&isSolid(p)&&Math.abs(player.x-p.x)<.78&&Math.abs(player.z-p.z)<.78&&player.y<p.y+1.7&&player.y+HEIGHT>p.y+.65){
@@ -729,6 +729,24 @@ function drawAvatar(){
   part(0,1.488,-.292,.125,.028,.02,'#ac7058');
   part(0,1.515,-.296,.07,.025,.018,'#fff8e9');
 }
+// Landing marker: a flat disc straight below the player while airborne, so jumps can be judged
+// in depth. No disc means nothing is below.
+const shadowTints=new Map();
+function shadowTint(hex){
+  if(!shadowTints.has(hex)){const c=color(hex),h=v=>Math.round(v*255*.62).toString(16).padStart(2,'0');shadowTints.set(hex,'#'+h(c[0])+h(c[1])+h(c[2]));}
+  return shadowTints.get(hex);
+}
+function drawDropShadow(){
+  if(state==='title'||player.dead||player.ground)return;
+  let below=null;
+  for(const p of platforms){
+    if(Math.abs(p.z-player.z)>6||!isSolid(p)||!overlap(player.x,player.z,p,0)||p.y>player.y+.05)continue;
+    if(!below||p.y>below.y)below=p;
+  }
+  if(!below)return;
+  const h=player.y-below.y,r=clamp(.78-h*.06,.36,.78);
+  cylinder(player.x,below.y+.065,player.z,r,.018,r,shadowTint(below.tint),0,0,0,1);
+}
 function drawScene(dt){
   if(state!=='paused'){
     const p=player.dead?platforms[checkpoint]:player;
@@ -754,7 +772,7 @@ function drawScene(dt){
     for(let k=-1;k<=1;k++)ball(x+k*2.4,y+(k===0?.55:0),z+(k%2)*.55,5.6,2.5+(k===0?1:0),3.8,'#f8fbff',0,0,0,.35);
   }
   for(const p of platforms)if(p.z<camera.z+19&&p.z>camera.z-112)drawPlatform(p);
-  drawAvatar();
+  drawAvatar();drawDropShadow();
   for(const p of particles){const s=p.size*Math.min(1,p.life*5);box(p.x,p.y,p.z,s,s,s,p.tint,p.angle,p.angle*.7,0,.25);}
   const intro=camera.intro,mobile=renderer.width<650&&renderer.height>renderer.width;
   const shift=mobile?0:-5.7*intro;

@@ -54,7 +54,9 @@ class Battlefield {
  }
  createEffects(){
   this.particleMesh=new T.InstancedMesh(new T.IcosahedronGeometry(1,0),new T.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true}),650);this.particleMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);this.particleMesh.frustumCulled=false;this.particleMesh.count=0;this.scene.add(this.particleMesh);this.dummy=new T.Object3D();this.pColor=new T.Color();
-  const ringGeo=new T.RingGeometry(4.05,4.12,80),ringMat=new T.MeshBasicMaterial({color:0xffd391,side:T.DoubleSide,transparent:true,opacity:.88,depthWrite:false});this.aimRing=new T.Mesh(ringGeo,ringMat);this.aimRing.rotation.x=-Math.PI/2;this.aimRing.position.y=.055;this.aimRing.visible=false;this.scene.add(this.aimRing);
+  const ringGeo=new T.RingGeometry(3.8,4.12,80),ringMat=new T.MeshBasicMaterial({color:0xffe3a6,side:T.DoubleSide,transparent:true,opacity:.88,depthWrite:false,toneMapped:false});this.aimRing=new T.Mesh(ringGeo,ringMat);this.aimRing.rotation.x=-Math.PI/2;this.aimRing.position.y=.055;this.aimRing.visible=false;this.scene.add(this.aimRing);
+  // A soft filled area under the ring: at this camera angle a thin ring alone is almost flat on screen.
+  this.aimDisc=new T.Mesh(new T.CircleGeometry(3.8,64),new T.MeshBasicMaterial({color:0xfff1cc,side:T.DoubleSide,transparent:true,opacity:.26,depthWrite:false,toneMapped:false}));this.aimDisc.rotation.x=-Math.PI/2;this.aimDisc.position.y=.05;this.aimDisc.visible=false;this.scene.add(this.aimDisc);
   this.aimCenter=new T.Mesh(new T.RingGeometry(.16,.23,24),ringMat);this.aimCenter.rotation.x=-Math.PI/2;this.aimCenter.position.y=.07;this.aimCenter.visible=false;this.scene.add(this.aimCenter);
   this.aimLine=new T.Group();for(let i=0;i<4;i++){const a=i*Math.PI/2;const line=new T.Mesh(new T.BoxGeometry(.045,.025,.54),ringMat);line.position.set(Math.sin(a)*.56,.07,Math.cos(a)*.56);line.rotation.y=a;this.aimLine.add(line);}this.aimLine.visible=false;this.scene.add(this.aimLine);
  }
@@ -66,7 +68,7 @@ class Battlefield {
  }
  releaseUnit(m){m.userData.materials?.forEach(ma=>ma.dispose());const sh=m.userData.shadow;if(sh){sh.geometry.dispose();sh.material.dispose();}}
  setBase(side,age){if(this.bases[side])this.scene.remove(this.bases[side]);const b=M.base(age,side);b.position.x=side===0?-20:20;this.scene.add(b);this.bases[side]=b;
-  b.userData.fires.forEach(f=>{const flame=M.group(f,0,.20,0);for(let i=0;i<3;i++){const mesh=M.part(flame,'cone',i===0?0xffd67f:0xea9b48,(i-1)*.10,.26,0,.13,.56,.12,.12*(i-1));mesh.material=new T.MeshBasicMaterial({color:i===0?0xffd67f:0xefab57,transparent:true,opacity:.88});mesh.castShadow=false;}f.userData.flame=flame;});
+  b.userData.fires.forEach(f=>{const flame=M.group(f,0,.20,0);for(let i=0;i<3;i++){const mesh=M.part(flame,'cone',i===0?0xffd67f:0xea9b48,(i-1)*.10,.26,0,.13,.56,.12,.12*(i-1));mesh.material=this.basic(i===0?0xffd67f:0xefab57,.88);mesh.castShadow=false;}f.userData.flame=flame;});
  }
  getTurretPos(side,slot){const b=this.bases[side],age=b?.userData.age||0,dir=side===0?1:-1;return new T.Vector3((side===0?-20:20)+[-.95,.07,1.09][slot]*dir,[2.97,3.78,3.36,2.91,4.10][age],[-.22,-.29,-.24][slot]);}
  syncTurrets(teams){teams.forEach(t=>{for(let i=0;i<3;i++){if(this.turrets[t.side][i])this.scene.remove(this.turrets[t.side][i]);this.turrets[t.side][i]=null;const tr=t.turrets[i];if(tr){const m=M.turret(t.age,tr.type,t.side,tr.level);m.position.copy(this.getTurretPos(t.side,i));m.scale.x=t.side===0?1:-1;this.scene.add(m);this.turrets[t.side][i]=m;}}});}
@@ -103,24 +105,43 @@ class Battlefield {
   if(kind==='stone')M.part(m,'rock',0xbeb598,0,0,0,.095,.095,.095);
   else if(kind==='arrow'){M.part(m,'cylinder',0xbfaa76,0,0,0,.013,.59,.013,-Math.PI/2);M.part(m,'cone',0xe7e0bf,.33,0,0,.048,.15,.020,-Math.PI/2);}
   else if(kind==='shell')M.part(m,'ball',e.age===4?0xaeedda:0x46523e,0,0,0,.15,.15,.15,0,e.age===4?0xaeedda:0);
-  else{const p=M.part(m,'box',e.age===4?0xa0efd5:0xffe2a8,0,0,0,e.age===4?.52:.36,.032,.032);p.material=new T.MeshBasicMaterial({color:e.age===4?0xa0efd5:0xffe2a8});}
+  else{const p=M.part(m,'box',e.age===4?0xa0efd5:0xffe2a8,0,0,0,e.age===4?.52:.36,.032,.032);p.material=this.basic(e.age===4?0xa0efd5:0xffe2a8);}
   this.scene.add(m);this.projectiles.push({mesh:m,from:pos.clone(),to:e.to,toId:e.toId,life:0,duration:Math.max(.08,e.delay),arc:kind==='stone'?1.45:kind==='arrow'?.75:kind==='shell'&&e.age<3?1.8:.035,kind,dir});
   if(e.age>=2){this.burst(pos.x,pos.y,pos.z,5,e.age===4?0xc4fbe6:0xffe4a1,.8,.025);this.puff(pos.x,pos.y,pos.z,.28,e.age===4?0xb0dcca:0xb8b390,.20);}
  }
  createStrike(e){
   const m=new T.Group(),c=e.age===4?0xa8f2df:e.age===1?0xc6b487:0xe9b365;
   if(e.age===1){M.part(m,'cylinder',0xc9b382,0,0,0,.015,.9,.015);M.part(m,'cone',boneColor(),0,-.54,0,.063,.18,.035,Math.PI);}
-  else if(e.age===4){const beam=M.part(m,'cylinder',c,0,4,0,.11,8,.11);beam.material=new T.MeshBasicMaterial({color:c,transparent:true,opacity:.84});}
-  else {const stone=M.part(m,'rock',0x6c6245,0,0,0,e.age===2?.20:.32,e.age===2?.20:.34,e.age===2?.20:.32);const tail=M.part(m,'cone',c,0,.8,0,.24,1.7,.24);tail.material=new T.MeshBasicMaterial({color:c,transparent:true,opacity:.75});}
+  else if(e.age===4){const beam=M.part(m,'cylinder',c,0,4,0,.11,8,.11);beam.material=this.basic(c,.84);}
+  else {const stone=M.part(m,'rock',0x6c6245,0,0,0,e.age===2?.20:.32,e.age===2?.20:.34,e.age===2?.20:.32);const tail=M.part(m,'cone',c,0,.8,0,.24,1.7,.24);tail.material=this.basic(c,.75);}
   m.position.set(e.x-5,14,0);this.scene.add(m);this.incoming.push({mesh:m,x:e.x,life:0,duration:e.delay,age:e.age,startX:e.x+(e.side===0?-5:5),lastTrail:0});
  }
  addPlane(side){const g=new T.Group();M.armor(g,0x718675,0,0,0,2.6,.20,.39);M.part(g,'box',0x536e5b,0,.03,0,.45,.1,3.1);M.part(g,'box',0x546c53,-1.0,.08,0,.29,.1,1.05);M.part(g,'box',0xb9c6ae,-.95,.29,0,.3,.46,.07);M.part(g,'box',0xb8cbb6,.38,.15,0,.52,.17,.19);g.position.set(side===0?-30:30,8,0);g.scale.x=side===0?1:-1;this.scene.add(g);this.incoming.push({mesh:g,plane:true,life:0,duration:3.8,dir:side===0?1:-1});}
- aim(show,x){this.aiming=show;if(x!==undefined)this.aimX=clamp(x,-17,17);for(const o of [this.aimRing,this.aimCenter,this.aimLine]){o.visible=show;o.position.x=this.aimX;}}
+ /* Portrait phones: a closer camera that follows the front line; a drag pans it for a few seconds. */
+ updateFollow(sim,now){
+  const rdt=clamp(now-(this.lastNow??now),0,.1);this.lastNow=now;this.adapt(rdt);
+  if(!this.follow)return;
+  if(this.hold>0){this.hold-=rdt;return;}
+  let goal;
+  if(this.aiming)goal=this.aimX;
+  else{let f0=-99,f1=99;for(const u of sim.units){if(u.dead)continue;if(u.side===0){if(u.x>f0)f0=u.x;}else if(u.x<f1)f1=u.x;}
+   if(f0===-99&&f1===99)goal=-8;else if(f0===-99)goal=f1-4;else if(f1===99)goal=f0+4;else goal=(f0+f1)/2;}
+  goal=clamp(goal,-this.camLimit,this.camLimit);this.camX+=(goal-this.camX)*Math.min(1,rdt*2.2);this.target.x=this.camX;
+ }
+ panBy(dxPixels){if(!this.follow)return;this.camX=clamp(this.camX-dxPixels*this.worldW/this.width,-this.camLimit,this.camLimit);this.target.x=this.camX;this.hold=4;}
+ /* Lower the render resolution step by step when frames stay slow. */
+ adapt(rdt){
+  if(this.dpr===undefined){this.dpr=Math.min(devicePixelRatio||1,1.65);this.slow=0;this.frameAvg=1/60;}
+  if(rdt<=0||rdt>=.1||document.hidden)return;this.frameAvg+=(rdt-this.frameAvg)*.05;
+  if(this.frameAvg>1/36&&this.dpr>1){this.slow+=rdt;if(this.slow>3){this.dpr=Math.max(1,this.dpr-.3);this.renderer.setPixelRatio(this.dpr);this.renderer.setSize(innerWidth,innerHeight,false);this.slow=0;this.frameAvg=1/60;}}else this.slow=Math.max(0,this.slow-rdt);
+ }
+ basic(color,opacity=1){this.basicMats=this.basicMats||new Map();const k=color+':'+opacity;if(!this.basicMats.has(k))this.basicMats.set(k,new T.MeshBasicMaterial({color,transparent:opacity<1,opacity}));return this.basicMats.get(k);}
+ aim(show,x){this.aiming=show;if(x!==undefined)this.aimX=clamp(x,-17,17);for(const o of [this.aimRing,this.aimDisc,this.aimCenter,this.aimLine]){o.visible=show;o.position.x=this.aimX;}}
  pointerX(clientX,clientY){const r=this.canvas.getBoundingClientRect(),v=new T.Vector3(((clientX-r.left)/r.width)*2-1,1-((clientY-r.top)/r.height)*2,.5);v.unproject(this.camera);const dir=new T.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion);const t=-v.y/dir.y;return clamp(v.x+dir.x*t,-17,17);}
  project(x,y,z=0){const v=new T.Vector3(x,y,z).project(this.camera);return{x:(v.x*.5+.5)*this.width,y:(-.5*v.y+.5)*this.heightPixels,visible:v.z>-1&&v.z<1};}
- resize(){this.width=innerWidth;this.heightPixels=innerHeight;this.renderer.setSize(innerWidth,innerHeight,false);const ratio=innerWidth/innerHeight,worldW=innerWidth<700?48:ratio>2.25?53:49.8,worldH=worldW/ratio;this.camera.left=-worldW/2;this.camera.right=worldW/2;this.camera.top=worldH/2;this.camera.bottom=-worldH/2;
+ resize(){this.width=innerWidth;this.heightPixels=innerHeight;this.renderer.setSize(innerWidth,innerHeight,false);const ratio=innerWidth/innerHeight,phone=innerWidth<700&&innerHeight>500;this.follow=ratio<1;const worldW=this.follow?clamp(24+(ratio-.46)*30,22,34):phone?48:ratio>2.25?53:49.8,worldH=worldW/ratio;this.worldW=worldW;this.camLimit=this.follow?Math.max(0,22.6-worldW/2):0;this.camX=this.follow?clamp(this.camX||0,-this.camLimit,this.camLimit):0;this.target.x=this.camX;this.camera.left=-worldW/2;this.camera.right=worldW/2;this.camera.top=worldH/2;this.camera.bottom=-worldH/2;
   // Position the ground above the command dock, including portrait mobile layouts.
-  const dock=innerWidth<700?275:innerHeight<650?176:208,groundFraction=(innerHeight-dock-62)/innerHeight;this.target.y=(groundFraction-.5)*worldH/.95;this.target.y=clamp(this.target.y,-5,13);this.camera.position.set(0,this.target.y+11.4,32);this.camera.lookAt(this.target);this.camera.updateProjectionMatrix();
+  const dock=phone?275:innerHeight<650?176:208,groundFraction=(innerHeight-dock-62)/innerHeight;this.target.y=(groundFraction-.5)*worldH/.95;this.target.y=clamp(this.target.y,-5,13);this.camera.position.set(this.camX,this.target.y+11.4,32);this.camera.lookAt(this.target);this.camera.updateProjectionMatrix();
   const d=Math.min(devicePixelRatio||1,1.7);this.fxCanvas.width=Math.round(innerWidth*d);this.fxCanvas.height=Math.round(innerHeight*d);this.ctx.setTransform(d,0,0,d,0,0);this.fxRatio=d;
  }
  update(sim,dt,ambientTime){
@@ -151,8 +172,8 @@ class Battlefield {
   this.particles=this.particles.filter(p=>{p.life-=dt;p.vy-=dt*8;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;if(p.y<.02){p.y=.02;p.vy*=-.28;p.vx*=.7;p.vz*=.7;}return p.life>0;});
   this.particleMesh.count=this.particles.length;this.particles.forEach((p,i)=>{this.dummy.position.set(p.x,p.y,p.z);this.dummy.scale.setScalar(p.size*Math.min(1,p.life*4));this.dummy.rotation.set(p.spin+p.life*3,p.spin,0);this.dummy.updateMatrix();this.particleMesh.setMatrixAt(i,this.dummy.matrix);this.particleMesh.setColorAt(i,this.pColor.setHex(p.color));});this.particleMesh.instanceMatrix.needsUpdate=true;if(this.particleMesh.instanceColor)this.particleMesh.instanceColor.needsUpdate=true;
   this.floating=this.floating.filter(t=>{t.life-=dt;t.y+=dt*.55;return t.life>0;});
-  this.shake=Math.max(0,this.shake-dt*.75);const s=this.reduced?0:this.shake;this.camera.position.x=Math.sin(ambientTime*83)*s;this.camera.position.y=this.target.y+11.4+Math.sin(ambientTime*79)*s*.7;
-  if(this.aiming){this.aimRing.material.opacity=.60+Math.sin(ambientTime*5)*.15;this.aimLine.rotation.y=ambientTime*.14;}
+  this.shake=Math.max(0,this.shake-dt*.75);const s=this.reduced?0:this.shake;this.updateFollow(sim,ambientTime);this.camera.position.x=this.camX+Math.sin(ambientTime*83)*s;this.camera.position.y=this.target.y+11.4+Math.sin(ambientTime*79)*s*.7;
+  if(this.aiming){this.aimRing.material.opacity=.78+Math.sin(ambientTime*5)*.17;this.aimDisc.material.opacity=.22+Math.sin(ambientTime*5)*.06;this.aimLine.rotation.y=ambientTime*.14;}
  }
  draw(sim,showHealth=true){
   this.renderer.render(this.scene,this.camera);const c=this.ctx;c.clearRect(0,0,this.width,this.heightPixels);

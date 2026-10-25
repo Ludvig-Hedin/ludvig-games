@@ -41,6 +41,8 @@
  .toast{bottom:90px;font-size:11px}
 }
 #resultTitle,#resultReason,#healthLabel,.combo small,.level-info p{display:none!important}
+/* The hub's round "All games" button sits bottom-left; the touch row moves up clear of it. */
+@media(max-width:480px),(max-height:520px){html.back-bl .touch{bottom:max(62px,calc(env(safe-area-inset-bottom) + 54px))}}
 <style>
 /* meta layer: collection sheet, daily button, locked courses */
 .meta-open{position:relative}.meta-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--ink)}.meta-dot[hidden]{display:none}
@@ -338,6 +340,9 @@ const C={ink:'#102c30',deep:'#08242b',paper:'#f4edda',acid:'#d6ff61',red:'#ff695
 const canvas=$('game'),ctx=canvas.getContext('2d',{alpha:false});let W=innerWidth,H=innerHeight,DPR=1,view=1;
 function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);view=clamp(Math.min(W/1220,H/740),W<H?.44:.63,1.38);}
 addEventListener('resize',resize);resize();
+// The hub adds a round "All games" link outside the Mac app; when it sits bottom-left the touch controls move clear of it.
+function clearBackButton(){try{const a=document.querySelector('body > a[aria-label="All games"]'),r=a&&a.getBoundingClientRect();document.documentElement.classList.toggle('back-bl',!!r&&r.width>0&&r.left<120&&r.bottom>innerHeight-120);}catch(e){}}
+addEventListener('load',clearBackButton);setTimeout(clearBackButton,1500);addEventListener('resize',clearBackButton);
 const defaultSave={vehicle:0,scores:{},times:{},ghosts:{},settings:{music:.60,sfx:.75,gore:true,shake:true,ghost:true},editor:null};
 let save;try{const s=JSON.parse(localStorage.getItem('nobrakes-v1')||'null');save=s&&typeof s==='object'?{...defaultSave,...s,settings:{...defaultSave.settings,...s.settings}}:structuredClone(defaultSave);}catch(e){save=structuredClone(defaultSave)}
 save.scores=save.scores&&typeof save.scores==='object'?save.scores:{};save.times=save.times&&typeof save.times==='object'?save.times:{};save.ghosts=save.ghosts&&typeof save.ghosts==='object'?save.ghosts:{};

@@ -119,6 +119,10 @@ body.playing #carry{top:20px;bottom:auto;left:24px;max-width:190px}
 .modal,.podium-card{justify-self:center}
 .modal-actions{flex-wrap:wrap}
 @media(pointer:coarse){.modal .quiet-button,.podium-foot .quiet-button{min-height:44px;min-width:44px;padding:0 6px}}
+/* 2026-10-25: keep the wordmark and the left HUD clear of the site's back button (top-left, about 48 px). */
+.identity{padding-left:34px}
+@media(max-width:600px){.identity{padding-left:38px}body.playing #score-panel{left:max(64px,calc(env(safe-area-inset-left) + 52px))}}
+@media(max-height:500px) and (pointer:coarse){body.playing #carry{left:max(66px,calc(env(safe-area-inset-left) + 54px))}}
 </style>
 </head><body>
 <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>

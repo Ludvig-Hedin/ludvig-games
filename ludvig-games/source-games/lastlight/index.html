@@ -1464,7 +1464,7 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i
 void main(){vec3 fog=mix(vec3(.70,.84,.82),vec3(.48,.39,.70),uOutside*.8);vec3 col=vC.rgb;float alpha=vC.a;float dist=distance(uEye,vP);
 if(uMode>3.5){float r=length(vP.xz);float w=vn(vP.xz*.16+vec2(uTime*.22,uTime*.13))*.55+vn(vP.xz*.47-vec2(uTime*.31,-uTime*.2))*.45;vec3 deep=vec3(.11,.45,.55),shallow=vec3(.33,.76,.74);col=mix(shallow,deep,smoothstep(78.,120.,r));col=mix(col,col*1.18,w);vec3 V=normalize(uEye-vP);float fres=pow(1.-max(0.,V.y),3.);col+=vec3(.55,.66,.66)*fres*.35;col+=vec3(1.,.96,.8)*pow(w,9.)*.55;float foam=smoothstep(.55,1.,sin((r-74.)*2.4-uTime*1.6+w*3.)*.5+.5)*(1.-smoothstep(77.,84.,r))*smoothstep(72.,76.,r);col=mix(col,vec3(.93,.97,.94),foam*.55);}
 else if(uMode>2.5){gl_FragColor=vec4(col,alpha*(1.-smoothstep(110.,220.,dist)));return;}
-else if(uMode>1.5){float ang=atan(vP.z,vP.x);float n=vn(vec2(ang*16.+uTime*.5,vP.y*.32-uTime*1.3))*.6+vn(vec2(ang*42.-uTime*.9,vP.y*.85-uTime*2.1))*.4;float bands=pow(.5+.5*sin(vP.y*1.5-uTime*2.1+n*5.),6.);float flash=step(.94,h21(vec2(floor(uTime*7.),3.7)))*(.5+.5*sin(ang*3.+uTime*2.));col=mix(vec3(.36,.17,.70),vec3(.86,.74,1.),clamp(bands*.7+n*.55,0.,1.))+vec3(.55,.5,1.)*flash*.45;alpha*=.26+n*.42+bands*.32+flash*.3;alpha*=1.-smoothstep(18.,48.,vP.y);alpha*=.5+.5*smoothstep(0.,26.,dist);col=mix(col,fog,smoothstep(70.,220.,dist)*.5);gl_FragColor=vec4(col,alpha);return;}
+else if(uMode>1.5){float ang=atan(vP.z,vP.x);float n=vn(vec2(ang*16.+uTime*.5,vP.y*.32-uTime*1.3))*.6+vn(vec2(ang*42.-uTime*.9,vP.y*.85-uTime*2.1))*.4;float bands=pow(.5+.5*sin(vP.y*1.5-uTime*2.1+n*5.),6.);float flash=step(.94,h21(vec2(floor(uTime*7.),3.7)))*(.5+.5*sin(ang*3.+uTime*2.));col=mix(vec3(.36,.17,.70),vec3(.86,.74,1.),clamp(bands*.7+n*.55,0.,1.))+vec3(.55,.5,1.)*flash*.45;alpha*=.26+n*.42+bands*.32+flash*.3;alpha*=1.-smoothstep(18.,48.,vP.y);alpha*=.5+.5*smoothstep(0.,26.,dist);alpha*=1.-smoothstep(45.,120.,dist)*.45;col=mix(col,fog,smoothstep(70.,220.,dist)*.5);gl_FragColor=vec4(col,alpha);return;}
 else if(uMode<.5){vec3 n=normalize(vN);float sun=max(0.,dot(n,normalize(vec3(-.5,.85,.35))));vec3 amb=mix(vec3(.55,.52,.47),vec3(.70,.80,.85),n.y*.5+.5);vec3 light=amb*.95+vec3(1.,.92,.78)*sun*.47;float g=vn(vP.xz*.85+vP.y*.4)*.6+vn(vP.xz*3.3+vP.y)*.4;col*=mix(1.,.9+g*.2,uDetail*(1.-smoothstep(22.,70.,dist)));col*=light;float rim=pow(1.-max(0.,dot(n,normalize(uEye-vP))),3.);col+=vec3(.03,.042,.03)*rim;float storm=smoothstep(uRadius-.6,uRadius+2.,length(vP.xz));col=mix(col,col*vec3(.72,.56,1.1),storm*.62);}
 float f=smoothstep(42.,190.,dist)*(1.-clamp((vP.y-3.)/60.,0.,.4));col=mix(col,fog,f*.82);gl_FragColor=vec4(col,alpha);}`;
     const meshProgram = program(vertex, fragment), loc = {};
@@ -3466,7 +3466,7 @@ float f=smoothstep(42.,190.,dist)*(1.-clamp((vP.y-3.)/60.,0.,.4));col=mix(col,fo
             disc(glow, a.x, ground(a.x, a.z) + .06, a.z, .95, .95, [.55, 1, .6, .22 + Math.sin(visualTime * 8) * .08], 16);
     }
     function updateCamera(dt) { if (!player)
-        return; const focus = player.dead && mate && !mate.dead ? mate : player; let direction = aimDirection(), distance = aiming ? 3.4 : 5.5, side = aiming ? .6 : .8, pivot = [focus.x, focus.y + 1.9, focus.z]; let wanted = [pivot[0] - direction[0] * distance + Math.cos(cameraYaw) * side, pivot[1] - direction[1] * distance + .25, pivot[2] - direction[2] * distance + Math.sin(cameraYaw) * side]; let vec = sub(wanted, pivot), L = hypot(...vec), hit = cast(pivot, norm(vec), L, null, false, true); if (hit.t < L) {
+        return; const focus = player.dead && mate && !mate.dead ? mate : player; const tall = height > width; let direction = aimDirection(), distance = aiming ? (tall ? 4.2 : 3.4) : (tall ? 7 : 5.5), side = aiming ? .6 : (tall ? .5 : .8), pivot = [focus.x, focus.y + 1.9, focus.z]; let wanted = [pivot[0] - direction[0] * distance + Math.cos(cameraYaw) * side, pivot[1] - direction[1] * distance + .25, pivot[2] - direction[2] * distance + Math.sin(cameraYaw) * side]; let vec = sub(wanted, pivot), L = hypot(...vec), hit = cast(pivot, norm(vec), L, null, false, true); if (hit.t < L) {
         const f = Math.max(.35, hit.t - .28) / L;
         wanted = pivot.map((v, i) => v + vec[i] * f);
     } wanted[1] = Math.max(wanted[1], ground(wanted[0], wanted[2]) + .4); if (!cameraReady) {
@@ -3691,10 +3691,15 @@ float f=smoothstep(42.,190.,dist)*(1.-clamp((vP.y-3.)/60.,0.,.4));col=mix(col,fo
             if (obstruction.actor !== a)
                 continue;
             const w = clamp(760 / p.w, 23, 47);
+            // Health and shield as two bars, so a fresh shield never hides how hurt a fighter is.
             ctx.fillStyle = '#123742aa';
-            ctx.fillRect(p.x - w / 2, p.y, w, 4);
-            ctx.fillStyle = a.shield > 0 ? '#81ddff' : '#edf4c2';
-            ctx.fillRect(p.x - w / 2, p.y, w * clamp((a.hp + a.shield) / 110, 0, 1), 4);
+            ctx.fillRect(p.x - w / 2 - 1, p.y - 4, w + 2, 9);
+            ctx.fillStyle = '#edf4c2';
+            ctx.fillRect(p.x - w / 2, p.y + 1, w * clamp(a.hp / 100, 0, 1), 3);
+            if (a.shield > 0) {
+                ctx.fillStyle = '#81ddff';
+                ctx.fillRect(p.x - w / 2, p.y - 3, w * clamp(a.shield / 100, 0, 1), 3);
+            }
         }
         for (const n of numbers) {
             const p = project(n.x, n.y, n.z);

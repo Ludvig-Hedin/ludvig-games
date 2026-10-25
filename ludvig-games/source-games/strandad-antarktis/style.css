@@ -36,7 +36,7 @@ html,body{width:100%;height:100vh;height:100dvh;overflow:hidden}
 .lg-trophy[hidden]{display:none}
 .lg-board{max-width:100%;margin:0 auto 22px;text-align:left;font-size:13px;color:inherit}
 .lg-board:empty{display:none}
-@media(pointer:coarse){.primary .key{display:none}.icon-btn,.close-btn{position:relative}.icon-btn::after,.close-btn::after{content:'';position:absolute;inset:-7px}.lg-trophy::after{inset:0}}
+@media(pointer:coarse){.primary .key{display:none}.icon-btn:not(.lg-trophy){position:relative}.icon-btn::after,.close-btn::after{content:'';position:absolute;inset:-7px}.lg-trophy::after{inset:0}}
 @media(max-width:360px){.menu-content h1{font-size:50px}.menu-content{left:18px;right:18px}.end-stats strong{font-size:20px}}
 @media(pointer:coarse){.pause-controls,#interactPrompt .key{display:none}}
 /* SVG icons */
@@ -52,3 +52,6 @@ html,body{width:100%;height:100vh;height:100dvh;overflow:hidden}
 #eventBanner{top:122px;bottom:auto;left:17px;transform:none;max-width:calc(100% - 34px)}
 #toast{font-size:12px;padding:8px 14px}
 }
+/* 2026-10-25: keep the stick clear of the hub's "All games" button in the bottom-left corner. */
+@media(pointer:coarse){#joystick{left:max(62px,calc(env(safe-area-inset-left) + 62px));bottom:max(26px,env(safe-area-inset-bottom))}}
+@media(pointer:fine) and (min-width:481px){.rocket-board{left:max(64px,calc(env(safe-area-inset-left) + 64px))}}

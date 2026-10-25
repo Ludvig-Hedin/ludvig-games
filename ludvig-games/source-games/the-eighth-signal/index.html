@@ -30,6 +30,9 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
 @media (max-width:480px),(pointer:coarse){body.playing .brand{display:none}.field-notes{top:calc(max(18px,env(safe-area-inset-top)) + 54px);left:max(18px,env(safe-area-inset-left))}.field-notes .label,.note-ticks,.clock{display:none}.note-count{font-size:26px;margin-top:0}.note-count span{font-size:11px}.compass-wrap{top:max(18px,env(safe-area-inset-top));width:min(175px,46vw)}#objective{top:calc(max(18px,env(safe-area-inset-top)) + 58px);font-size:9px}.stick-caption,#lookCaption{animation:lgFadeCaption .8s 5s forwards}#toast .toast-body{font-size:16px}}
 /* Resting joystick sits above the stamina/signal meters so they never overlap. */
 .touch .stick-base{bottom:118px}@media (max-height:650px){.touch .stick-base{bottom:104px}}
+/* Leave the corner free for the site's All games button. */
+body.has-back .brand{margin-left:46px}
+#topbar .top-actions{margin-left:auto}
 </style>
 </head>
 <body>
@@ -1354,10 +1357,14 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
     if(renderer)renderer.resize(width,height,dpr);
     fx.width=Math.round(width*dpr);fx.height=Math.round(height*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    const w=compass.parentElement.clientWidth;
+    sizeCompass();
+    if(rotated)resetTouch();
+  }
+  // The HUD is hidden at load, so the compass is measured again whenever it becomes visible.
+  function sizeCompass(){
+    const w=compass.parentElement.clientWidth;if(!w)return;
     compass.width=Math.round(w*dpr);compass.height=Math.round(36*dpr);
     cc.setTransform(dpr,0,0,dpr,0,0);
-    if(rotated)resetTouch();
   }
   addEventListener('resize',resize);resize();
 
@@ -1398,7 +1405,7 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
     mode='playing';showScreen(null);document.body.classList.add('playing');
     $('menuFoot').hidden=true;$('hud').hidden=false;$('pauseBtn').hidden=false;
     $('captureHint').hidden=touch || !lockDenied;
-    last=performance.now();updateHUD();capturePointer();
+    last=performance.now();sizeCompass();updateHUD();capturePointer();
     if(sound){sound.start().catch(()=>{});sound.setMuted(muted);}
     toast('','Follow the compass. Find the first note.',4.2);
   }
@@ -1412,7 +1419,7 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
   function resumeGame(){
     if(mode!=='paused')return;
     mode='playing';clearInput();showScreen(null);document.body.classList.add('playing');
-    $('hud').hidden=false;$('pauseBtn').hidden=false;last=performance.now();
+    $('hud').hidden=false;$('pauseBtn').hidden=false;last=performance.now();sizeCompass();
     sound?.setPaused(false);capturePointer();
   }
   function title(){
@@ -1499,8 +1506,10 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
     return true;
   }
   function bearing(target){return wrap(Math.atan2(target.x-player.x,-(target.z-player.z))-player.yaw);}
+  // Tall phone screens get a wider vertical field of view so the sides of the path stay visible.
+  function viewFov(){const aspect=width/Math.max(1,height);return aspect>=1?73:clamp(2*Math.atan(Math.tan(31*Math.PI/180)/aspect)*180/Math.PI,73,100);}
   function inView(target,fov=.75){
-    const horizontalHalfFov=Math.atan(Math.tan(73*Math.PI/360)*width/height);
+    const horizontalHalfFov=Math.atan(Math.tan(viewFov()*Math.PI/360)*width/height);
     return Math.abs(bearing(target))<Math.min(fov,horizontalHalfFov*.98);
   }
   function spawnStalker(initial=false){
@@ -1576,7 +1585,7 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
     let d=distance(player,stalker);
     proximity=clamp((22-d)/20,0,1);
     const visibleAngle=touch?.78:.86;
-    const halfVFov=73*Math.PI/360;
+    const halfVFov=viewFov()*Math.PI/360;
     const topAngle=Math.atan2(3.2-player.y,d),bottomAngle=Math.atan2(-player.y,d);
     const verticallyVisible=topAngle>player.pitch-halfVFov&&bottomAngle<player.pitch+halfVFov;
     seen=d<38&&inView(stalker,visibleAngle)&&verticallyVisible&&lineClear(player,stalker,.03);
@@ -1669,6 +1678,16 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
         for(let i=0;i<3;i++){const y=(worldTime*(19+i*11)+i*height*.31)%height;ctx.fillRect(0,y,width,1+i);}
       }
     }
+    // Interference creeps in from the edge he is approaching from while you are not looking at him.
+    if(mode==='playing'&&active&&!seen&&proximity>.3){
+      const bb=bearing(stalker),k=clamp((proximity-.3)/.7,0,1)*(gentle?.28:.5),back=clamp(-Math.cos(bb),0,1)*.6;
+      for(const [side,amt] of [[-1,clamp(-Math.sin(bb),0,1)+back],[1,clamp(Math.sin(bb),0,1)+back]]){
+        const a=Math.min(1,amt)*k;if(a<.02)continue;
+        const x0=side<0?0:width,x1=side<0?width*.32:width*.68,g=ctx.createLinearGradient(x0,0,x1,0);
+        g.addColorStop(0,`rgba(58,10,11,${a})`);g.addColorStop(1,'rgba(58,10,11,0)');ctx.fillStyle=g;ctx.fillRect(Math.min(x0,x1),0,width*.32,height);
+        if(!gentle){ctx.fillStyle=`rgba(196,214,204,${a*.22})`;for(let i=0;i<7;i++){const y=(worldTime*(140+i*37)+i*97)%height,len=width*(.05+.12*((i*53)%10)/10)*a*2;ctx.fillRect(side<0?0:width-len,y,len,1);}}
+      }
+    }
     if(flash>.005){ctx.fillStyle=`rgba(${endWon&&mode==='outcome'?'228,230,210':'221,215,184'},${Math.min(gentle?.055:.22,flash)})`;ctx.fillRect(0,0,width,height);}
     for(let i=particles.length-1;i>=0;i--){
       const p=particles[i];
@@ -1714,7 +1733,7 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
       }
       const jolt=mode==='playing'&&!gentle?shake+panic*.009:0;
       const camera={...view,yaw:view.yaw+Math.sin(worldTime*49)*jolt*.055,pitch:view.pitch+Math.cos(worldTime*41)*jolt*.05};
-      renderer.render({time:worldTime,player:camera,stalker:enemy,notes:items,flashlight:light,panic:mode==='menu'?0:panic,shake:jolt,quality});
+      renderer.render({time:worldTime,fov:viewFov(),player:camera,stalker:enemy,notes:items,flashlight:light,panic:mode==='menu'?0:panic,shake:jolt,quality});
       drawEffects(frozen?0:dt);if(mode==='playing')drawCompass();
     }
     requestAnimationFrame(frame);
@@ -1806,6 +1825,7 @@ html,body{height:100vh;height:100dvh}.audio-label{display:none}.icon-button{widt
   for(const id of ['gentleToggle','pauseGentle'])$(id).addEventListener('change',e=>{gentle=e.target.checked;updateSettings();save();});
   $('sensitivity').addEventListener('input',e=>{sensitivity=Number(e.target.value);$('sensitivityValue').value=sensitivity.toFixed(1);save();});
   addEventListener('pagehide',()=>{clearInput();sound?.setPaused(true);});
+  {const backCheck=()=>document.body.classList.toggle('has-back',!!document.querySelector('a[aria-label="All games"]'));addEventListener('load',backCheck);setTimeout(backCheck,1500);}
   requestAnimationFrame(frame);
 })();
 

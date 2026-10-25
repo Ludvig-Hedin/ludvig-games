@@ -72,6 +72,8 @@ body.online #phoneBtn{display:none}
 @media(pointer:coarse){#emotePicker{top:189px}}
 @media(max-width:640px){#emotePicker{right:17px;top:158px}}
 @media(max-width:480px){#emotePicker{top:128px}.onlineCode strong{font-size:24px}}
+/* The hub's round "All games" button sits in the top-left corner (12 to 48 px); keep the objective below it. */
+.hudTop{top:58px!important}
 </style></head><body>
 <canvas tabindex="0" id="world" aria-label="Getaway 3D open-world game"></canvas><canvas id="fx"></canvas><div id="vignette"></div><div id="damage"></div><div id="letterbox"></div>
 <div id="hud" hidden><div class="hudTop"><div id="objectiveLabel" class="overline">MARA · CHAPTER 01</div><div id="objectiveTitle">A fresh start</div><div id="objectiveHint">Your car is waiting.</div><div id="objectiveTrack"><div id="objectiveBar"><div id="objectiveFill"></div></div><span id="objectiveDistance"></span></div></div><div id="rightTop"><div id="money" class="money">$0</div><div id="wanted"><span><svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span><svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span><svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span><svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span><svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></span></div><div id="wantedText">OFF THE RADAR</div></div><div id="minimapWrap"><div class="mapFrame" id="mapClick"><canvas id="minimap"></canvas><span class="north">N <svg class="ui-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></div><div class="healthRow"><div class="bar"><i id="healthBar"></i></div><div class="bar"><i id="armorBar"></i></div><div class="bar"><i id="staminaBar"></i></div></div><div id="area"><span id="district">LITTLE PARADISE</span><span id="timeOfDay">17:40</span></div></div><div id="vehicleHUD" hidden><div class="speed"><span id="speed">0</span><small>KM/H</small></div><div id="carName">HELIOS GT</div><div class="carMeters"><div class="bar"><i id="carHealthBar"></i></div><div class="bar"><i id="nitroBar"></i></div></div><div id="gear">GEAR 1</div></div><div id="weaponHUD"><div id="weaponName">9MM PISTOL</div><div class="ammo"><span id="ammo">12</span><small id="reserve">84</small></div><div id="reloadBar" hidden><div id="reloadFill"></div></div></div><div id="radio" hidden><b></b>&nbsp;&nbsp; <span id="radioName">SOL FM 98.6</span></div><button id="prompt" hidden><kbd>E</kbd><span id="promptText">Enter car</span></button></div>
@@ -2017,6 +2019,12 @@ const net=(()=>{
   }
  }
  /* ---------- every animation frame, also while menus are open ---------- */
+ let hiddenBeat=0;
+ // Animation frames stop in a hidden tab; a slow timer keeps the pose (and host rounds) going so the player stays visible to others.
+ document.addEventListener('visibilitychange',()=>{clearInterval(hiddenBeat);hiddenBeat=0;if(document.hidden&&room)hiddenBeat=setInterval(()=>{if(!room||!document.hidden){clearInterval(hiddenBeat);hiddenBeat=0;return;}tick(now());},BEAT_MS);});
+ // True while a player in the room has not been heard from yet (direct link still negotiating).
+ function connecting(){if(!room||!active)return false;const t=now();return peers().some(p=>p.id!==selfId()&&!remotes.get(p.id)?.buf.length&&t-(joinSeen.get(p.id)??t)<12000);}
+ const joinSeen=new Map();
  function tick(t){
   if(!room)return;hostTick(t);
   if(!active||t-lastSend<SEND_MS)return;lastSend=t;
@@ -2033,6 +2041,8 @@ const net=(()=>{
  /* ---------- messages ---------- */
  function onMessage(from,data){
   if(!data||typeof data!=='object'||from==null)return;const t=now();
+  // A pose still in flight when the room says a player left would recreate them as a frozen ghost car.
+  if(!peers().some(p=>p.id===from))return;
   switch(data.t){
    case'p':pushPose(remote(from),t,data);break;
    case'hi':lastPacket='';if(isHost()){sendTo(from,{t:'w',d:r2(dayTime)});const rs=roundState();if(rs)sendTo(from,rs);}break;
@@ -2053,8 +2063,8 @@ const net=(()=>{
  function ping(){clearTimeout(pingTimer);latency=0;pingLeft=3;const shot=()=>{if(!room||isHost())return;sendTo(room.host,{t:'pi',c:Math.round(now())});if(--pingLeft>0)pingTimer=setTimeout(shot,400);};shot();}
  function onMeta(m){meta=m&&typeof m==='object'?{...m}:{};const box=$('onlinePvp');if(box)box.checked=!!meta.pvp;renderSheet();}
  function onHost(){ping();if(isHost()&&round&&!hostRound){hostRound={itMs:{...round.scores},acc:now(),scClock:0,fins:round.fins.map(f=>({...f})),firstFinAt:round.fins.length?now():0,doneAt:round.ph==='done'?now():0};publishMeta();}renderSheet();}
- function onJoin(id){if(id==null||id===selfId())return;lastPacket='';renderSheet();}
- function onLeave(id){if(id==null||id===selfId())return;const r=remotes.get(id);if(r){dropCar(r);remotes.delete(id);}renderSheet();}
+ function onJoin(id){if(id==null||id===selfId())return;joinSeen.set(id,now());lastPacket='';renderSheet();}
+ function onLeave(id){if(id==null||id===selfId())return;joinSeen.delete(id);const r=remotes.get(id);if(r){dropCar(r);remotes.delete(id);}renderSheet();}
 
  /* ---------- connect, enter, leave ---------- */
  async function connect(how,code=''){
@@ -2068,7 +2078,7 @@ const net=(()=>{
   attach(joined,how);
  }
  function attach(r,how){
-  room=r;quick=how==='quick';meta={...(r.meta||{})};round=null;hostRound=null;remotes.clear();lastPacket='';
+  room=r;quick=how==='quick';meta={...(r.meta||{})};round=null;hostRound=null;remotes.clear();lastPacket='';joinSeen.clear();for(const p of peers())joinSeen.set(p.id,now());
   const on=(event,fn)=>{try{r.on(event,(...args)=>{if(room!==r)return;try{fn(...args);}catch(e){console.error(e);}});}catch{}};
   on('join',p=>onJoin(idOf(p)));on('leave',p=>onLeave(idOf(p)));on('message',(from,data)=>onMessage(idOf(from),data));on('host',onHost);on('meta',onMeta);on('close',reason=>onClose(reason));
   send({t:'hi'});ping();enterCity();
@@ -2081,7 +2091,7 @@ const net=(()=>{
   $('onlineTool').hidden=false;$('emoteTool').hidden=false;showPlaying(true);initAudio();updateHUD();requestLock();
  }
  function cleanup(){
-  clearTimeout(pingTimer);for(const r of remotes.values())dropCar(r);remotes.clear();
+  clearTimeout(pingTimer);clearInterval(hiddenBeat);hiddenBeat=0;joinSeen.clear();for(const r of remotes.values())dropCar(r);remotes.clear();
   if(litCar)litCar.lightbar=false;litCar=null;room=null;quick=false;round=null;hostRound=null;meta={};active=false;emote(false);
   document.body.classList.remove('online');$('onlineTool').hidden=true;$('emoteTool').hidden=true;$('onlineResults').hidden=true;
  }
@@ -2216,7 +2226,7 @@ const net=(()=>{
  $('emotePicker').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-emote]');if(b)sendEmote(Number(b.dataset.emote));});
  addEventListener('online',refreshButton);addEventListener('offline',refreshButton);
  return{
-  get active(){return active;},prepare:()=>{if(active)sync();},available,refreshButton,joinFromLink,openSheet,closeSheet,leave,onReset,tick,update,draw,overlay,mapMarks,point,copy,knockedOut,rayPeople,hitPeer,pvp,emote,
+  get active(){return active;},prepare:()=>{if(active)sync();},connecting,available,refreshButton,joinFromLink,openSheet,closeSheet,leave,onReset,tick,update,draw,overlay,mapMarks,point,copy,knockedOut,rayPeople,hitPeer,pvp,emote,
   get open(){return!$('onlineOverlay').hidden;},
   calm:()=>active&&!!round&&round.ph!=='done',
   noWeapons:()=>active&&!!round&&round.g==='tag'&&round.ph!=='done',
@@ -2232,11 +2242,12 @@ const net=(()=>{
 // Single animation loop. No physics runs while a menu or a background tab is open.
 if(!TYPES[save.carType])save.carType='coupe';save.paint=clamp(Math.floor(Number(save.paint))||0,0,paints.length-1);save.best=Math.max(0,Number(save.best)||0);for(const k of['engine','grip','armor'])save.upgrades[k]=clamp(Math.floor(Number(save.upgrades[k]))||0,0,3);save.weapons=Array.isArray(save.weapons)?save.weapons.slice(0,3).map(Boolean):[true,false,false];save.weapons[0]=true;save.stashes=Array.isArray(save.stashes)?save.stashes.filter(Number.isInteger):[];save.completed=Array.isArray(save.completed)?save.completed:[];for(const k of Object.keys(save.stats))save.stats[k]=Math.max(0,Number(save.stats[k])||0);if(!['ultra','high','balanced','low'].includes(settings.quality))settings.quality='high';settings.volume=clamp(Number(settings.volume)||0,0,1);settings.sensitivity=clamp(Number(settings.sensitivity)||1,.4,2);settings.resolution=clamp(Number(settings.resolution)||1,.75,1.5);if(!['normal','busy'].includes(settings.density))settings.density='busy';
 resetWorld();mode='title';updateTitle();resize();updateHUD();showPlaying(false);net.refreshButton();net.joinFromLink();
-let previous=performance.now();
+let previous=performance.now(),skipDraw=false;
 function frame(now){requestAnimationFrame(frame);const raw=(now-previous)/1000;previous=now;const dt=Math.min(.10,Math.max(.001,raw));averageFrame=mix(averageFrame,Math.min(raw,.1)*1000,.035);net.tick(now);if(document.hidden)return;adaptQuality(dt);
  if(mode==='play'){updateMouseEdge(dt);worldTime+=dt;let left=dt;while(left>0&&mode==='play'){const step=Math.min(left,1/90);update(step);left-=step;}if(mode==='play')updateAudio(dt);hudClock-=dt;if(hudClock<=0){hudClock=.08;updateHUD();}needRender=true;}
  else if(mode==='title'){worldTime+=dt;updateCars(dt);updatePeople(dt);needRender=true;}
  else if(mode==='dead'||mode==='failed'){worldTime+=dt;updateEffects(dt);needRender=true;}
+ if(needRender&&averageFrame>45&&net.connecting()){skipDraw=!skipDraw;if(skipDraw)return;}
  if(needRender){renderWorld(dt);if(mode==='play'){drawMiniMap(dt);mapFrames++;}needRender=false;}
 }
 requestAnimationFrame(frame);

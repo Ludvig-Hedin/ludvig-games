@@ -64,6 +64,23 @@ body.touch #zoneinfo{top:calc(67px + env(safe-area-inset-top,0px))}body.touch #m
 .online-status{font-size:12px;color:#c1d2c4;margin:0 0 16px;min-height:1.2em}.online-error{font-size:12px;color:var(--red);margin:14px 0 0}
 #locker,#online{justify-content:flex-start;overflow-y:auto;touch-action:pan-y}#locker>:first-child,#online>h2{margin-top:auto}#locker>:last-child,#online>:last-child{margin-bottom:auto}
 @media(max-height:420px){.title{font-size:62px;margin:8px 0 8px}.intro{display:none}}
+/* 2026-10-25: keep the HUD clear of the corner "All games" button; phone portrait layout where the
+   action buttons sit in one cluster around FIRE and the vitals + ammo sit above the stick, so nothing overlaps. */
+.hud-top,#zoneinfo{left:calc(72px + env(safe-area-inset-left,0px))}
+body.touch .hud-top,body.touch #zoneinfo{left:calc(62px + env(safe-area-inset-left,0px))}
+@media(max-width:480px){
+ body.touch #stick{left:max(18px,env(safe-area-inset-left));bottom:calc(34px + var(--safe));width:116px;height:116px}
+ body.touch #fire{right:18px;bottom:calc(40px + var(--safe));width:78px;height:78px}
+ body.touch #aim{right:104px;bottom:calc(30px + var(--safe));width:52px;height:52px}
+ body.touch #jump{right:24px;bottom:calc(130px + var(--safe));width:54px;height:54px}
+ body.touch #reload{right:96px;bottom:calc(98px + var(--safe));width:48px;height:48px}
+ body.touch #heal{right:164px;bottom:calc(34px + var(--safe));width:46px;height:46px}
+ body.touch #throw{right:154px;bottom:calc(96px + var(--safe));width:46px;height:46px}
+ body.touch #survival{left:max(20px,env(safe-area-inset-left));transform:none;width:132px;bottom:calc(166px + var(--safe))}
+ body.touch #inventory{justify-content:flex-start}
+ body.touch #ammo{left:max(20px,env(safe-area-inset-left));transform:none;text-align:left;bottom:calc(208px + var(--safe));min-width:96px;min-height:44px}
+ body.touch #help{bottom:calc(262px + var(--safe));max-width:calc(100vw - 40px);white-space:normal;text-align:center}
+}
 </style>
 </head>
 <body>
@@ -2576,7 +2593,7 @@ const LD = {};
   function pauseGame(map = false) { if (state !== 'playing') return; state = map ? 'map' : 'paused'; mapOpen = map; clearInputs(); audio.pause(true); if (document.pointerLockElement) document.exitPointerLock(); $('pause').hidden = map; $('map-screen').hidden = !map; $('touch').hidden = true; if (map) drawMap($('bigmap'), true); }
   function resume() { if (!['paused', 'map'].includes(state)) return; state = 'playing'; mapOpen = false; $('pause').hidden = true; $('map-screen').hidden = true; $('touch').hidden = !touch; clearInputs(); audio.pause(false); requestLock(); lastNow = performance.now(); accumulator = 0; }
   function finish(won, reason = 'You were eliminated.') {
-    if (state !== 'playing' && !(live && (state === 'paused' || state === 'map'))) return; const rank = won ? 1 : clamp(alive() + mpAliveOthers() + (player.hp > 0 ? 0 : 1), 2, 16); // alive() already counts you while you stand state = 'over'; $('pause').hidden = true; $('map-screen').hidden = true; sceneDirty = true; clearInputs(); if (document.pointerLockElement) document.exitPointerLock();
+    if (state !== 'playing' && !(live && (state === 'paused' || state === 'map'))) return; const rank = won ? 1 : clamp(alive() + mpAliveOthers() + (player.hp > 0 ? 0 : 1), 2, 16); /* alive() already counts you while you stand */ state = 'over'; $('pause').hidden = true; $('map-screen').hidden = true; sceneDirty = true; clearInputs(); if (document.pointerLockElement) document.exitPointerLock();
     $('hud').hidden = true; $('touch').hidden = true; $('results').hidden = false; $('pause-button').hidden = true; $('zonewash').style.opacity = 0; $('damage').style.opacity = 0;
     const result = Math.max(0, Math.floor(score + time * 4 + kills * 200 + (16 - rank) * 90 + (won ? 1500 : 0))); if (result > best) { best = result; try { localStorage.setItem('lastdrop.best.v1', String(best)); } catch (e) {} }
     $('result-title').textContent = won ? 'ISLAND. YOURS.' : rank <= 3 ? 'SO CLOSE.' : 'NEXT DROP.'; $('result-title').style.color = won ? 'var(--yellow)' : 'var(--paper)'; $('result-rank').firstElementChild.textContent = '#' + rank; $('result-description').textContent = won ? '' : reason;
@@ -3465,7 +3482,7 @@ const LD = {};
     const d = dynamicGeometry(camera);
     const pl = pointLight ? { x: pointLight.x, y: pointLight.y, z: pointLight.z, power: pointLight.power * (pointLight.life / pointLight.max), color: pointLight.color, weapon: flash > 0 } : null;
     renderer.render({ camera, dynamic: d.m, fx: d.fx, weapon: weapon ? weapon.m : null, weaponFx: weapon ? weapon.w : null, weaponXform: weapon ? weapon.xform : null, zone: state === 'title' ? { x: 0, z: 0, radius: 172 } : zone, time: totalTime, flash: 0, point: pl });
-    if (state === 'playing') { drawCompass(); $('damage').style.opacity = String(hurtFlash * .55); $('hurt-direction').style.opacity = String(hurtFlash); $('hurt-direction').style.transform = 'rotate(' + damageAngle + 'rad)'; $('hitmarker').style.opacity = String(Math.min(1, hitFlash * 10)); $('crosshair').style.opacity = aimBlend > .8 ? '.15' : '1'; $('crosshair').style.transform = 'translate(-50%,-50%) scale(' + (1 + recoil * 6 + moveBlend * .15) + ')'; $('notice').style.opacity = noticeTimer > 0 ? '1' : '0'; $('elimination').style.opacity = String(Math.min(1, eliminationTimer)); }
+    if (state === 'playing') { drawCompass(); $('damage').style.opacity = String(Math.max(hurtFlash * .55, player.hp > 0 && player.hp < 30 ? .14 + Math.sin(totalTime * 5.5) * .07 : 0)); $('hurt-direction').style.opacity = String(hurtFlash); $('hurt-direction').style.transform = 'rotate(' + damageAngle + 'rad)'; $('hitmarker').style.opacity = String(Math.min(1, hitFlash * 10)); $('crosshair').style.opacity = aimBlend > .8 ? '.15' : '1'; $('crosshair').style.transform = 'translate(-50%,-50%) scale(' + (1 + recoil * 6 + moveBlend * .15) + ')'; $('notice').style.opacity = noticeTimer > 0 ? '1' : '0'; $('elimination').style.opacity = String(Math.min(1, eliminationTimer)); }
   }
   function frame(now) {
     let dt = Math.min((now - lastNow) / 1000, .1); lastNow = now;

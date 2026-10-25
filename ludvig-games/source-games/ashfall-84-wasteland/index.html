@@ -1160,7 +1160,9 @@ button:disabled {
  #prompt{font-size:10px;padding:7px 10px}
  .touch-active .ammo strong{font-size:28px}.touch-active .ammo em{font-size:13px}
 }
-#result-title{display:none}
+#result-title{font-size:clamp(22px,4vw,34px);margin:0 0 14px;letter-spacing:.04em;color:#efdfb7}
+#hitmarker{transition:width .1s ease-out,height .1s ease-out}#hitmarker.kill{width:36px;height:36px;border-width:3px}
+.hud-top{left:max(66px,calc(env(safe-area-inset-left) + 58px))}
 /* Online co-op (2026-10-23). */
 .online-btn{display:flex;align-items:center;gap:10px;margin-top:14px;width:max-content;min-height:46px}
 .online-btn .ui-ico{width:18px;height:18px}
@@ -1562,7 +1564,7 @@ gl_FragColor=vec4(col,1.);}`;
       this.i=i+12;
     }
     faceNormal(a, b, c) {
-      const ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=c[0]-a[0], vy=c[1]-a[1], vz=c[2]-a[2], nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx, l=Math.hypot(nx, ny, nz)||1, n=this.n||(this.n=[0, 0, 0]);
+      const ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=c[0]-a[0], vy=c[1]-a[1], vz=c[2]-a[2], nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx, h=Math.hypot(nx, ny, nz), l=h>1e-12?h:Infinity, n=this.n||(this.n=[0, 0, 0]);
       n[0]=nx/l;
       n[1]=ny/l;
       n[2]=nz/l;
@@ -1575,7 +1577,9 @@ gl_FragColor=vec4(col,1.);}`;
       this.v(c, n, col, null, e);
     }
     quad(a, b, c, d, col, e=0, uv=null) {
-      const n=this.faceNormal(a, b, c);
+      let n=this.faceNormal(a, b, c);
+      // Sphere caps collapse b and c into one pole; take the normal from the other triangle so the cap is not black.
+      if(n[0]===0&&n[1]===0&&n[2]===0)n=this.faceNormal(a, c, d);
       this.v(a, n, col, uv&&uv[0], e);
       this.v(b, n, col, uv&&uv[1], e);
       this.v(c, n, col, uv&&uv[2], e);
@@ -2249,7 +2253,7 @@ gl_FragColor=vec4(col,1.);}`;
   $('sensitivity').value=clamp(Number(read('ashfall-look', '1'))||1, .4, 2);
   audio.muted=read('ashfall-muted', '0')==='1';
   let mode='title', touchMode=matchMedia('(pointer:coarse)').matches, pointerLocked=false, dragLook=false, lookPointer=null, joyPointer=null, joyX=0, joyY=0, fireHeld=false, focusOn=false, keys=new Set();
-  let player, enemies=[], bullets=[], particles=[], corpses=[], loot=[], cores=[], runTime=0, worldTime=0, kills=0, score=0, coreCount=0, shots=0, shotsHit=0, directorTimer=18, toastTime=0, damageFlash=0, healFlash=0, shake=0, recoil=0, muzzle=0, hitMark=0, hitGold=false, focusBlend=0, deathTime=0, interactTarget=null, aimedEnemy=null, stepClock=0, ambientClock=0, navClock=0, gameSeed=0, damageAngle=0, viewportW=innerWidth, viewportH=innerHeight, dpr=1, last=0, accumulator=0, frameTime=0, mapClock=0, hudClock=0;
+  let player, enemies=[], bullets=[], particles=[], corpses=[], loot=[], cores=[], runTime=0, worldTime=0, kills=0, score=0, coreCount=0, shots=0, shotsHit=0, directorTimer=18, toastTime=0, damageFlash=0, healFlash=0, shake=0, recoil=0, muzzle=0, hitMark=0, hitGold=false, killMark=0, focusBlend=0, deathTime=0, interactTarget=null, aimedEnemy=null, stepClock=0, ambientClock=0, navClock=0, gameSeed=0, damageAngle=0, viewportW=innerWidth, viewportH=innerHeight, dpr=1, last=0, accumulator=0, frameTime=0, mapClock=0, hudClock=0;
   const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
   const TYPES=['raider', 'ghoul', 'warden'];
   let coopRun=false, useHeld=false, enemySerial=1, dropSerial=1, qLevel=0, qAvg=16, qSlow=0, qFast=0, qHold=0;
@@ -2335,7 +2339,7 @@ gl_FragColor=vec4(col,1.);}`;
     }));
     runTime=worldTime=kills=score=coreCount=shots=shotsHit=0;
     directorTimer=20;
-    damageFlash=healFlash=shake=recoil=muzzle=hitMark=focusBlend=deathTime=stepClock=navClock=0;
+    damageFlash=healFlash=shake=recoil=muzzle=hitMark=killMark=focusBlend=deathTime=stepClock=navClock=0;
     interactTarget=aimedEnemy=null;
     gameSeed=(Date.now()>>>0);
     seed=gameSeed;
@@ -2727,6 +2731,11 @@ gl_FragColor=vec4(col,1.);}`;
     kills++;
     score+=kills<=30?20:0;
     audio.play('kill');
+    if(!by) {
+      // Kill confirm: a bigger, warmer marker and a small kick, distinct from a plain hit.
+      killMark=.34;
+      shake=Math.max(shake, reduced?.01:.09);
+    }
     burst(e.x, e.height*.7, e.z, e.type==='ghoul'?C.green:C.rust, 15, 3.5);
     corpses.push( {
       ...e, life:8, fall:0
@@ -3747,6 +3756,7 @@ gl_FragColor=vec4(col,1.);}`;
     damageFlash=Math.max(0, damageFlash-dt);
     healFlash=Math.max(0, healFlash-dt);
     hitMark=Math.max(0, hitMark-dt);
+    killMark=Math.max(0, killMark-dt);
     let yaw, pitch;
     if(mode==='title') {
       renderEye=[8+Math.sin(frameTime*.06)*1.2, 2.5, 44];
@@ -4042,8 +4052,9 @@ gl_FragColor=vec4(col,1.);}`;
     $('focus-label').hidden=!focusOn;
     $('focus').classList.toggle('active', focusOn);
     $('reticle').classList.toggle('focusing', focusOn);
-    $('hitmarker').style.opacity=hitMark>0?'1':'0';
-    $('hitmarker').style.borderColor=hitGold?'#f1c877':'#ebeed7';
+    $('hitmarker').style.opacity=hitMark>0||killMark>0?'1':'0';
+    $('hitmarker').style.borderColor=killMark>0?'#ef8a6c':hitGold?'#f1c877':'#ebeed7';
+    $('hitmarker').classList.toggle('kill', killMark>0);
     const dir=camera([0, 0, 0], player.yaw, player.pitch).forward;
     const target=targetEnemy(dir, touchMode).enemy;
     aimedEnemy=target;
@@ -4813,6 +4824,7 @@ gl_FragColor=vec4(col,1.);}`;
         lastLookY=e.clientY;
       }
       fireHeld=true;
+      if(pointerLocked)shoot();
     }
     e.preventDefault();
   });
@@ -4881,6 +4893,8 @@ gl_FragColor=vec4(col,1.);}`;
   $('fire').addEventListener('pointerdown', e=> {
     if(mode!=='playing')return;
     fireHeld=true;
+    // Fire on press, so a quick tap shorter than one frame still shoots.
+    shoot();
     e.currentTarget.classList.add('active');
     e.currentTarget.setPointerCapture(e.pointerId);
     e.preventDefault();

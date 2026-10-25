@@ -142,6 +142,9 @@ body:not(.is-menu) #board-button{display:none}
 .online-status{min-height:1.6em;text-align:center;margin:12px 0 0}
 #online .pause-options button{min-height:44px}
 @media(max-width:360px){.fighter-hud{width:35%!important}.timer-value{font-size:20px!important}.hp-number{font-size:13px!important}.hud-name{font-size:13px!important}}
+/* 2026-10-25: keep the corner "All games" button clear of the brand mark and the phone HUD. */
+body:not(.is-menu) header{padding-left:max(64px,calc(env(safe-area-inset-left) + 56px))}
+@media(max-width:600px),(max-height:460px){#hud{left:calc(max(10px,env(safe-area-inset-left)) + 52px)}.fighter-hud{width:35%}}
 </style>
 </head>
 <body class="is-menu">
@@ -324,6 +327,7 @@ const STYLES={
   combos:[['jab','cross','upper'],['jab','kick'],['cross','upper'],['jab','cross','kick'],['upper','kick'],['jab','upper','cross']]}
 };
 const KINDS=['jab','cross','upper','kick'];
+const HITSTOP={jab:.028,cross:.045,upper:.06,kick:.055};
 const reach=def=>def.range+def.lunge*.8;
 function playerModel(){return{freq:{jab:1,cross:1,upper:1,kick:1},next:{},last:null,lastAt:-9,interval:.9,aggr:.4,guardRate:.3,dodgeRate:.15,tradeRate:.2};}
 function brain(){return{clock:.45,orbit:1,plan:[],mode:'poke',modeTime:0,feint:0,retreat:0,punish:0,seen:-1,perceiveAt:0,read:true,whiffSeen:-1,dodgeSeen:0,outcome:null,model:playerModel()};}
@@ -385,7 +389,7 @@ class Combat{
     b.stamina-=drain;b.regenDelay=.3;b.blocked++;damage*=perfect?.015:.09;
     b.hp=Math.max(0,b.hp-damage);b.recoil=.12;
     if(perfect)b.stamina=Math.min(100,b.stamina+5);
-    this.emit('block',{id:b.id,perfect,kind:at.kind});this.hitstop=.008;
+    this.emit('block',{id:b.id,perfect,kind:at.kind});this.hitstop=this.online?.008:.016;
     if(b.hp<=0){b.ko=.001;this.finish(a.id,'KNOCKOUT');}
     return true;
    }
@@ -398,7 +402,8 @@ class Combat{
   b.hitGlow=.21;b.recoil=.28;b.regenDelay=.25;b.stun=Math.max(b.stun,def.stun);
   b.attack=null;b.buffer=null;b.guard=false;
   const nx=dx/(d||1),nz=dz/(d||1);b.x+=nx*def.push;b.z+=nz*def.push;this.contain(b);
-  this.hitstop=at.kind==='jab'?.010:.022;
+  // Offline hits freeze a little longer so heavy strikes land with weight; online keeps its short, synced stop.
+  this.hitstop=this.online?(at.kind==='jab'?.010:.022):(HITSTOP[at.kind]||.03)+(counter?.015:0);
   this.emit('hit',{id:a.id,target:b.id,kind:at.kind,damage,counter,combo:a.combo,x:b.x,z:b.z});
   if(b.hp<=0){b.ko=.001;this.finish(a.id,'KNOCKOUT');}
   return true;
@@ -888,7 +893,7 @@ try{
  try{const p=JSON.parse(localStorage.getItem('cage.preferences')||'null');if(p)preferences={...preferences,...p};const r=JSON.parse(localStorage.getItem('cage.record')||'null');if(r)record={...record,...r};}catch{}
  const save=()=>{try{localStorage.setItem('cage.preferences',JSON.stringify(preferences));localStorage.setItem('cage.record',JSON.stringify(record));}catch{}};
  const renderer=new Renderer($('world')),root=new Node(),arena=new Arena(renderer,root),arts=[new FighterArt(root,0),new FighterArt(root,1)],particles=new Particles(root),sound=new CageAudio(),game=new Combat(preferences.level);
- arts.forEach(a=>a.attachShadow(renderer));sound.volume=preferences.volume;sound.effectsVolume=preferences.effects;sound.crowdVolume=preferences.crowd;sound.setMute(preferences.muted);let clock=0,sceneTime=0,shake=0,flash=0,impact=0,last=0,accumulator=0,announcementUntil=0,toastUntil=0,resultsAt=Infinity,settingsPaused=false,uiClock=0,frames=0,frameSeconds=0,autoScale=1,previousFocus=null;
+ arts.forEach(a=>a.attachShadow(renderer));sound.volume=preferences.volume;sound.effectsVolume=preferences.effects;sound.crowdVolume=preferences.crowd;sound.setMute(preferences.muted);let clock=0,koSlow=0,sceneTime=0,shake=0,flash=0,impact=0,last=0,accumulator=0,announcementUntil=0,toastUntil=0,resultsAt=Infinity,settingsPaused=false,uiClock=0,frames=0,frameSeconds=0,autoScale=1,previousFocus=null;
  const keys=new Set(),mouse={held:new Set(),last:0},touch={x:0,y:0,guard:false,id:null},fixed=1/120;
  let feedbackUntil=0,feedbackText='',inputFlashUntil=0;
  const canvas=$('world');
@@ -932,7 +937,7 @@ try{
  case 'guardbreak':popup(f,'GUARD BREAK','','enemy');sound.hit('kick');break;
  case 'evade':popup(f,'SLIPPED','','block');if(e.id===0)feedback('CLEAN DODGE · COUNTER NOW',.55);break;
  case 'break':clearInput();sound.setPhase('break');sound.bell();announce('END OF ROUND '+e.round,'BACK TO YOUR CORNER',e.winner===null?'EVEN ROUND':takes(e.winner,'ROUND'),2.0);break;
- case 'finish':clearInput();sound.setPhase('finished');if(e.reason==='KNOCKOUT')sound.ko();else sound.bell();announce(e.winner===null?'HONOURS EVEN':takes(e.winner,'WIN'),e.reason==='KNOCKOUT'?'KNOCKOUT.':e.reason==='DRAW'?'DRAW.':'DECISION.','',1.35);resultsAt=clock+1.6;if(game.level==='online'){if(e.winner===0)onlineRecord.wins++;else if(e.winner===1)onlineRecord.losses++;else onlineRecord.draws++;saveOnline();}else if(game.level!=='practice'){if(e.winner===0)record.wins++;else if(e.winner===1)record.losses++;else record.draws++;save();}break;
+ case 'finish':clearInput();sound.setPhase('finished');if(e.reason==='KNOCKOUT'){sound.ko();koSlow=.85;shake=Math.max(shake,.14);impact=.6;}else sound.bell();announce(e.winner===null?'HONOURS EVEN':takes(e.winner,'WIN'),e.reason==='KNOCKOUT'?'KNOCKOUT.':e.reason==='DRAW'?'DRAW.':'DECISION.','',1.35);resultsAt=clock+1.6;if(game.level==='online'){if(e.winner===0)onlineRecord.wins++;else if(e.winner===1)onlineRecord.losses++;else onlineRecord.draws++;saveOnline();}else if(game.level!=='practice'){if(e.winner===0)record.wins++;else if(e.winner===1)record.losses++;else record.draws++;save();}break;
  }}
  game.onEvent=e=>{onEvent(e);netPhaseEvent(e);};
 
@@ -1102,10 +1107,10 @@ try{
   $('guard-control').classList.toggle('active',p.guard);
  }
  function updateCamera(dt){const[p,e]=game.fighters,aspect=innerWidth/innerHeight;let eye,to;if(game.phase==='menu'){eye=[3.0+Math.sin(sceneTime*.1)*.12,2.85,7.9];to=[-.85,1.13,.1];renderer.fov=.62;if(aspect<1){eye=[3.2,3.2,9.2];to=[-.8,1.1,0];renderer.fov=.65;}}
- else{const mx=(p.x+e.x)/2,mz=(p.z+e.z)/2,d=game.distance(),need=Math.max(1,1.05/aspect),base=6.25+d*.33,pull=Math.min(need,Math.max(1,9.2/base)),lift=(pull-1)*1.4;eye=[mx+.10,3.05+d*.08+lift,mz+base*pull];to=[mx,1.04,mz];renderer.fov=2*Math.atan(Math.tan(.335)*need/pull);if(game.phase==='finished'&&game.phaseTime>1&&game.winner!==null){const w=game.fighters[game.winner];eye=[w.x+.4,2.7+lift,w.z+6.2*pull];to=[w.x,1.0,w.z];}}
+ else{const mx=(p.x+e.x)/2,mz=(p.z+e.z)/2,d=game.distance(),need=aspect<1?Math.max(1,(.6+d*.1)/aspect):Math.max(1,1.05/aspect),base=6.25+d*.33,pull=Math.min(need,Math.max(1,9.2/base)),lift=(pull-1)*1.4;eye=[mx+.10,3.05+d*.08+lift,mz+base*pull];to=[mx,1.04,mz];renderer.fov=2*Math.atan(Math.tan(.335)*need/pull);if(game.phase==='finished'&&game.phaseTime>1&&game.winner!==null){const w=game.fighters[game.winner];eye=[w.x+.4,2.7+lift,w.z+6.2*pull];to=[w.x,1.0,w.z];}}
  const k=1-Math.exp(-dt*(game.phase==='menu'?1.7:8));renderer.eye=M.mix(renderer.eye,eye,k);renderer.to=M.mix(renderer.to,to,k);if(preferences.shake&&shake>0&&game.phase!=='paused'){renderer.eye[0]+=Math.sin(clock*94)*shake;renderer.eye[1]+=Math.cos(clock*111)*shake*.48;}}
  function draw(dt){sceneTime+=dt;const menu=game.phase==='menu';for(let i=0;i<2;i++){let f=game.fighters[i];if(menu){f={...f,x:i?2.05:.4,z:i?-.16:.65,angle:i?-.82:.68,step:0,moving:0};}f.victoryTime=game.phaseTime;arts[i].update(f,sceneTime,game.phase,game.winner);}updateCamera(dt);arena.update(sceneTime,renderer.eye);particles.update(game.phase==='paused'?0:dt);renderer.draw(root,sceneTime,impact);}
- function frame(now){if(!last)last=now;let dt=Math.min((now-last)/1000,.12);last=now;clock+=dt;accumulator+=dt;netBefore(dt);let n=0;while(accumulator>=fixed&&n++<16){repeatHeld();game.update(fixed,currentInput());accumulator-=fixed;}netAfter();sound.setPhase(game.phase);sound.update(dt,game.fighters[0].hp);shake*=Math.exp(-dt*24);flash*=Math.exp(-dt*6);impact*=Math.exp(-dt*19);$('hit-overlay').style.opacity=flash.toFixed(3);if(clock>announcementUntil)$('announcement').classList.remove('show');if(clock>toastUntil)$('toast').classList.remove('show');if(game.phase==='finished'&&clock>=resultsAt){resultsAt=Infinity;results();}uiClock+=dt;if(uiClock>.033){uiClock=0;updateHUD();}draw(dt);frames++;frameSeconds+=dt;if(frames>=24){if(preferences.quality==='balanced'&&frameSeconds/frames>.023&&autoScale>.65){autoScale=Math.max(.65,autoScale-.12);renderer.scale=autoScale;resize();}frames=0;frameSeconds=0;}if(!window.__CAGE_MANUAL__)requestAnimationFrame(frame);}
+ function frame(now){if(!last)last=now;let dt=Math.min((now-last)/1000,.12);last=now;clock+=dt;const ts=koSlow>0&&game.phase==='finished'?.3:1;koSlow=Math.max(0,koSlow-dt);accumulator+=dt*ts;netBefore(dt);let n=0;while(accumulator>=fixed&&n++<16){repeatHeld();game.update(fixed,currentInput());accumulator-=fixed;}netAfter();sound.setPhase(game.phase);sound.update(dt,game.fighters[0].hp);shake*=Math.exp(-dt*24);flash*=Math.exp(-dt*6);impact*=Math.exp(-dt*19);$('hit-overlay').style.opacity=flash.toFixed(3);if(clock>announcementUntil)$('announcement').classList.remove('show');if(clock>toastUntil)$('toast').classList.remove('show');if(game.phase==='finished'&&clock>=resultsAt){resultsAt=Infinity;results();}uiClock+=dt;if(uiClock>.033){uiClock=0;updateHUD();}draw(dt*ts);frames++;frameSeconds+=dt;if(frames>=24){if(preferences.quality==='balanced'&&frameSeconds/frames>.023&&autoScale>.65){autoScale=Math.max(.65,autoScale-.12);renderer.scale=autoScale;resize();}frames=0;frameSeconds=0;}if(!window.__CAGE_MANUAL__)requestAnimationFrame(frame);}
  $('start-button').addEventListener('click',()=>begin(false));$('training-button').addEventListener('click',()=>begin(true));all('[data-level]').forEach(b=>b.addEventListener('click',()=>{sound.init();sound.click();difficulty(b.dataset.level);}));$('pause-button').onclick=togglePause;$('resume-button').onclick=togglePause;$('restart-button').onclick=()=>begin(game.level==='practice');$('leave-button').onclick=()=>goMenu();$('rematch-button').onclick=()=>{if(game.level==='online')mpRematch();else begin(game.level==='practice');};$('menu-button').onclick=()=>goMenu();$('settings-button').onclick=openSettings;$('pause-settings-button').onclick=openSettings;$('close-settings').onclick=closeSettings;$('save-settings').onclick=closeSettings;$('sound-button').onclick=()=>{sound.init();toggleMute();};$('fullscreen-button').onclick=fullscreen;if(!(document.fullscreenEnabled&&document.documentElement.requestFullscreen))$('fullscreen-button').hidden=true;
  all('.lg-trophy').forEach(b=>{b.addEventListener('pointerdown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();sound.click();lgOpen('cage');});});lgReady();window.addEventListener('load',lgReady);mpReady();window.addEventListener('load',mpReady);
  $('quality').value=preferences.quality;$('volume').value=Math.round(preferences.volume*100);$('shake-setting').checked=preferences.shake;$('quality').onchange=e=>{preferences.quality=e.target.value;applyQuality();save();};$('volume').oninput=e=>{sound.init();preferences.volume=Number(e.target.value)/100;sound.setVolume(preferences.volume);save();};$('shake-setting').onchange=e=>{preferences.shake=e.target.checked;save();};

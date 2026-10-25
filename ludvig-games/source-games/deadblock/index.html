@@ -31,6 +31,9 @@ html,body{height:100vh;height:100dvh;overflow-x:hidden}.icon-button[hidden],.cal
 @media(max-height:630px) and (min-width:620px){.menu-inner{padding-top:34px}.menu-inner h1{font-size:56px;letter-spacing:-4px;margin-bottom:12px}.menu-options{margin-bottom:9px}.menu-options.single{margin-bottom:9px}.arena-select select,.difficulty{height:40px}.primary{height:46px}.menu-row{margin-top:8px}.menu-row .secondary{height:40px}.best-line{margin-top:9px}}
 @media(max-height:720px) and (max-width:619px){.menu-inner{padding-top:48px}.menu-inner h1{font-size:76px;margin-bottom:18px}.primary{height:52px}.menu-options{margin-bottom:12px}}
 @media(max-width:620px){#team{left:calc(18px + env(safe-area-inset-left));top:calc(64px + env(safe-area-inset-top));width:112px}.mate{grid-template-columns:7px 1fr 30px;font-size:9px}#bossWrap{width:150px}#downPanel{top:34%}.upgrade-cards.four{grid-template-columns:1fr}#weaponDock .weapon{width:min(55px,calc((100vw - 52px) / var(--slots,5)))}#roomCode{font-size:32px}}
+/* 2026-10-25: keep vitals and the team list clear of the corner "All games" button. */
+.health-panel{left:calc(72px + env(safe-area-inset-left))}#team{left:calc(72px + env(safe-area-inset-left))}
+@media(max-width:620px){.health-panel{left:calc(18px + env(safe-area-inset-left));top:calc(62px + env(safe-area-inset-top))}#team{top:calc(102px + env(safe-area-inset-top))}}
 </style>
 </head>
 <body>

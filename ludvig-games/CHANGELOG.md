@@ -1,3 +1,13 @@
+# 2026-10-25: polish round across the games
+
+- The round "All games" button no longer covers scores, health, logos or controls in about 35 games (the game moves its own HUD clear of it).
+- Bugs fixed: Drop kept running and re-awarding XP after a win; Cinder showed black holes on heads and hands, and quick FIRE taps were lost; Dust shot townspeople on a tap meant to talk; Overtime's touch buttons were cut off on phones; No Brakes' back button sat on the lean button; Karts' home icons were invisible; Flap's late tap after a crash could hit Menu; Pulse paused right at the start; The Eighth Signal's compass never drew; Sunbound dropped input on very quick taps; Six Clues showed hidden cards mid-race; Draw Your Horse's undo after clear; Human, Probably's "a a car".
+- Feel and looks: hit direction and shake in Scrapyard, landing rings in Plunder, slow-motion knockouts in Punchy, real night lighting in Dust and Jailbird (power cut), night sky in Cruise, wingtip trails in Skyline, rolling balls in Velvet Pool, light columns and nitro in Neon, steam and frost in Lunch Rush, snowfall in Fresh Tracks, landing shadows in Hop and Cubeville, ghost of your best loop and gate splits in Under Sail, off-screen danger glow in Mosslight, Still House and The Eighth Signal.
+- Mechanics: Scrapyard's first drones wait a little before firing; Noodle spawns away from rivals, facing the middle; Higher or Lower starts with clearer pairs; Stacks speeds up more gently.
+- Phones: wider or closer cameras where the player filled or missed the screen (Storm, Still House, The Eighth Signal, Sunbound, Ages, Mosslight, Cubeville, Noodle, Pop Island, Punchy); big touch buttons in One More Prompt; keyboard hints hidden on touch.
+- Getaway online: a player who left no longer stays as a frozen car, and a player in a hidden tab stays visible.
+- Neon online: the second player's game clock could start below zero, which threw an error every frame and dropped them from the room. Fixed; checked twice with two players.
+
 # 2026-10-25: teammates in view in Scrapyard and Mosslight
 
 - Scrapyard (co-op) and Mosslight: every player used to start on the same spot, inside each other's camera, so you could not see your teammate. The first player keeps the spot; the others start a little behind and to the side, where they see the team ahead.

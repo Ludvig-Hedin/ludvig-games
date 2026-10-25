@@ -14,10 +14,13 @@ const store = { get(key, fallback) { try { return JSON.parse(localStorage.getIte
 const prefs = store.get('user-hostile-settings-v1', {sound:true, motion:!matchMedia('(prefers-reduced-motion: reduce)').matches, readable:false});
 let run, step = 0, paused = false, jobs = [], runSerial = 0, lastTick = performance.now(), captcha3D = null, background3D = null, threeReady = false;
 let audioContext, audioGain, lastSound = 0, supportGrowth = 0, supportClicks = 0, modalCleanup = null;
+// Round settings. Hint/skip penalties affect the score, not this deadline.
+const FORM_LIMIT_SECONDS = 5 * 60;
+const EMERGENCY_BONUS_SECONDS = 60;
 const STAGES = ['Account','You, allegedly','Preferences','Human-ish','The fine print','One last click'];
 const LIE_NUMBERS = [1,2,4,3,6,5];
 const HINTS = [
-  'The plain word HERE beneath the big green NO button starts the game. The underlined words are decoys.',
+  'The plain word HERE beneath the big green NO button starts the game. The underlined words are decoys. Clicking the wrong landing buttons 10 times also lets you in.',
   'Clear the pre-filled text. Any made-up email works, for example test @ example .com. A valid fake password is Sorry49!Яx. Use the Я button below the password rules to insert it. Uncheck “I do not accept”, then click the small grey Next.',
   'Use the supplied identity, not your real one. Move the age slider LEFT to get older; 37 corresponds to slider value 63. Choose the flag labelled Sweden. Enter 555013 on the reshuffling keypad. The “optional” name is required—any made-up name works.',
   'Choose the free plan and remove every paid extra. One extra re-enables itself once. Select exactly 3 interests; pink, crossed-out tags are selected. Turn ON the switch labelled “Do NOT email me”. Your total must be $0.',
@@ -27,7 +30,7 @@ const HINTS = [
   'You survived. There is no account and there never was a product.'
 ];
 function freshRun() {
-  return {id:++runSerial,elapsed:0,penalty:0,clicks:0,errors:0,hints:0,skips:0,started:false,finished:false,crimes:new Set(),nagCount:0,nextNag:65,
+  return {id:++runSerial,elapsed:0,penalty:0,clicks:0,errors:0,hints:0,skips:0,started:false,finished:false,expired:false,limitSeconds:FORM_LIMIT_SECONDS,extraSeconds:0,extensionsUsed:0,timeouts:0,rescueAd:null,wrongStartClicks:0,deadlineWarnings:new Set(),lastCountdownSound:-1,ads:{shown:0,closed:0,clicked:0,serial:0,items:[],queue:[],nextAt:6,lastAt:-20},crimes:new Set(),nagCount:0,nextNag:65,
     account:{password:'Choose Password',local:'Your email',domain:'Domain',tld:'other',reject:true,rules:2},
     profile:{name:'',age:74,country:'',phone:'',nameRevealed:false,keyOrder:shuffle(['1','2','3','4','5','6','7','8','9','0'])},
     preferences:{plan:'plus',addons:[true,true,true],surprise:false,interests:new Set([0,2,4,6,8]),interestOrder:[0,1,2,3,4,5,6,7,8],shuffled:false,emailOff:false},
@@ -45,27 +48,31 @@ function schedule(delay,fn,stage=step){jobs.push({at:run.elapsed+delay,fn,stage,
 function crime(label){run.crimes.add(label);updateMeter();}
 function updateMeter(){const used=clamp(run.errors*4+run.crimes.size*3+run.elapsed/16,3,98);$('#rage-fill').style.width=`${100-used}%`;}
 function toast(text,title='SYSTEM INCONVENIENCE',life=4){const el=document.createElement('div');el.className='toast';const strong=document.createElement('span');strong.className='toast-title';strong.textContent=title;const copy=document.createElement('span');copy.textContent=text;el.append(strong,copy);$('#toasts').append(el);while($('#toasts').children.length>3)$('#toasts').firstElementChild.remove();setTimeout(()=>{el.classList.add('toast-out');setTimeout(()=>el.remove(),300);},life*1000);}
-function fail(text,trap='Validation theatre'){run.errors++;crime(trap);sound('error');const card=$('.game-card');if(card){card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');}const box=$('#stage-error');if(box){box.innerHTML=`<b>✓ SUCCESS! Something is wrong.</b>${esc(text)}`;box.scrollIntoView({block:'nearest',behavior:prefs.motion?'smooth':'auto'});}else toast(text,'SUCCESS: ERROR');}
+function fail(text,trap='Validation theatre'){run.errors++;if(run.started&&run.errors%4===0)queueAd(1.2,'validation');crime(trap);sound('error');const card=$('.game-card');if(card){card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');}const box=$('#stage-error');if(box){box.innerHTML=`<b>✓ SUCCESS! Something is wrong.</b>${esc(text)}`;box.scrollIntoView({block:'nearest',behavior:prefs.motion?'smooth':'auto'});}else toast(text,'SUCCESS: ERROR');}
 function clearError(){const el=$('#stage-error');if(el)el.innerHTML='';}
 function applySettings(){document.body.classList.toggle('reduce-motion',!prefs.motion);document.body.classList.toggle('readable',prefs.readable);$('#sound-top').textContent=`SOUND: ${prefs.sound?'ON':'OFF'}`;$('#safety-motion').textContent=`Motion: ${prefs.motion?'on':'off'}`;if(audioGain)audioGain.gain.value=prefs.sound?.6:0;store.set('user-hostile-settings-v1',prefs);}
-function renderHUD(){const active=step>0&&step<7;$('#hud').classList.toggle('hidden',!active);if(active){$('#steps').innerHTML=STAGES.map((name,i)=>`<button class="step ${i+1===step?'current':''} ${i+1<step?'done':''}" data-step="${i+1}" aria-label="${esc(name)} (decorative navigation)">${LIE_NUMBERS[i]}</button>`).join('');$$('#steps button').forEach(el=>el.onclick=()=>{crime('Decorative navigation');toast('These steps are for emotional support, not navigation.','NICE TRY');});}}
+let calmHandle=null;
+function calmBoard(el,board){const ui=window.Ludvig&&window.Ludvig.ui;if(calmHandle){try{calmHandle.destroy&&calmHandle.destroy();}catch(e){}calmHandle=null;}if(!el)return;if(!ui){el.hidden=true;return;}el.hidden=false;el.textContent='';try{calmHandle=ui.board(el,{board,limit:5})||null;el._calmBoard=calmHandle;}catch(e){el.hidden=true;}}
+function calmOpenBoard(board){try{window.Ludvig&&window.Ludvig.ui&&window.Ludvig.ui.open({board});}catch(e){}}
+function renderHUD(){const active=step>0&&step<7;$('#hud').classList.toggle('hidden',!active);$('#board-top').hidden=active||!(window.Ludvig&&window.Ludvig.ui);$('#deadline-pill').classList.toggle('hidden',!active);if(active)updateDeadline(false);if(active){$('#steps').innerHTML=STAGES.map((name,i)=>`<button class="step ${i+1===step?'current':''} ${i+1<step?'done':''}" data-step="${i+1}" aria-label="${esc(name)} (decorative navigation)">${LIE_NUMBERS[i]}</button>`).join('');$$('#steps button').forEach(el=>el.onclick=()=>{crime('Decorative navigation');toast('These steps are for emotional support, not navigation.','NICE TRY');});}}
 function disposeCaptcha(){if(captcha3D){captcha3D.dispose();captcha3D=null;}}
-function setStage(next){disposeCaptcha();closeModal();step=next;renderHUD();if(next<7){render();window.scrollTo({top:0,behavior:'instant'});if(next>1)sound('success');if(next===3||next===5){showSupport(true);$('#bot-msg').textContent=next===3?'Good news: we remembered all the things you never agreed to.':'A human has joined the chat. Just kidding. Still me.';}}else finish();}
+function setStage(next){if(run.expired)return;disposeCaptcha();closeModal();step=next;renderHUD();if(next<7){render();window.scrollTo({top:0,behavior:'instant'});if(next>1){sound('success');queueAd(.9,'stage');celebrateStage(next);}if(next===3||next===5){showSupport(true);$('#bot-msg').textContent=next===3?'Good news: we remembered all the things you never agreed to.':'A human has joined the chat. Just kidding. Still me.';}}else finish();}
+function celebrateStage(next){if(!prefs.motion)return;const el=$('.game-card');if(!el)return;el.classList.add('card-arrive');const done=$$('#steps .step')[next-2];if(done)done.classList.add('just-done');const box=el.getBoundingClientRect(),x=box.left+box.width/2,y=Math.max(70,box.top+18),colors=['#d6ff1c','#f33163','#30a3f7','#1ec477','#feef31'];for(let i=0;i<16;i++){const bit=document.createElement('i');bit.className='stage-confetti';const a=Math.PI*(1.1+.8*Math.random()),d=90+Math.random()*170;bit.style.cssText=`left:${x}px;top:${y}px;background:${colors[i%colors.length]};--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d*.8+140}px;--spin:${Math.round(Math.random()*720-360)}deg`;document.body.append(bit);setTimeout(()=>bit.remove(),1000);}}
 function card(number,title,subtitle,body,footer=true,extra=''){return `<section class="game-card window"><div class="window-title"><span>▣ ${esc(STAGES[step-1]||'signup')}.exe</span><div class="win-buttons"><button class="fake-minimize" title="Minimize">_</button><button class="fake-close" title="Close this form">×</button></div></div><div class="window-body"><div class="stage-heading"><div class="stage-number">${number}</div><div><h1 class="stage-title">${title}</h1><p class="stage-sub">${subtitle}</p></div></div>${body}<div id="stage-error" class="notice" role="status"></div>${footer?`<div class="card-foot"><button class="ghost" id="next-step">Next</button><button class="primary-cancel" id="cancel-form">Cancel</button><button class="ghost" id="fake-reset">Reset</button></div>`:''}<div class="progress-lie">Step ${LIE_NUMBERS[step-1]} of 3. You're nearly there.</div></div></section>${extra}`;}
 function bindCard(){bind('.fake-close','click',cancelModal);bind('#cancel-form','click',cancelModal);bind('#fake-reset','click',()=>{crime('Reset confidence');toast('Your confidence has been reset. Your fields are, unfortunately, intact.','RESET COMPLETE');sound('boing');});bind('.fake-minimize','click',()=>{crime('Minimize maximized');toast('Minimized the amount of help available.','WINDOW MANAGEMENT');showSupport(true);});}
 function cancelModal(){crime('Cancellation recursion');openModal('Cancel cancelling?',`<span class="modal-symbol">?</span><h2>Are you sure you want to stop not continuing?</h2><p>We can cancel your cancellation. Your answers will stay right here, judging you.</p>`,[{text:'NO',class:'hot',action:closeModal},{text:'Yes, don’t cancel',class:'ghost',action:()=>{closeModal();toast('Your cancellation has been successfully cancelled.');}}]);}
 function render(){switch(step){case 0:renderLanding();break;case 1:renderAccount();break;case 2:renderProfile();break;case 3:renderPreferences();break;case 4:renderCaptcha();break;case 5:renderTerms();break;case 6:renderFinal();break;}}
 function renderLanding(){
- $('#view').innerHTML=`<section id="landing"><div class="landing-tag">A WORST-PRACTICE EXPERIENCE™</div><h1 class="hero-title">Just create<br>an <span>account.</span></h1><p class="hero-sub">One little form.<br>How bad could it possibly be?</p><p class="hero-small">Finish as fast as you can. Lose something along the way.</p><button class="no-button" id="big-no">NO</button><div class="start-line">Please <button class="decoy" id="decoy-click">click</button> <button id="begin">HERE</button> to <button class="decoy" id="decoy-not">NOT</button> <button class="decoy" id="decoy-begin">begin</button>.</div><div class="landing-features"><span>6 easy* steps</span><span>0 useful features</span><span>1 bad time</span></div><p class="privacy">Use made-up details. Nothing you enter is sent anywhere.<br>Sound & motion can be turned off. Esc always opens honest help.</p></section>`;
- bind('#begin','click',startGame);bind('#big-no','click',()=>{sound('boing');crime('The big green NO');const b=$('#big-no');b.textContent=['NOPE','STILL NO','NO'][supportClicks++%3];b.style.fontSize=b.textContent.length>3?'25px':'37px';toast('Correct. This button does not start the game.','YOUR DECISION MATTERS');});
- ['#decoy-click','#decoy-not','#decoy-begin'].forEach((sel,i)=>bind(sel,'click',()=>{crime('Fake links');sound('error');toast(['That is underlined for decoration.','Not doing that.','Beginning is a state of mind. Try a different word.'][i],'LINK NOT FOUND');}));
+ $('#view').innerHTML=`<section id="landing"><h1 class="hero-title">Just create<br>an <span>account.</span></h1><button class="no-button" id="big-no">NO</button><div class="start-line">Please <button class="decoy" id="decoy-click">click</button> <button id="begin">HERE</button> to <button class="decoy" id="decoy-not">NOT</button> <button class="decoy" id="decoy-begin">begin</button>.</div><p id="start-mercy" class="start-mercy" aria-live="polite"></p><p class="privacy">Use made-up details. Nothing you enter is sent anywhere.</p></section>`;
+ bind('#begin','click',startGame);bind('#big-no','click',()=>{if(wrongStartClick())return;sound('boing');crime('The big green NO');const b=$('#big-no');b.textContent=['NOPE','STILL NO','NO'][supportClicks++%3];b.style.fontSize=b.textContent.length>3?'25px':'37px';toast('Correct. This button does not start the game.','YOUR DECISION MATTERS');});
+ ['#decoy-click','#decoy-not','#decoy-begin'].forEach((sel,i)=>bind(sel,'click',()=>{if(wrongStartClick())return;crime('Fake links');sound('error');toast(['That is underlined for decoration.','Not doing that.','Beginning is a state of mind. Try a different word.'][i],'LINK NOT FOUND');}));
 }
-function startGame(){unlockAudio();run.started=true;run.elapsed=0;run.penalty=0;lastTick=performance.now();setStage(1);showCookies();showSupport(false);sound('success');}
+function startGame(){if(run.started||step!==0)return;unlockAudio();run.started=true;run.elapsed=0;run.penalty=0;run.expired=false;lastTick=performance.now();setStage(1);showCookies();showSupport(false);sound('success');}
 function showCookies(){const el=$('#cookie');el.classList.remove('hidden');el.innerHTML=`<div class="cookie-inner"><div class="cookie-icon" aria-hidden="true">🍪</div><div class="cookie-text"><h2>We value your privacy.<br>At approximately $0.00.</h2><p>Our 847 imaginary partners would love to get to know the inside of your fridge.</p></div></div><div id="cookie-settings"></div><div class="cookie-actions"><button class="link reject-run" id="reject-cookies">Reject all</button><button class="link tiny" id="manage-cookies">Manage 847 preferences</button><button class="hot" id="accept-cookies">ACCEPT MY FATE</button></div><p class="cookie-disclaimer">All tracking in this game is fictional. No actual cookies or consent records are created.</p>`;
  bind('#accept-cookies','click',()=>dismissCookies('Convenience won'));const reject=$('#reject-cookies');bind('#reject-cookies','pointerenter',e=>{if(e.pointerType==='mouse'&&run.cookieDodges<2&&prefs.motion){run.cookieDodges++;reject.style.transform=`translateX(${run.cookieDodges===1?27:0}px)`;crime('Runaway cookie refusal');sound('boing');}});bind('#reject-cookies','click',()=>dismissCookies('Privacy, eventually'));
  bind('#manage-cookies','click',()=>{crime('847 imaginary partners');$('#cookie-settings').innerHTML=`<div class="cookie-settings"><b>847 partners. Grouped for your inconvenience.</b>${['Emotion analytics','Unnecessary necessities','Advertising for advertisements','Partner partners','The remaining 843'].map((s,i)=>`<label><input type="checkbox" checked data-cookie="${i}">${s}</label>`).join('')}<button class="retro tiny" id="save-cookies">Save all of my some choices</button></div>`;$('#accept-cookies').textContent='GIVE UP & ACCEPT';bind('#save-cookies','click',()=>{if($$('[data-cookie]:checked').length){sound('error');toast('Some partners are still partners. Uncheck all five groups to reject.','PREFERENCES PREFERRED');}else dismissCookies('Consent paperwork');});});
 }
-function dismissCookies(trap){crime(trap);run.cookieDismissed=true;$('#cookie').classList.add('hidden');sound('pop');toast('Your imaginary preferences will be ignored by nobody.','COOKIES NOT SAVED',3);}
+function dismissCookies(trap){crime(trap);run.cookieDismissed=true;$('#cookie').classList.add('hidden');queueAd(1.2,'welcome');queueAd(3.4,'welcome');sound('pop');toast('Your imaginary preferences will be ignored by nobody.','COOKIES NOT SAVED',3);}
 const passwordRules=[
  {text:'At least 10 characters. Brevity is a security risk.',test:v=>[...v].length>=10},
  {text:'At least one CAPITAL letter. Be more dramatic.',test:v=>/[A-Z]/.test(v)},
@@ -149,22 +156,32 @@ function confirmCreation(){openModal('Final final confirmation',`<span class="mo
 function beginLoading(){run.final.phase='loading';run.final.percent=0;renderLoading();const timeline=[[.45,14,'Encrypting your disappointment…'],[1,67,'Contacting absolutely nobody…'],[1.65,94,'Filing forms about forms…'],[2.35,12,'Unloading the loading bar…'],[3,99,'Almost there. Forever.']];timeline.forEach(([at,p,label])=>schedule(at,()=>{run.final.percent=p;if(p===99){run.final.phase='stuck';crime('99 percent, forever');}updateLoader(label);sound(p===12?'error':'type');},6));}
 function renderLoading(){const f=run.final;$('#view').innerHTML=card('99','Creating your account.','Please wait faster.',`<div class="fake-loader"><div class="loading-label" id="loading-label">${f.phase==='stuck'?'Almost there. Forever.':'Preparing to prepare…'}</div><div class="loading-bar"><div class="loading-fill" id="loading-fill" style="width:${f.percent}%"></div></div><button id="loading-percent" class="loading-percent" aria-label="Manually complete the loading percentage">${f.percent}%</button><p class="tiny-copy dim" id="loading-hint">${f.phase==='stuck'?'The remaining 1% requires manual intervention.':'Estimated time remaining: yes.'}</p></div>`,false);bindCard();bind('#loading-percent','click',()=>{if(run.final.phase==='stuck'){run.final.percent=100;sound('success');setStage(7);}else toast('You are clicking faster than we can pretend to load.','PLEASE WAIT',2);});}
 function updateLoader(text){if(step!==6)return;if($('#loading-label'))$('#loading-label').textContent=text;if($('#loading-fill'))$('#loading-fill').style.width=run.final.percent+'%';if($('#loading-percent'))$('#loading-percent').textContent=run.final.percent+'%';if(run.final.phase==='stuck'&&$('#loading-hint'))$('#loading-hint').textContent='The remaining 1% requires manual intervention.';}
-function finish(){run.finished=true;paused=false;jobs=[];$('#cookie').classList.add('hidden');hideSupport(false);$('#support-tab').classList.add('hidden');$('#hud').classList.add('hidden');const total=run.elapsed+run.penalty;const prev=store.get('user-hostile-best-v1',null);const eligible=run.skips===0;const record=eligible&&(!prev||total<prev.seconds);if(record)store.set('user-hostile-best-v1',{seconds:total,errors:run.errors,clicks:run.clicks,hints:run.hints});const best=record?total:prev?.seconds;
- $('#view').innerHTML=`<section class="receipt"><small>DEPARTMENT OF UNNECESSARY INTERACTION</small><div class="trophy" aria-hidden="true">🏆</div><div class="completion-stamp">BARELY HUMAN</div><h1>YOU<br>SURVIVED.</h1><div class="win-time">${formatTime(total)}</div><small>${run.penalty?`${formatTime(run.elapsed)} playing + ${run.penalty}s in honest assistance`:'TIME THAT NO ONE WILL RETURN TO YOU'}</small><div class="receipt-stats"><div class="receipt-line"><span>Unnecessary clicks</span><b>${run.clicks}</b></div><div class="receipt-line"><span>Errors blamed on you</span><b>${run.errors}</b></div><div class="receipt-line"><span>UX crimes encountered</span><b>${run.crimes.size}</b></div><div class="receipt-line"><span>Hints / skipped steps</span><b>${run.hints} / ${run.skips}</b></div><div class="receipt-line"><span>Personal best · this browser</span><b>${best?formatTime(best):'—'}${record?' NEW!':''}</b></div></div><p><b>Your account has successfully not been created.</b><br>There is no product. There never was.<br>Thank you for your unnecessary patience.</p><div class="traps-list">${[...run.crimes].slice(0,12).map(c=>`<span class="trap-badge">${esc(c)}</span>`).join('')}</div><div class="barcode" aria-hidden="true"></div><div class="version-label">RECEIPT #000404 · NO REFUNDS ON TIME</div></section><div class="win-actions"><button class="hot" id="play-again">Never again ↻</button><button class="retro" id="copy-score">Copy suffering report</button></div><p class="privacy center">${eligible?'Completed without skipping.':'Assisted run · not eligible for the unskipped best.'} Made-up data never left this page.</p>`;
- bind('#play-again','click',restart);bind('#copy-score','click',copyScore);sound('win');window.scrollTo({top:0,behavior:'instant'});if(background3D)background3D.celebrate();
+function finish(){if(run.expired)return;run.finished=true;paused=false;jobs=[];clearAds();$('#timeout-root').innerHTML='';document.body.classList.remove('deadline-warning','deadline-critical');$('#deadline-pill').classList.add('hidden');syncInert();$('#cookie').classList.add('hidden');hideSupport(false);$('#support-tab').classList.add('hidden');$('#hud').classList.add('hidden');const total=run.elapsed+run.penalty;const prev=store.get('user-hostile-best-v2-timed',null);const eligible=run.skips===0&&run.extensionsUsed===0;const record=eligible&&(!prev||total<prev.seconds);if(record)store.set('user-hostile-best-v2-timed',{seconds:total,errors:run.errors,clicks:run.clicks,hints:run.hints});const best=record?total:prev?.seconds;
+ $('#view').innerHTML=`<section class="receipt"><h1>YOU<br>SURVIVED.</h1><div class="win-time">${formatTime(total)}</div><small>${run.penalty?`${formatTime(run.elapsed)} playing + ${run.penalty}s in honest assistance`:'Total time'}</small><div class="calm-board" id="calm-board" hidden></div><div class="receipt-stats"><div class="receipt-line"><span>Unnecessary clicks</span><b>${run.clicks}</b></div><div class="receipt-line"><span>Ads endured / dismissed</span><b>${run.ads.shown} / ${run.ads.closed}</b></div><div class="receipt-line"><span>Time left / extra minutes</span><b>${formatTime(timeRemaining(),false)} / ${run.extensionsUsed}</b></div><div class="receipt-line"><span>Errors blamed on you</span><b>${run.errors}</b></div><div class="receipt-line"><span>UX crimes encountered</span><b>${run.crimes.size}</b></div><div class="receipt-line"><span>Hints / skipped steps</span><b>${run.hints} / ${run.skips}</b></div><div class="receipt-line"><span>Personal best · this browser</span><b>${best?formatTime(best):'—'}${record?' NEW!':''}</b></div></div><p><b>Your account has successfully not been created.</b></p></section><div class="win-actions"><button class="hot" id="play-again">Play again <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button class="retro" id="copy-score">Copy result</button></div>${eligible?'':'<p class="privacy center">Assisted or extended run · not eligible for the five-minute best.</p>'}`;
+ calmBoard($('#calm-board'),'user-hostile');bind('#play-again','click',restart);bind('#copy-score','click',copyScore);sound('win');window.scrollTo({top:0,behavior:'instant'});if(background3D)background3D.celebrate();
 }
-async function copyScore(){const text=`I survived User Hostile in ${formatTime(run.elapsed+run.penalty)}. ${run.clicks} clicks. ${run.errors} validation errors. ${run.crimes.size} UX crimes. ${run.skips?`${run.skips} skipped steps. `:''}My account still doesn't exist.`;try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);}else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.top='-9999px';document.body.append(ta);ta.select();if(!document.execCommand('copy'))throw new Error('Copy unavailable');ta.remove();}toast('Copied. Make your friends suffer too.','REPORT COPIED');}catch{openModal('Your suffering report',`<h2>Copy this manually.</h2><textarea id="score-text" style="width:100%;min-height:120px">${esc(text)}</textarea>`,[{text:'Close',class:'retro',action:closeModal}]);$('#score-text').select();}}
-function restart(){background3D?.reset?.();disposeCaptcha();closeModal();$('#pause-root').innerHTML='';paused=false;jobs=[];run=freshRun();step=0;supportGrowth=0;supportClicks=0;$('#cookie').classList.add('hidden');$('#support').classList.add('hidden');$('#support-tab').classList.add('hidden');$('#toasts').innerHTML='';$('#support').style.width='';$('#support').style.transform='';lastTick=performance.now();renderHUD();render();window.scrollTo({top:0,behavior:'instant'});}
-function openModal(title,body,buttons){closeModal();const previous=document.activeElement;$('#modal-root').innerHTML=`<div class="overlay" id="modal-overlay"><section class="modal-window window" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="window-title" id="modal-drag"><span>${esc(title)}</span><div class="win-buttons"><button id="modal-close" aria-label="Close dialog">×</button></div></div><div class="window-body">${body}<div class="modal-buttons">${buttons.map((b,i)=>`<button data-modal-action="${i}" class="${b.class||'retro'}">${esc(b.text)}</button>`).join('')}</div></div></section></div>`;$('#main').inert=true;$$('[data-modal-action]').forEach(el=>el.onclick=buttons[+el.dataset.modalAction].action);bind('#modal-close','click',closeModal);sound('pop');let drag=null;const panel=$('.modal-window');const down=e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,baseX:parseFloat(panel.dataset.dx||0),baseY:parseFloat(panel.dataset.dy||0)};e.preventDefault();};const move=e=>{if(!drag)return;const maxX=Math.max(0,(innerWidth-panel.offsetWidth)/2-8),maxY=Math.max(0,(innerHeight-panel.offsetHeight)/2-8);const x=clamp(drag.baseX+e.clientX-drag.x,-maxX,maxX),y=clamp(drag.baseY+e.clientY-drag.y,-maxY,maxY);panel.style.transform=`translate(${x}px,${y}px)`;panel.dataset.dx=x;panel.dataset.dy=y;};const up=()=>drag=null;bind('#modal-drag','pointerdown',down);document.addEventListener('pointermove',move);document.addEventListener('pointerup',up);modalCleanup=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);if(previous?.isConnected)previous.focus({preventScroll:true});};setTimeout(()=>{const first=$('[data-modal-action]');if(first&&!paused)first.focus({preventScroll:true});},30);}
-function closeModal(){if(modalCleanup){const cleanup=modalCleanup;modalCleanup=null;cleanup();}$('#modal-root').innerHTML='';$('#main').inert=paused;}
-function showPause(reason='manual') {if(paused)return;paused=true;$('#main').inert=true;$('#support').inert=true;$('#cookie').inert=true;$('#pause-root').innerHTML=`<div class="overlay pause-overlay"><section class="pause-window" role="dialog" aria-modal="true" aria-label="Honest pause menu"><h2>A moment of good UX.</h2><p>${reason==='hidden'?'Paused because you left the tab. ':''}The timer is paused. These controls tell the truth.</p><button class="real-button main" id="resume-game">${step===0?'Back to the game':step===7?'Back to your receipt':'Resume'} <small>Esc</small></button>${step<7?`<button class="real-button" id="real-hint">${step===0?'Where do I start?':'Give me an actual hint'} <small>${step===0?'No penalty':'+15 seconds'}</small></button><button class="real-button" id="real-skip">${step===0?'Start the game':`Skip ${esc(STAGES[step-1])}`} <small>${step===0?'No penalty':'+60 seconds'}</small></button>`:''}<div id="honest-hint"></div><div class="real-settings"><label><input id="real-sound" type="checkbox" ${prefs.sound?'checked':''}>Sound</label><label><input id="real-motion" type="checkbox" ${prefs.motion?'checked':''}>Motion</label><label><input id="real-readable" type="checkbox" ${prefs.readable?'checked':''}>Readable text</label></div><p style="font-size:11px">Use made-up details. No entries are sent or stored. This is a game, not a real signup.</p><button class="real-button" id="real-restart">Restart from the beginning <small>Clears this run</small></button></section></div>`;
- bind('#resume-game','click',hidePause);bind('#real-hint','click',()=>{if(step>0){run.hints++;run.penalty+=15;}$('#honest-hint').innerHTML=`<p class="hint-text">${esc(HINTS[step])}</p>`;$('#real-hint').disabled=true;});bind('#real-skip','click',()=>{const s=step;if(s>0){run.skips++;run.penalty+=60;crime('Honest emergency exit');}hidePause();if(s===0){startGame();return;}if(!run.cookieDismissed){$('#cookie').classList.add('hidden');run.cookieDismissed=true;}if(s<6)setStage(s+1);else setStage(7);});
- bind('#real-sound','change',e=>{prefs.sound=e.target.checked;unlockAudio();applySettings();});bind('#real-motion','change',e=>{prefs.motion=e.target.checked;applySettings();});bind('#real-readable','change',e=>{prefs.readable=e.target.checked;applySettings();});bind('#real-restart','click',()=>{const b=$('#real-restart');if(b.dataset.confirm==='yes'){hidePause();restart();}else{b.dataset.confirm='yes';b.innerHTML='Really restart? Click again. <small>Run will be lost</small>';}});$('#resume-game').focus();}
-function hidePause(){paused=false;$('#pause-root').innerHTML='';$('#main').inert=!!$('#modal-overlay');$('#support').inert=false;$('#cookie').inert=false;lastTick=performance.now();}
+async function copyScore(){const text=`I survived User Hostile in ${formatTime(run.elapsed+run.penalty)}. ${run.clicks} clicks. ${run.errors} validation errors. ${run.ads.shown} ads. ${run.crimes.size} UX crimes. ${formatTime(timeRemaining(),false)} left${run.extensionsUsed?' (extra minute used)':''}. ${run.skips?`${run.skips} skipped steps. `:''}My account still doesn't exist.`;try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);}else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.top='-9999px';document.body.append(ta);ta.select();if(!document.execCommand('copy'))throw new Error('Copy unavailable');ta.remove();}toast('Copied. Make your friends suffer too.','REPORT COPIED');}catch{openModal('Your suffering report',`<h2>Copy this manually.</h2><textarea id="score-text" style="width:100%;min-height:120px">${esc(text)}</textarea>`,[{text:'Close',class:'retro',action:closeModal}]);$('#score-text').select();}}
+function restart(){clearAds();$('#timeout-root').innerHTML='';document.body.classList.remove('deadline-warning','deadline-critical');background3D?.reset?.();disposeCaptcha();closeModal();$('#pause-root').innerHTML='';paused=false;jobs=[];run=freshRun();step=0;supportGrowth=0;supportClicks=0;$('#cookie').classList.add('hidden');$('#support').classList.add('hidden');$('#support-tab').classList.add('hidden');$('#toasts').innerHTML='';$('#support').style.width='';$('#support').style.transform='';lastTick=performance.now();syncInert();renderHUD();render();window.scrollTo({top:0,behavior:'instant'});}
+function openModal(title,body,buttons){closeModal();const previous=document.activeElement;$('#modal-root').innerHTML=`<div class="overlay" id="modal-overlay"><section class="modal-window window" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="window-title" id="modal-drag"><span>${esc(title)}</span><div class="win-buttons"><button id="modal-close" aria-label="Close dialog">×</button></div></div><div class="window-body">${body}<div class="modal-buttons">${buttons.map((b,i)=>`<button data-modal-action="${i}" class="${b.class||'retro'}">${esc(b.text)}</button>`).join('')}</div></div></section></div>`;syncInert();$$('[data-modal-action]').forEach(el=>el.onclick=buttons[+el.dataset.modalAction].action);bind('#modal-close','click',closeModal);sound('pop');let drag=null;const panel=$('.modal-window');const down=e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,baseX:parseFloat(panel.dataset.dx||0),baseY:parseFloat(panel.dataset.dy||0)};e.preventDefault();};const move=e=>{if(!drag)return;const maxX=Math.max(0,(innerWidth-panel.offsetWidth)/2-8),maxY=Math.max(0,(innerHeight-panel.offsetHeight)/2-8);const x=clamp(drag.baseX+e.clientX-drag.x,-maxX,maxX),y=clamp(drag.baseY+e.clientY-drag.y,-maxY,maxY);panel.style.transform=`translate(${x}px,${y}px)`;panel.dataset.dx=x;panel.dataset.dy=y;};const up=()=>drag=null;bind('#modal-drag','pointerdown',down);document.addEventListener('pointermove',move);document.addEventListener('pointerup',up);modalCleanup=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);if(previous?.isConnected)previous.focus({preventScroll:true});};setTimeout(()=>{const first=$('[data-modal-action]');if(first&&!paused)first.focus({preventScroll:true});},30);}
+function closeModal(){if(modalCleanup){const cleanup=modalCleanup;modalCleanup=null;cleanup();}$('#modal-root').innerHTML='';syncInert();}
+function showPause(reason='manual') {
+ if(paused)return;paused=true;syncInert();
+ const active=step>0&&step<7;
+ $('#pause-root').innerHTML=`<div class="overlay pause-overlay"><section class="pause-window" role="dialog" aria-modal="true" aria-label="Honest pause menu"><h2>A moment of good UX.</h2><p>${reason==='hidden'?'Paused because you left the tab. ':''}${run.expired?'Your form has expired. The rescue-ad timer is paused too.':'The countdown and ads are paused. These controls tell the truth.'}</p><button class="real-button main" id="resume-game">${run.expired?'Back to expired session':step===0?'Back to the game':step===7?'Back to your receipt':'Resume'} <small class="key-hint">Esc</small></button>${step<7&&!run.expired?`<button class="real-button" id="real-hint">${step===0?'Where do I start?':'Give me an actual hint'} <small>${step===0?'No penalty':'+15s to score'}</small></button><button class="real-button" id="real-skip">${step===0?'Start the game':`Skip ${esc(STAGES[step-1])}`} <small>${step===0?'No penalty':'+60s to score'}</small></button>`:''}<div id="honest-hint"></div>${active?'<p class="pause-ad-help">Ads: the small × in each title bar really closes it. Windows can be dragged. The countdown keeps running during ads and fake dialogs, but never while this menu is open.</p>':''}<div class="real-settings"><label><input id="real-sound" type="checkbox" ${prefs.sound?'checked':''}>Sound</label><label><input id="real-motion" type="checkbox" ${prefs.motion?'checked':''}>Motion</label><label><input id="real-readable" type="checkbox" ${prefs.readable?'checked':''}>Readable text</label></div><p style="font-size:11px">Use made-up details. No entries are sent or stored. All ads are fictional. This is a game, not a real signup.</p><button class="real-button" id="real-restart">Restart from the beginning <small>Clears this run</small></button></section></div>`;
+ bind('#resume-game','click',hidePause);
+ bind('#real-hint','click',()=>{if(step>0){run.hints++;run.penalty+=15;}$('#honest-hint').innerHTML=`<p class="hint-text">${esc(HINTS[step])}</p>`;$('#real-hint').disabled=true;});
+ bind('#real-skip','click',()=>{const current=step;if(current>0){run.skips++;run.penalty+=60;crime('Honest emergency exit');}hidePause();if(current===0){startGame();return;}if(!run.cookieDismissed){$('#cookie').classList.add('hidden');run.cookieDismissed=true;}if(current<6)setStage(current+1);else setStage(7);});
+ bind('#real-sound','change',e=>{prefs.sound=e.target.checked;unlockAudio();applySettings();});
+ bind('#real-motion','change',e=>{prefs.motion=e.target.checked;applySettings();});
+ bind('#real-readable','change',e=>{prefs.readable=e.target.checked;applySettings();});
+ bind('#real-restart','click',()=>{const button=$('#real-restart');if(button.dataset.confirm==='yes'){hidePause();restart();}else{button.dataset.confirm='yes';button.innerHTML='Really restart? Click again. <small>Run will be lost</small>';}});
+ $('#resume-game').focus();
+}
+function hidePause(){paused=false;$('#pause-root').innerHTML='';syncInert();lastTick=performance.now();if(run.expired)$('#timeout-root button:not(:disabled)')?.focus({preventScroll:true});}
 function showSupport(force=false){if(step===0||step===7)return;if(innerWidth<950&&!force){hideSupport(false);return;}$('#support').classList.remove('hidden');$('#support-tab').classList.add('hidden');}
 function hideSupport(play=true){$('#support').classList.add('hidden');if(step>0&&step<7)$('#support-tab').classList.remove('hidden');if(play)sound('boing');}
 function nag(){if(step<1||step>6||paused||$('#modal-overlay')||!run.cookieDismissed||run.nagCount>=3)return;run.nagCount++;run.nextNag=run.elapsed+85;crime('Interrupting your interruption');const content=[['You seem to be taking a while.','Have you tried doing it correctly, but faster?'],['A quick satisfaction survey.','How likely are you to recommend this website to someone you dislike?'],['Your session is still alive.','We thought you might appreciate an interruption confirming that.']][run.nagCount-1];openModal('Unrequested assistance',`<span class="modal-symbol">⏱</span><h2>${content[0]}</h2><p>${content[1]}</p>`,[{text:'REMIND ME NOW',class:'hot',action:()=>{sound('boing');toast('Reminder: this is a reminder.','REMINDER REMINDER');}},{text:'Keep wasting time',class:'ghost',action:closeModal}]);}
-function about(){openModal('About this questionable decision',`<h2>User Hostile</h2><p>An original, deliberately awful signup game inspired by <a href="https://userinyerface.com/" target="_blank" rel="noopener noreferrer">User Inyerface</a>. Not affiliated with its creators.</p><p>Six playable stages, procedural 3D objects, local sound effects and no real signup. No form entry is saved or transmitted.</p><p>Three.js r160 loads from a public CDN when available. A built-in WebGL renderer keeps the game three-dimensional offline. A final lightweight fallback also works without WebGL. Best-run numbers and settings stay in this browser.</p><p>Esc opens honest help. M toggles sound, unless you are typing. Reduced motion and readable text are in the honest menu.</p>`,[{text:'That explains nothing',class:'retro',action:closeModal}]);}
+function about(){openModal('About this questionable decision',`<h2>User Hostile</h2><p>An original, deliberately awful signup game inspired by <a href="https://userinyerface.com/" target="_blank" rel="noopener noreferrer">User Inyerface</a>. Not affiliated with its creators.</p><p>Six playable stages, a five-minute deadline, a rotating collection of fictional popup ads, procedural 3D objects, local sound effects and no real signup. No form entry is saved or transmitted.</p><p>Three.js r160 loads from the local game files when available. A built-in WebGL renderer keeps the game three-dimensional offline. A final lightweight fallback also works without WebGL. Best-run numbers and settings stay in this browser.</p><p>Esc opens honest help. M toggles sound, unless you are typing. Reduced motion and readable text are in the honest menu.</p>`,[{text:'That explains nothing',class:'retro',action:closeModal}]);}
 /*__NATIVE_3D__*/
 function makeMesh(T,geom,color,metalness=0,roughness=.4){return new T.Mesh(geom,new T.MeshStandardMaterial({color,metalness,roughness}));}
 function disposeScene(scene){const geoms=new Set(),mats=new Set(),textures=new Set();scene.traverse(o=>{if(o.geometry)geoms.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{mats.add(m);if(m.map)textures.add(m.map);});});geoms.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
@@ -197,17 +214,231 @@ function createBackground3D(){const T=window.THREE,container=$('#bg3d'),renderer
  return {kind:'three',celebrate,reset(){const geometries=new Set(),materials=new Set();confetti.forEach(m=>{scene.remove(m);geometries.add(m.geometry);materials.add(m.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());confetti=[];celebration=false;},update(dt,t){things.forEach(({mesh,nx,ny},i)=>{const base=baseRotations[i];mesh.position.y=ny*halfH+(prefs.motion?Math.sin(t*.55+i*1.7)*.14:0);mesh.rotation.x=base.x+(prefs.motion?Math.sin(t*.3+i)*.12:0);mesh.rotation.y=base.y+(prefs.motion?Math.sin(t*.4+i)*.32:.15);mesh.rotation.z=base.z+(prefs.motion?Math.sin(t*.37+i)*.09:0);});if(prefs.motion)confetti.forEach(m=>{m.position.y-=dt*m.userData.speed;m.position.x+=Math.sin(t+m.id)*dt*.1;m.rotation.x+=dt*.9;m.rotation.z+=dt*m.userData.drift;if(m.position.y<-halfH-1)m.position.y=halfH+1;});renderer.render(scene,camera);},dispose(){ro.disconnect();disposeScene(scene);renderer.dispose();renderer.domElement.remove();}};
 }
 function initializeThree(){if(threeReady||!window.THREE)return;threeReady=true;try{const replacement=createBackground3D();if(background3D)background3D.dispose();background3D=replacement;document.body.classList.add('with-three');if(run.finished)background3D.celebrate();}catch(error){console.warn('Background WebGL unavailable. The game remains playable.',error);}if(step===4)renderCaptcha();}
-function loadThree(){if(window.THREE){initializeThree();return;}const urls=['./three.min.js'];let index=0;const attempt=()=>{if(window.THREE){initializeThree();return;}if(index>=urls.length)return;const script=document.createElement('script');script.src=urls[index++];script.async=true;script.crossOrigin='anonymous';let done=false;const timeout=setTimeout(next,6000);function next(){if(done)return;done=true;clearTimeout(timeout);if(window.THREE)initializeThree();else attempt();}script.onload=next;script.onerror=next;document.head.append(script);};attempt();}
-function focusTrap(event){const root=$('.pause-window')||$('.modal-window');if(!root||event.key!=='Tab')return;const targets=$$('button:not(:disabled),input:not(:disabled),textarea,a[href],select,[tabindex="0"]',root).filter(e=>e.offsetParent!==null);if(!targets.length)return;const first=targets[0],last=targets[targets.length-1];if(event.shiftKey&&(document.activeElement===first||!root.contains(document.activeElement))){event.preventDefault();last.focus();}else if(!event.shiftKey&&(document.activeElement===last||!root.contains(document.activeElement))){event.preventDefault();first.focus();}}
-function tick(now){const dt=Math.max(0,(now-lastTick)/1000);lastTick=now;if(run.started&&!run.finished&&!paused){run.elapsed+=dt;$('#timer-value').textContent=formatTime(run.elapsed+run.penalty);updateMeter();const due=jobs.filter(j=>j.id===run.id&&j.at<=run.elapsed&&j.stage===step);jobs=jobs.filter(j=>j.id===run.id&&j.stage===step&&j.at>run.elapsed);due.forEach(j=>{if(j.id===run.id&&j.stage===step)j.fn();});if(run.elapsed>=run.nextNag)nag();}if(!paused&&!document.hidden){const t=now/1000;if(background3D)background3D.update(Math.min(dt,.05),t);if(captcha3D)captcha3D.update(Math.min(dt,.05),t);}requestAnimationFrame(tick);}
-run=freshRun();applySettings();renderLanding();
-bind('#sound-top','click',()=>{prefs.sound=!prefs.sound;unlockAudio();applySettings();if(prefs.sound)sound('pop');});bind('#pause-top','click',()=>paused?hidePause():showPause());bind('#safety-help','click',()=>paused?hidePause():showPause());bind('#safety-motion','click',()=>{prefs.motion=!prefs.motion;applySettings();});bind('#safety-about','click',about);bind('#taskbar-start','click',()=>{crime('Finish means start');toast('“Finish” opens the start menu. Naturally.','TASK FAILED SUCCESSFULLY');showPause();});
+function loadThree(){if(window.THREE){initializeThree();return;}const urls=['three.min.js'];let index=0;const attempt=()=>{if(window.THREE){initializeThree();return;}if(index>=urls.length)return;const script=document.createElement('script');script.src=urls[index++];script.async=true;script.crossOrigin='anonymous';let done=false;const timeout=setTimeout(next,6000);function next(){if(done)return;done=true;clearTimeout(timeout);if(window.THREE)initializeThree();else attempt();}script.onload=next;script.onerror=next;document.head.append(script);};attempt();}
+/* Timed rounds and fictional ads. No network, billing, tabs or browser popups.
+ * All clocks use active game time, so Escape and tab visibility pause them.
+ * Ad counts, retaliation queues and the one emergency extension are bounded.
+ */
+function wrongStartClick(){
+ if(step!==0||run.started)return false;
+ run.wrongStartClicks++;
+ if(run.wrongStartClicks>=10){
+   crime('Persistence-based navigation');startGame();
+   toast('10 wrong clicks. Close enough. We have let you in.','PERSISTENCE ACCEPTED',5);
+   return true;
+ }
+ if(run.wrongStartClicks>=3){
+   const el=$('#start-mercy');
+   if(el)el.textContent=`${run.wrongStartClicks} / 10 wrong clicks. Persistence now counts as navigation.`;
+ }
+ return false;
+}
+function timeRemaining(){return Math.max(0,run.limitSeconds+run.extraSeconds-run.elapsed);}
+function syncInert(){
+ const blocked=paused||run.expired,modal=!!$('#modal-overlay');
+ $('#main').inert=blocked||modal;
+ $('#support').inert=blocked;
+ $('#cookie').inert=blocked;
+ $('#ads-layer').inert=blocked||modal;
+ $('#modal-root').inert=blocked;
+ $('#timeout-root').inert=paused;
+}
+function updateDeadline(warn=true){
+ const left=timeRemaining(),value=formatTime(Math.ceil(left),false);
+ $('#timer-value').textContent=value;
+ $('#deadline-mini').textContent=value;
+ document.body.classList.toggle('deadline-warning',left<=60&&run.started&&!run.finished);
+ document.body.classList.toggle('deadline-critical',left<=20&&run.started&&!run.finished);
+ if(!warn||run.expired||!run.started||run.finished)return;
+ for(const threshold of [60,20]){
+   if(left>0&&left<=threshold&&!run.deadlineWarnings.has(threshold)){
+     run.deadlineWarnings.add(threshold);
+     toast(threshold===60?'One minute left. Naturally, our advertisers have a few things to say.':'20 seconds. The form expires at zero. The ads do not believe in deadlines.',threshold===60?'YOUR SESSION HAS COMMITMENT ISSUES':'FORM EXPIRING',5);
+     if(threshold===60)queueAd(1,'deadline');
+     sound('error');
+   }
+ }
+ if(left>0&&left<=10&&Math.ceil(left)!==run.lastCountdownSound){
+   run.lastCountdownSound=Math.ceil(left);tone(730,.04,'triangle',.025);
+ }
+}
+function expireRun(){
+ if(run.expired||run.finished)return;
+ run.expired=true;run.timeouts++;crime('A deadline with advertisements');
+ closeModal();clearAds();$('#cookie').classList.add('hidden');
+ hideSupport(false);$('#support-tab').classList.add('hidden');$('#toasts').innerHTML='';
+ renderExpiry();syncInert();sound('error');
+}
+function renderExpiry(){
+ const rescueAvailable=run.extensionsUsed===0,watching=!!run.rescueAd;
+ $('#timeout-root').innerHTML=`<div class="overlay timeout-overlay"><section class="timeout-window window" role="dialog" aria-modal="true" aria-labelledby="timeout-heading"><div class="window-title"><span>⌛ session_final_FINAL_expired.exe</span><span>00:00</span></div><div class="window-body"><div class="expiry-kicker">SUCCESS: YOU RAN OUT OF TIME</div><h2 id="timeout-heading">SESSION<br>EXPIRED.</h2><p class="expiry-copy">${rescueAvailable?'We gave you five minutes. Then filled them with advertisements.':'Your emergency minute has also expired. Even our generosity has a limit.'}</p><div class="expiry-receipt"><span>Form progress</span><b>${step} / 6</b><span>Ads endured</span><b>${run.ads.shown}</b><span>Account created</span><b>Of course not.</b></div>${rescueAvailable?`<div id="rescue-ad" class="rescue-ad ${watching?'':'hidden'}"><span class="ad-kicker">A FICTIONAL MESSAGE FROM TIMEFLIX™</span><strong>TIME.<br>NOW WITH ADS.</strong><p>For people who just spent five minutes trying to save five minutes.</p><div class="rescue-progress"><div id="rescue-progress-fill"></div></div><div id="rescue-status">Please waste 5 more seconds.</div></div><button id="watch-extension" class="hot expiry-primary">Watch fake ad · get 60 seconds</button><p class="expiry-note">5-second ad. One extension per run. Your answers stay intact.</p>`:'<p class="expiry-note">One emergency extension per run. Start a fresh form to try again.</p>'}<button id="retry-form" class="retro expiry-retry">Restart form · fresh 05:00</button><button id="expiry-menu" class="link tiny">Esc · honest help</button></div></section></div>`;
+ bind('#watch-extension','click',()=>{
+   if(run.rescueAd?.remaining<=0){claimExtension();return;}
+   if(run.rescueAd)return;
+   run.rescueAd={remaining:5};run.ads.shown++;crime('Time sponsored by more time');
+   $('#rescue-ad').classList.remove('hidden');
+   $('#watch-extension').disabled=true;$('#watch-extension').textContent='Advertisement · 5';
+   sound('pop');
+ });
+ bind('#retry-form','click',()=>{restart();startGame();});
+ bind('#expiry-menu','click',()=>showPause());
+ $('#watch-extension, #retry-form')?.focus({preventScroll:true});
+}
+function updateRescueAd(dt){
+ const ad=run.rescueAd;if(!ad||ad.remaining<=0)return;
+ ad.remaining=Math.max(0,ad.remaining-dt);
+ const button=$('#watch-extension');if(!button)return;
+ const seconds=Math.ceil(ad.remaining);
+ $('#rescue-progress-fill').style.width=`${(1-ad.remaining/5)*100}%`;
+ $('#rescue-status').textContent=ad.remaining>0?`Your free minute is ready in ${seconds}…`:'Your minute has been fully monetised. Take it.';
+ button.textContent=ad.remaining>0?`Advertisement · ${seconds}`:'Return to form · +60 seconds';
+ if(ad.remaining<=0){button.disabled=false;sound('success');}
+}
+function claimExtension(){
+ if(!run.expired||!run.rescueAd||run.rescueAd.remaining>0||run.extensionsUsed>0)return;
+ run.extraSeconds+=EMERGENCY_BONUS_SECONDS;run.extensionsUsed++;
+ run.expired=false;run.rescueAd=null;run.lastCountdownSound=-1;
+ $('#timeout-root').innerHTML='';
+ $('#cookie').classList.toggle('hidden',run.cookieDismissed);
+ if(step>0&&step<7)$('#support-tab').classList.remove('hidden');
+ run.ads.nextAt=run.elapsed+10;
+ lastTick=performance.now();syncInert();updateDeadline(false);
+ toast('One extra minute. Same form. Same mistakes. No more extensions.','TIMEFLIX DELIVERED',5);
+ sound('success');
+}
+const AD_CAMPAIGNS=[
+ {theme:'prize',name:'WINNER_DEFINITELY.exe',eyebrow:'YOU ARE VISITOR NUMBER 000001',icon:'🏆',title:'YOU WON<br>ABSOLUTELY<br>NOTHING!',copy:'Congratulations! Your lack of a prize has been reserved for the next 00:00 seconds.',cta:'CLAIM MY NOTHING',reply:'Your nothing is ready.',detail:'No delivery. No prize. No follow-up. Finally, an advertiser that keeps its promises.'},
+ {theme:'patience',name:'download_more_patience.exe',eyebrow:'THE #0 PRODUCTIVITY TOOL',icon:'⬇',title:'DOWNLOAD<br>MORE<br>PATIENCE',copy:'Your patience is critically low. Ours was never installed.',cta:'GET 4GB OF INNER PEACE',reply:'Installation failed successfully.',detail:'Your operating system already contains the maximum permitted amount of disappointment.'},
+ {theme:'buttons',name:'hot_single_buttons.html',eyebrow:'SPONSORED · WITHIN 3 PIXELS OF YOU',icon:'↖',title:'HOT SINGLE<br>BUTTONS<br>NEAR YOU',copy:'They want you to click. They have absolutely no intention of committing.',cta:'MEET MY NEXT BUTTON',reply:'404: emotional connection not found.',detail:'The button saw your cursor and moved away. Please respect its personal space.'},
+ {theme:'insurance',name:'CAPTCHA_insurance_approved.exe',eyebrow:'INHUMANLY GOOD COVERAGE',icon:'☑',title:'ARE YOU<br>HUMAN<br>ENOUGH?',copy:'Insure your next CAPTCHA against the emotional cost of another CAPTCHA.',cta:'COVER MY EXISTENTIAL DOUBT',reply:'Your claim has been declined.',detail:'To prove you are eligible, please prove you are human. Yes, we see the irony.'},
+ {theme:'bundle',name:'BUY_ONE_AD_GET_ONE_AD.exe',eyebrow:'LIMITED OFFER · FOREVER',icon:'×2',title:'BUY ONE AD.<br>GET ANOTHER<br>AD.',copy:'Twice the advertising. Exactly the same amount of product.',cta:'YES, MORE ADVERTISING',reply:'Your order of more ads is confirmed.',detail:'Nothing was charged. Something else will pop up. Thank you for growing the problem.'},
+ {theme:'air',name:'air_plus_free_trial.exe',eyebrow:'BREATHING: REIMAGINED AS A PROBLEM',icon:'☁',title:'PREMIUM<br>AIR™',copy:'Regular air is for regular people. Try the subscription nobody asked for.',cta:'BREATHE MORE EXPENSIVELY',reply:'You already have the free version.',detail:'It is all around you. There is no upgrade, no charge, and no justification for this rectangle.'},
+ {theme:'meeting',name:'quick_47_minute_call.exe',eyebrow:'THIS AD COULD HAVE BEEN AN EMAIL',icon:'☎',title:'QUICK<br>QUESTION.<br>47 MINUTES?',copy:'We noticed you were busy and would like to discuss that in a meeting.',cta:'LET’S CIRCLE BACK FOREVER',reply:'Meeting successfully not scheduled.',detail:'Nobody is invited. Nothing will be discussed. This is our most productive meeting so far.'},
+ {theme:'time',name:'your_time_is_our_inventory.exe',eyebrow:'TIME-SENSITIVE NONSENSE',icon:'⌛',title:'RUNNING<br>OUT OF<br>TIME?',copy:'Have you considered looking at an advertisement about running out of time?',cta:'WASTE A LITTLE MORE',reply:'Thank you for your time.',detail:'We took some. No seconds were added. At zero, the expired-session screen offers one real in-game extension.'}
+];
+function maxAds(){return innerWidth<700?2:3;}
+function queueAd(delay=1,reason='scheduled'){
+ if(!run.started||run.finished||run.expired||run.ads.queue.length>=3)return;
+ run.ads.queue.push({at:run.elapsed+delay,reason});run.ads.queue.sort((a,b)=>a.at-b.at);
+}
+function updateAds(){
+ if(paused||run.expired||run.finished||!run.cookieDismissed||$('#modal-overlay'))return;
+ const ads=run.ads;
+ for(const ad of ads.items){
+   const skip=ad.el.querySelector('[data-skip-number]');
+   if(skip)skip.textContent=String(3+Math.min(96,Math.floor(run.elapsed-ad.born)));
+ }
+ if(ads.items.length>=maxAds()||run.elapsed-ads.lastAt<1.5)return;
+ const due=ads.queue[0];
+ if(due&&due.at<=run.elapsed){ads.queue.shift();spawnAd(due.reason);}
+ else if(run.elapsed>=ads.nextAt)spawnAd('scheduled');
+}
+function spawnAd(reason='scheduled'){
+ if(paused||run.expired||run.finished||!run.started||run.ads.items.length>=maxAds())return;
+ const ads=run.ads,id=++ads.serial;
+ const campaign=reason==='deadline'?AD_CAMPAIGNS[7]:AD_CAMPAIGNS[(id-1)%AD_CAMPAIGNS.length];
+ const slot=[0,1,2].find(i=>!ads.items.some(ad=>ad.slot===i))??0;
+ const el=document.createElement('aside');el.className=`ad-window window ad-${campaign.theme}`;
+ el.dataset.adId=id;el.setAttribute('aria-label',`Fictional advertisement: ${campaign.name}`);
+ const ad={id,el,slot,campaign,born:run.elapsed,clicked:false,retaliated:false,dragged:false};
+ el.innerHTML=`<div class="window-title ad-titlebar"><span>▣ ${esc(campaign.name)}</span><div class="win-buttons"><button data-close-ad="${id}" aria-label="Dismiss advertisement" title="Actually close this ad">×</button></div></div><div class="ad-body"><span class="ad-kicker">${esc(campaign.eyebrow)}</span><div class="ad-art"><span class="ad-icon" aria-hidden="true">${campaign.icon}</span><button class="ad-fake-close" title="A misleading close button" aria-label="Misleading close button">×</button></div><h2>${campaign.title}</h2><p>${esc(campaign.copy)}</p><button class="ad-cta">${esc(campaign.cta)}</button><div class="ad-bottom"><button class="ad-skip">Skip ad in <b data-skip-number>3</b>s ›</button><span class="ad-counter">AD ${String(ads.shown+1).padStart(2,'0')}</span></div></div><div class="ad-disclaimer">FICTIONAL SPONSOR · GAME ONLY · NO REAL OFFER</div>`;
+ ads.items.push(ad);ads.shown++;ads.lastAt=run.elapsed;
+ ads.nextAt=run.elapsed+(timeRemaining()<=60?8:(innerWidth<700?15:12))+Math.random()*3;
+ $('#ads-layer').append(el);positionAd(ad);
+ bind('[data-close-ad]','click',()=>closeAd(ad),el);
+ bind('.ad-fake-close','click',()=>{
+   crime('The X is an advertisement');sound('boing');
+   if(!ad.retaliated){ad.retaliated=true;queueAd(1.5,'fake-close');}
+   $('.ad-fake-close',el).textContent='+';
+   toast('That was the “more advertisements” button. The small × in the title bar really closes it.','CLOSE ENOUGH',4);
+ },el);
+ bind('.ad-skip','click',()=>{
+   crime('Countdown going the wrong way');sound('error');
+   toast('Our skip timer is counting up. Engineering says this is technically counting.','PLEASE WAIT LONGER',4);
+ },el);
+ bind('.ad-cta','click',()=>clickAd(ad),el);
+ makeAdDraggable(ad);crime('Ad-supported inconvenience');
+ tone(260,.10,'triangle',.035,0,900);tone(600,.08,'sine',.025,.09,430);
+}
+function clickAd(ad){
+ if(ad.clicked)return;ad.clicked=true;run.ads.clicked++;crime('The advertisement was the product');sound('boing');
+ $('.ad-body',ad.el).innerHTML=`<span class="ad-kicker">YOUR CLICK HAS BEEN SUCCESSFULLY WASTED</span><div class="ad-reply-icon" aria-hidden="true">✓</div><h2 class="ad-reply-title">${esc(ad.campaign.reply)}</h2><p>${esc(ad.campaign.detail)}</p><button class="ad-cta ad-reply-close">Close this offer. Actually.</button>`;
+ bind('.ad-reply-close','click',()=>closeAd(ad),ad.el);
+ if(ad.campaign.theme==='bundle')queueAd(1.5,'bundle');
+ positionAd(ad);
+}
+function closeAd(ad){
+ if(!run.ads.items.includes(ad))return;
+ const focusWasInside=ad.el.contains(document.activeElement);
+ ad.el.remove();run.ads.items=run.ads.items.filter(item=>item!==ad);run.ads.closed++;sound('pop');
+ // Only every third genuine dismissal retaliates; queues and active windows stay capped.
+ if(run.ads.closed%3===0){queueAd(2.5,'retaliation');toast('Thanks for closing that ad. A different one has been notified.','YOUR FEEDBACK MATTERS',3);}
+ if(focusWasInside){const next=run.ads.items.at(-1);if(next)next.el.querySelector('[data-close-ad]')?.focus({preventScroll:true});}
+}
+function clearAds(){
+ if(!run?.ads)return;
+ $('#ads-layer').innerHTML='';run.ads.items=[];run.ads.queue=[];
+}
+function positionAd(ad,keepDragged=true){
+ const el=ad.el,w=el.offsetWidth,h=el.offsetHeight,top=72,bottom=innerHeight-42;
+ const mobile=innerWidth<700;
+ let x,y;
+ if(ad.dragged&&keepDragged){x=parseFloat(el.style.left)||0;y=parseFloat(el.style.top)||top;}
+ else if(mobile){x=ad.slot===0?10:innerWidth-w-10;y=ad.slot===0?bottom-h-8:92;}
+ else{
+   x=ad.slot===0?18:ad.slot===1?innerWidth-w-18:(innerWidth-w)/2+45;
+   y=ad.slot===0?135:ad.slot===1?105:bottom-h-18;
+ }
+ x=clamp(x,7,Math.max(7,innerWidth-w-7));
+ y=clamp(y,top,Math.max(top,bottom-h));
+ el.style.left=`${x}px`;el.style.top=`${y}px`;
+}
+function makeAdDraggable(ad){
+ const title=$('.ad-titlebar',ad.el);let drag=null;
+ title.addEventListener('pointerdown',e=>{
+   if(e.target.closest('button')||e.button!==0)return;
+   drag={x:e.clientX,y:e.clientY,left:parseFloat(ad.el.style.left)||0,top:parseFloat(ad.el.style.top)||0};
+   title.setPointerCapture(e.pointerId);ad.dragged=true;e.preventDefault();
+ });
+ title.addEventListener('pointermove',e=>{
+   if(!drag)return;
+   ad.el.style.left=`${drag.left+e.clientX-drag.x}px`;ad.el.style.top=`${drag.top+e.clientY-drag.y}px`;
+   positionAd(ad);
+ });
+ const stop=()=>drag=null;title.addEventListener('pointerup',stop);title.addEventListener('pointercancel',stop);title.addEventListener('lostpointercapture',stop);
+}
+window.addEventListener('resize',()=>{
+ if(!run?.ads)return;
+ while(run.ads.items.length>maxAds()){const ad=run.ads.items.pop();ad.el.remove();}
+ run.ads.items.forEach((ad,index)=>{ad.slot=index;positionAd(ad);});
+});
+
+function focusTrap(event){const root=$('.pause-window')||$('.timeout-window')||$('.modal-window');if(!root||event.key!=='Tab')return;const targets=$$('button:not(:disabled),input:not(:disabled),textarea,a[href],select,[tabindex="0"]',root).filter(e=>e.offsetParent!==null);if(!targets.length)return;const first=targets[0],last=targets[targets.length-1];if(event.shiftKey&&(document.activeElement===first||!root.contains(document.activeElement))){event.preventDefault();last.focus();}else if(!event.shiftKey&&(document.activeElement===last||!root.contains(document.activeElement))){event.preventDefault();first.focus();}}
+function tick(now){
+ const dt=Math.max(0,(now-lastTick)/1000);lastTick=now;
+ if(run.started&&!run.finished&&!paused&&!run.expired){
+   run.elapsed=Math.min(run.elapsed+dt,run.limitSeconds+run.extraSeconds);
+   updateDeadline();updateMeter();
+   if(timeRemaining()<=0)expireRun();
+   else{
+     const due=jobs.filter(j=>j.id===run.id&&j.at<=run.elapsed&&j.stage===step);
+     jobs=jobs.filter(j=>j.id===run.id&&j.stage===step&&j.at>run.elapsed);
+     due.forEach(j=>{if(!run.finished&&!run.expired&&j.id===run.id&&j.stage===step)j.fn();});
+     if(!run.finished){updateAds();if(run.elapsed>=run.nextNag)nag();}
+   }
+ }
+ if(run.expired&&!paused)updateRescueAd(dt);
+ if(!paused&&!document.hidden){const t=now/1000;if(background3D)background3D.update(Math.min(dt,.05),t);if(captcha3D)captcha3D.update(Math.min(dt,.05),t);}
+ requestAnimationFrame(tick);
+}
+run=freshRun();applySettings();renderLanding();$('#board-top').hidden=!(window.Ludvig&&window.Ludvig.ui);
+bind('#sound-top','click',()=>{prefs.sound=!prefs.sound;unlockAudio();applySettings();if(prefs.sound)sound('pop');});bind('#pause-top','click',()=>paused?hidePause():showPause());bind('#board-top','click',()=>{if(!paused)calmOpenBoard('user-hostile');});bind('#safety-help','click',()=>paused?hidePause():showPause());bind('#safety-motion','click',()=>{prefs.motion=!prefs.motion;applySettings();});bind('#safety-about','click',about);bind('#taskbar-start','click',()=>{crime('Finish means start');toast('“Finish” opens the start menu. Naturally.','TASK FAILED SUCCESSFULLY');showPause();});
 bind('#support-tab','click',()=>showSupport(true));bind('#support-hide','click',()=>hideSupport());bind('#support-expand','click',()=>{crime('Close means bigger');supportGrowth++;if(supportGrowth<=2){$('#support').style.width=`${Math.min(innerWidth-30,(innerWidth<950?235:260)+supportGrowth*35)}px`;$('#bot-msg').textContent=supportGrowth===1?'You clicked ×. I assumed you wanted extra support.':'Even more room for us to not solve your problem.';sound('boing');}else hideSupport();});
 bind('#support-send','click',()=>{const text=$('#chat-input').value;const replies=['Have you tried turning your expectations off and on again?','Your issue has been escalated to a slightly larger issue.','I understand. Have you considered not understanding?','A specialist will be with you in 4–6 business eternities.','Please describe the problem without using words from the problem.','Thanks! This conversation will be used to improve absolutely nothing.'];$('#bot-msg').textContent=text.trim()?replies[supportClicks++%replies.length]:'Please type a message so I can ignore something specific.';$('#chat-input').value='';crime('Support without the support');sound('pop');});
 document.addEventListener('pointerdown',e=>{unlockAudio();if(!paused&&!run.finished&&e.target.closest('button,input,label,select')){run.clicks++;sound('click');}},{passive:true});
-document.addEventListener('keydown',e=>{focusTrap(e);if(e.key==='Escape'){e.preventDefault();if(paused)hidePause();else if($('#modal-overlay'))closeModal();else showPause();return;}const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable;if(e.key.toLowerCase()==='m'&&!typing){prefs.sound=!prefs.sound;unlockAudio();applySettings();}if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type==='text'&&!paused&&!$('#modal-overlay')){e.preventDefault();const next=$('#next-step');if(next)next.click();}});
+document.addEventListener('keydown',e=>{focusTrap(e);if(e.key==='Escape'){e.preventDefault();if(paused)hidePause();else if(!run.expired&&$('#modal-overlay'))closeModal();else showPause();return;}const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable;if(e.key.toLowerCase()==='m'&&!typing){prefs.sound=!prefs.sound;unlockAudio();applySettings();}if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type==='text'&&!paused&&!$('#modal-overlay')){e.preventDefault();const next=$('#next-step');if(next)next.click();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&run.started&&!run.finished&&!paused)showPause('hidden');lastTick=performance.now();});
-window.UserHostile=Object.freeze({get status(){return Object.freeze({stage:step,stageName:STAGES[step-1]||(step===7?'Finished':'Landing'),paused,elapsed:run.elapsed,penalty:run.penalty,errors:run.errors,skips:run.skips,finished:run.finished,threeLoaded:threeReady,threeVersion:window.THREE?.REVISION||null,background3D:!!background3D,captcha3D:!!captcha3D,renderer:background3D?.kind||(threeReady?'three':'2d')});}});
+window.UserHostile=Object.freeze({get status(){return Object.freeze({stage:step,stageName:STAGES[step-1]||(step===7?'Finished':'Landing'),paused,elapsed:run.elapsed,penalty:run.penalty,errors:run.errors,skips:run.skips,finished:run.finished,expired:run.expired,timeLimit:run.limitSeconds,timeRemaining:timeRemaining(),extensionsUsed:run.extensionsUsed,timeouts:run.timeouts,rescueAdRemaining:run.rescueAd?.remaining??null,wrongStartClicks:run.wrongStartClicks,adsShown:run.ads.shown,adsOpen:run.ads.items.length,adsClosed:run.ads.closed,threeLoaded:threeReady,threeVersion:window.THREE?.REVISION||null,background3D:!!background3D,captcha3D:!!captcha3D,renderer:background3D?.kind||(threeReady?'three':'2d')});}});
 try{background3D=createNativeBackground3D();document.body.classList.add('with-renderer');}catch(error){console.warn('Built-in WebGL unavailable. All puzzles remain playable.',error);}
 requestAnimationFrame(tick);loadThree();
 })();

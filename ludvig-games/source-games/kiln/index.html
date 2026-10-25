@@ -106,10 +106,13 @@ html,body{height:100dvh}
 #mission-panel.dm .wave-segments{display:none}
 .result-board .sb-row{font-size:12px}
 @media(max-width:600px),(max-height:500px){.room-code{font-size:36px}#online h2{font-size:26px;margin-bottom:12px}#scoreboard{padding:14px 16px}#scoreboard h3{font-size:18px}}
+#hitdir{position:fixed;left:50%;top:50%;width:0;height:0;pointer-events:none;--r:clamp(96px,24vmin,230px)}#hitdir i{position:absolute;left:-64px;top:calc(var(--r) * -1);width:128px;height:30px;transform-origin:64px var(--r);border-top:5px solid #ff4a3a;border-radius:50% 50% 0 0/100% 100% 0 0;filter:drop-shadow(0 0 6px #ff342c);opacity:0;will-change:transform,opacity}
+body:has(>a[aria-label="All games"]) .topbar{padding-left:44px}
+#announcement{padding:16px 28px;border-radius:18px;background:radial-gradient(ellipse at center,#12221ccc 0,#12221c8c 45%,#12221c00 75%)}#announcement .micro{color:#ff9c78;text-shadow:0 1px 3px #0b1712}#announcement h2,#announcement p{text-shadow:0 1px 3px #0b1712,0 0 14px #0b171299}
 </style>
 </head>
 <body>
-<canvas tabindex="-1" id="world" aria-label="Scrapyard first-person shooter arena"></canvas><div id="vignette"></div><div id="damage"></div>
+<canvas tabindex="-1" id="world" aria-label="Scrapyard first-person shooter arena"></canvas><div id="vignette"></div><div id="damage"></div><div id="hitdir" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="menu">
  <div><h1 class="brand">Scrapyard<span>.</span></h1><p class="description">Clear five waves. Destroy the Warden. Extract.</p><div class="difficulty-box"><div class="difficulty-top"><label for="difficulty">Difficulty</label><strong id="difficulty-name">Hard · 3 / 5</strong></div><input type="range" id="difficulty" min="1" max="5" step="1" value="3" aria-label="Difficulty"><div class="difficulty-ends"><span>EASY</span><span>NIGHTMARE</span></div><p class="difficulty-desc" id="difficulty-desc">Faster enemies. Keep moving.</p></div><button id="play">Start mission <span class="arrow"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></button><button id="online-btn" class="secondary-btn" hidden>Play online <span class="arrow"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 17c0-3 2.5-5 5.5-5s5.5 2 5.5 5M13.5 3.2a3 3 0 0 1 0 5.6M15.5 12.4c1.6.7 2.5 2.4 2.5 4.6"/></svg></span></button>
  </div>
@@ -675,7 +678,7 @@ function setDifficulty(value){
 function resetBarrels(){barrels=isDM()?[]:[[-4,4],[4,9],[-14,9],[15,4],[-6,-14],[6,-19],[-19,-3],[18,-21]].map(([x,z],id)=>({x,z,id,y:.65,hp:38,dead:false}))}
 function shockwave(){
  if(state!=='playing'||!(mission==='combat'||mission==='dm')||pulseCharge<100||pulseCooldown>0||player.down||player.dead||net.frozen)return;
- pulseCharge=0;pulseCooldown=3;pulseFX=.36;pulseSound();
+ pulseCharge=0;pulseCooldown=3;pulseFX=.36;pulseSound();addShake(.22);
  shockRings.push({x:player.x,y:.22,z:player.z,r:.7,life:.58,max:.58,color:'pulse'});if(net.live)net.event({t:'pu',x:FpsKit.q(player.x),z:FpsKit.q(player.z)});
  const center=[player.x,player.y-.2,player.z];
  bullets=bullets.filter(b=>Math.hypot(b.p[0]-player.x,b.p[2]-player.z)>10);
@@ -700,7 +703,7 @@ function explodeBarrel(b,hurtPlayer=true,by='me'){
   for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-b.x,e.z-b.z);if(d<7.5&&clearLine([b.x,1.2,b.z],[e.x,e.y,e.z])){e.hp-=240*(1-d/10);e.flash=.2;e.stun=.65;if(e.hp<=0)killEnemy(e,false,by)}}
   for(const other of barrels)if(!other.dead&&Math.hypot(other.x-b.x,other.z-b.z)<6&&clearLine([b.x,1.2,b.z],[other.x,1.2,other.z]))explodeBarrel(other,hurtPlayer,by);
  }
- const dist=Math.hypot(player.x-b.x,player.z-b.z);if(hurtPlayer&&dist<5&&clearLine([b.x,1.2,b.z],[player.x,player.y,player.z]))hurt(30*(1-dist/5));
+ const dist=Math.hypot(player.x-b.x,player.z-b.z);addShake(clamp(.55-dist/28,0,.55));if(hurtPlayer&&dist<5&&clearLine([b.x,1.2,b.z],[player.x,player.y,player.z]))hurt(30*(1-dist/5),b.x,b.z);
 }
 function openExtraction(){
  if(mission==='extract')return;mission='extract';if(net.live&&net.isHost())net.event({t:'ex'});if(player.down)net.revive(null,100);bullets=[];mouseDown=false;extractProgress=0;player.hp=100;reloadT=0;ammo=24;
@@ -825,7 +828,7 @@ function bossDown(){bossDefeated=true;if(waveKills<waveTotal)announce('WARDEN DE
 function killFX(e,core){
  burst([e.x,e.y,e.z],e.type===1?0xb5d9b0:0xffa86a,e.boss?45:30,e.boss?10:6.5);
  tracers.push({a:[e.x,e.y-.2,e.z],b:[e.x,e.y+.2,e.z],life:.18,max:.18,color:0xffe8b8,width:e.boss?1.3:.5});
- killSound(core,e);if(e.boss)explosionSound(e);
+ killSound(core,e);if(e.boss){explosionSound(e);addShake(.8)}
  // The shell drops, tumbles and bursts on the floor.
  if(wrecks.length<10)wrecks.push({type:e.boss?3:e.type,x:e.x,y:e.y,z:e.z,heading:e.heading,scale:e.scale,vy:1.5,spinX:rand(-3,3),spinZ:rand(-3,3),rx:0,rz:0,life:2.4});
 }
@@ -837,11 +840,17 @@ function creditKill(e,core){
  feed(e.boss?'WARDEN DESTROYED':core?'CORE SHATTER':e.type===2?'HEAVY DOWN':'DRONE SCRAPPED',points);
  if(combo>=3&&combo%3===0){overdriveT=6;ammo=24;reloadT=0;tone(440,.18,'sawtooth',.12,880);tone(1320,.3,'sine',.18,0,.12);showHint('OVERDRIVE · faster fire + damage · magazine refilled',2.5)}
 }
-function hurt(amount){
+function hurt(amount,sx,sz){
  if(!simRunning()||invulnerable||mission==='extract'||player.down||player.dead||isDM())return;
- player.hp=Math.max(0,player.hp-amount*tuning().damage);damageAt=clock;damageFlash=.6;
+ player.hp=Math.max(0,player.hp-amount*tuning().damage);damageAt=clock;damageFlash=.6;hitFrom(sx,sz);addShake(.16+amount*.014);
  noise(.22,.4,1600);tone(90,.22,'triangle',.4,28);hud();if(player.hp<=0){if(net.live&&net.mode==='coop')net.goDown();else finish(false)}
 }
+// Damage feedback: an arc around the crosshair points at the shooter, and the camera shakes briefly.
+let shake=0,hitDirN=0;const hitDirs=[{a:0,t:0},{a:0,t:0},{a:0,t:0}],hitDirEls=[...document.querySelectorAll('#hitdir i')];
+function addShake(v){if(!reduced)shake=Math.min(1,shake+v)}
+function hitFrom(x,z){if(!Number.isFinite(x)||!Number.isFinite(z))return;const dx=x-player.x,dz=z-player.z;if(dx*dx+dz*dz<.04)return;const h=hitDirs[hitDirN++%hitDirs.length];h.a=Math.atan2(dx,-dz);h.t=1}
+function nearestEnemyTo(x,z){let best=null,bd=1e9;for(const e of enemies){if(e.dead)continue;const d=(e.x-x)**2+(e.z-z)**2;if(d<bd){bd=d;best=e}}return best}
+function hitDirFrame(dt){const on=state==='playing'||state==='capturing';for(let i=0;i<hitDirs.length;i++){const h=hitDirs[i],el=hitDirEls[i];if(!el)continue;if(!on)h.t=0;if(h.t<=0&&!h.shown)continue;h.t=Math.max(0,h.t-dt*1.15);h.shown=h.t>0;el.style.opacity=h.t>0?Math.min(1,h.t*1.6).toFixed(3):'0';if(h.t>0)el.style.transform=`rotate(${FpsKit.wrap(h.a-player.yaw).toFixed(3)}rad)`}}
 // ---------- Squad tactics: cover, peeking, flanking, suppressing fire, retreat when hurt ----------
 // Drones share a 2 m grid with the old flow field. Each squad (up to three) mixes an assault drone that
 // fights from cover, a flanker that circles to the side and a suppressor that keeps firing at the last
@@ -887,7 +896,7 @@ function steer(e,t,dx,dz,dist){
  }
 }
 function engage(e,t,dt,dist){const now=clock*1000;
- if(e.type===1){e.attack-=dt;if(dist<1.65&&Math.abs(e.y-t.y)<1.5&&e.attack<=0){e.swing=.3;e.attack=1.0/tuning().fire;burst([e.x,e.y,e.z],0xc7e1bc,5,2);if(t===selfThreat)hurt(12);else net.melee(t.id,12)}return}
+ if(e.type===1){e.attack-=dt;if(dist<1.65&&Math.abs(e.y-t.y)<1.5&&e.attack<=0){e.swing=.3;e.attack=1.0/tuning().fire;burst([e.x,e.y,e.z],0xc7e1bc,5,2);if(t===selfThreat)hurt(12,e.x,e.z);else net.melee(t.id,12)}return}
  e.fire-=dt*(e.mode==='retreat'?.55:1);
  const mem=squadOf(e),suppress=!e.los&&!e.boss&&e.role==='suppress'&&clock-mem.t<4&&dist<30;
  if(e.inCover&&e.peek<=0&&e.fire<.5&&(e.los||suppress)&&(e.boss||tokens.request(e.id,now,1500)))e.peek=1.4;
@@ -901,7 +910,7 @@ function engage(e,t,dt,dist){const now=clock*1000;
 function animateDrone(e,dt,ox,oz){e.vx=(e.x-ox)/Math.max(dt,1e-4);e.vz=(e.z-oz)/Math.max(dt,1e-4);const s=Math.sin(e.heading),c=Math.cos(e.heading),fwd=e.vx*s-e.vz*c,side=e.vx*c+e.vz*s,k=1-Math.exp(-dt*6);e.tilt=lerp(e.tilt,clamp(-fwd*.05,-.3,.3),k);e.bank=lerp(e.bank,clamp(side*.05,-.3,.3),k);e.spin+=dt*(3+Math.hypot(e.vx,e.vz)*1.4)}
 function makeEnemy(id,type,boss,x,z){
  const scale=boss?1.85:type===2?1.28:type===1?.87:1,baseHp=boss?700:type===2?240:type===1?68:90,maxHp=baseHp*tuning().health*(net.live?1+.25*(net.count()-1):1);
- return{id,x,z,y:boss?2.55:1.95,hp:maxHp,maxHp,baseHp,boss,type,scale,radius:.83*scale,heading:0,age:0,fire:rand(1.25,2.1)/tuning().fire,charge:0,stun:0,phase:rand(0,TAU),flash:0,dead:false,strafe:Math.random()<.5?-1:1,attack:0,
+ return{id,x,z,y:boss?2.55:1.95,hp:maxHp,maxHp,baseHp,boss,type,scale,radius:.83*scale,heading:0,age:0,fire:rand(1.25,2.1)/tuning().fire+(wave===1&&spawned<3?2.6:0),charge:0,stun:0,phase:rand(0,TAU),flash:0,dead:false,strafe:Math.random()<.5?-1:1,attack:0,
   role:'assault',squad:null,side:Math.random()<.5?-1:1,mode:'advance',modeT:0,planT:rand(0,.5),think:rand(0,.12),goal:null,cover:null,coverY:1.2,dist:new Int16Array(GRID*GRID),distGoal:-1,distT:0,inCover:false,peek:0,retreated:false,tgt:null,tgtRef:null,los:false,seen:-99,vx:0,vz:0,tilt:0,bank:0,spin:0,swing:0,recoil:0,flinch:0};
 }
 
@@ -936,7 +945,7 @@ function newGame(){
  wave=0;kills=0;score=0;shots=0;hits=0;elapsed=0;clock=0;waveKills=0;spawnSerial=0;
  mission='combat';runDifficulty=difficulty;pulseCharge=100;pulseCooldown=0;pulseFX=0;overdriveT=0;bestChain=0;bossDefeated=false;extractProgress=0;shockRings=[];heartCD=0;footstepT=0;
  Object.assign(player,{x:0,y:1.72,z:19,yaw:0,pitch:-.015,vx:0,vz:0,vy:0,hp:100,ground:true,down:false,dead:false});
- ammo=24;reloadT=0;shotCD=0;recoil=0;aimBlend=0;fov=76;combo=0;lastKill=-99;damageAt=-99;damageFlash=0;keys={};mouseDown=false;aim=false;
+ ammo=24;reloadT=0;shotCD=0;recoil=0;aimBlend=0;fov=76;combo=0;lastKill=-99;damageAt=-99;damageFlash=0;shake=0;keys={};mouseDown=false;aim=false;
  state='capturing';$('menu').classList.add('hidden');$('pause').style.display='none';$('results').style.display='none';$('hud').classList.add('active');$('floating').innerHTML='';$('killfeed').innerHTML='';$('hint').style.opacity=0;resetBarrels();
  wrecks=[];decals.length=0;decalDirty=true;net.frozen=false;$('down-banner').style.display='none';$('scoreboard').style.display='none';if(net.live)net.onNewGame();
  if(touch)enterGameplay();else requestLock();
@@ -981,7 +990,7 @@ function pause(){
 }
 function resume(){if(state!=='paused')return;initAudio();resetMouseInput();state='capturing';if(touch)enterGameplay();else requestLock()}
 function finish(win){
- if(!simRunning())return;player.down=false;$('down-banner').style.display='none';state='result';resetMouseInput();$('capture').style.display='none';if(document.pointerLockElement===canvas)document.exitPointerLock();$('touch-controls').style.display='none';pulseFX=0;
+ if(!simRunning())return;player.down=false;$('down-banner').style.display='none';state='result';resetMouseInput();$('capture').style.display='none';if(document.pointerLockElement===canvas)document.exitPointerLock();$('touch-controls').style.display='none';pulseFX=0;damageFlash=0;shake=0;
  if(win)score+=Math.round((1500+Math.max(0,600-elapsed))*DIFFICULTIES[runDifficulty-1].score);
  let previous=0;try{previous=+localStorage.getItem('kiln-best-v12-'+runDifficulty)||0}catch(e){}const isBest=!net.live&&score>previous;
  if(isBest)try{localStorage.setItem('kiln-best-v12-'+runDifficulty,score)}catch(e){}
@@ -1030,7 +1039,7 @@ function updateEnemies(dt){flowTimer-=dt;if(flowTimer<=0){flowTimer=.5;updateFlo
  }
  for(const e of enemies)if(e.dead){clearCover(e);tokens.release(e.id)}
  enemies=enemies.filter(e=>!e.dead)}
-function updateBullets(dt){for(let b of bullets){b.life-=dt;b.prev=[...b.p];let step=V.mul(b.v,dt),len=V.len(step),dir=V.mul(step,1/(len||1));if(wallDistance(b.p,dir,len)<len){burst(b.p,0xffb881,3,2);b.life=0;continue}let center=[player.x,player.y-.55,player.z];let hit=raySphere(b.p,dir,center,.62);if(hit<=len){hurt(b.damage);b.life=0;continue}b.p=V.add(b.p,step);if(b.p[1]<.06)b.life=0}bullets=bullets.filter(b=>b.life>0)}
+function updateBullets(dt){for(let b of bullets){b.life-=dt;b.prev=[...b.p];let step=V.mul(b.v,dt),len=V.len(step),dir=V.mul(step,1/(len||1));if(wallDistance(b.p,dir,len)<len){burst(b.p,0xffb881,3,2);b.life=0;continue}let center=[player.x,player.y-.55,player.z];let hit=raySphere(b.p,dir,center,.62);if(hit<=len){hurt(b.damage,b.p[0]-b.v[0],b.p[2]-b.v[2]);b.life=0;continue}b.p=V.add(b.p,step);if(b.p[1]<.06)b.life=0}bullets=bullets.filter(b=>b.life>0)}
 function updatePlayer(dt){let fw=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)+touchMove.y,side=(keys.KeyD?1:0)-(keys.KeyA?1:0)+touchMove.x;if(player.down||player.dead||net.frozen){fw=0;side=0}let n=Math.hypot(fw,side);if(n>1){fw/=n;side/=n}if(keys.ArrowLeft)player.yaw-=dt*1.7;if(keys.ArrowRight)player.yaw+=dt*1.7;aimBlend=lerp(aimBlend,aim?1:0,1-Math.exp(-dt*14));let sprint=(keys.ShiftLeft||keys.ShiftRight)&&fw>0&&!aim&&!mouseDown;let speed=aim?3.9:sprint?9.5:6.6;let s=Math.sin(player.yaw),c=Math.cos(player.yaw),tx=(s*fw+c*side)*speed,tz=(-c*fw+s*side)*speed;let smoothing=1-Math.exp(-dt*(n?18:13));player.vx=lerp(player.vx,tx,smoothing);player.vz=lerp(player.vz,tz,smoothing);moveEntity(player,player.vx*dt,player.vz*dt,.34,player.y-1.72,player.y+.15);
  let oldFoot=player.y-1.72;player.vy-=20*dt;player.y+=player.vy*dt;let floor=0;for(let o of obstacles){if(Math.abs(player.x-o.x)<o.w+.20&&Math.abs(player.z-o.z)<o.d+.20&&oldFoot>=o.top-.05&&player.y-1.72<=o.top&&player.vy<=0)floor=Math.max(floor,o.top)}for(const b of barrels){if(!b.dead&&Math.hypot(player.x-b.x,player.z-b.z)<.57&&oldFoot>=1.3-.05&&player.y-1.72<=1.3&&player.vy<=0)floor=Math.max(floor,1.3)}if(player.y<=floor+1.72){if(!player.ground&&player.vy<-3){tone(64,.12,'triangle',.07,40);if(!reduced)recoil+=.022}player.y=floor+1.72;player.vy=0;player.ground=true}else player.ground=false;
  if(clock-damageAt>5&&player.hp<100&&!player.down&&!player.dead){player.hp=Math.min(100,player.hp+regenRate()*dt)}
@@ -1138,7 +1147,7 @@ function render(dt=0){let inGame=state!=='menu';updateAmbient(dt);
  const dyaw=FpsKit.wrap(player.yaw-lastYaw),dpitch=player.pitch-lastPitch,sk=reduced?0:1,sm=1-Math.exp(-dt*9);lastYaw=player.yaw;lastPitch=player.pitch;
  swayX=lerp(swayX,clamp(-dyaw*1.6,-.06,.06)*sk,sm);swayY=lerp(swayY,clamp(dpitch*1.6,-.05,.05)*sk,sm);
  if(!inGame){let t=menuTime*.065;cameraEye=[11.5+Math.sin(t)*2.8,3.4+Math.sin(t*.7)*.25,19.5+Math.cos(t)*2];let target=[-1.5,2.8,-5];let d=V.norm(V.sub(target,cameraEye));cameraYaw=Math.atan2(d[0],-d[2]);cameraPitch=Math.asin(d[1])}
- else{let bob=!reduced&&player.ground?Math.sin(moveBob)*.027*clamp(Math.hypot(player.vx,player.vz)/6,0,1):0;cameraEye=[player.x,player.y+bob-(player.down?1.05:0)-(player.dead?1.25:0),player.z];cameraYaw=player.yaw;cameraPitch=player.pitch+(reduced?0:kick*.6)}
+ else{let bob=!reduced&&player.ground?Math.sin(moveBob)*.027*clamp(Math.hypot(player.vx,player.vz)/6,0,1):0;cameraEye=[player.x,player.y+bob-(player.down?1.05:0)-(player.dead?1.25:0),player.z];cameraYaw=player.yaw;cameraPitch=player.pitch+(reduced?0:kick*.6);if(shake>0){shake=reduced?0:Math.max(0,shake-dt*1.7);const k=shake*shake*.03;cameraYaw+=Math.sin(menuTime*63.1)*k;cameraPitch+=Math.sin(menuTime*49.7+1.3)*k}}
  let view=lookAt(cameraEye,V.add(cameraEye,[Math.sin(cameraYaw)*Math.cos(cameraPitch),Math.sin(cameraPitch),-Math.cos(cameraYaw)*Math.cos(cameraPitch)]));let cam=camWorld(cameraEye,cameraYaw,cameraPitch),p=perspective((inGame?fov:63)*Math.PI/180,canvas.width/canvas.height);currentVP=mm(p,view);let ringModel=trs([0,4.15,-4],menuTime*.24,1,0,.13);
  // Viewmodel first: its muzzle also lights the world for a frame.
  let gunModel=null,muzzlePos=null;const rt=reloadT>0?1-reloadT/1.3:0;
@@ -1183,8 +1192,8 @@ function render(dt=0){let inGame=state!=='menu';updateAmbient(dt);
   if(show)draw(magMesh,mm(gunModel,trs([0,md,0],0,1,mt)));
   if(muzzle>0){const fl=flameGeo;fl.v.length=0;for(let i=0;i<4;i++){let m=trs([0,0,0],0,1,0,i*TAU/4+muzzleRot);fl.tri(transform(m,[-.05,.014,-.84]),transform(m,[.05,.014,-.84]),transform(m,[0,.014,-1.0-rand(0,.18)]),0xffdea1,2);fl.tri(transform(m,[0,-.04,-.86]),transform(m,[0,.07,-.86]),transform(m,[0,.014,-.94-rand(0,.1)]),0xfff3d0,2)}upload(effectMesh,fl);gl.disable(gl.CULL_FACE);draw(effectMesh,gunModel);
    const mg=mglowGeo;mg.v.length=0;glow(mg,muzzlePos,.3+Math.random()*.08,0xffc27a,cam);upload(muzzleGlowMesh,mg);gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);draw(muzzleGlowMesh);gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST)}}
- $('damage').style.opacity=damageFlash*.7;$('hitmarker').style.opacity=Math.min(1,hitFlash*10);$('crosshair').style.setProperty('--spread',(aim?4:8+recoil*65)+'px');$('reload-circle').style.display=reloadT>0?'block':'none';$('reload-circle').firstElementChild.style.width=((1-reloadT/1.3)*100)+'%';if(state==='playing'&&frame%3===0)radar();
- extraHUD();if(frame%4===0)audioTick();if(net.live)net.updateTags();
+ const lowHP=(state==='playing'||state==='paused')&&!player.down&&!player.dead&&player.hp<28?(reduced?.22:.16+.14*Math.max(0,Math.sin(menuTime*6.6))):0;$('damage').style.opacity=Math.max(damageFlash*.7,lowHP).toFixed(3);$('hitmarker').style.opacity=Math.min(1,hitFlash*10);$('crosshair').style.setProperty('--spread',(aim?4:8+recoil*65)+'px');$('reload-circle').style.display=reloadT>0?'block':'none';$('reload-circle').firstElementChild.style.width=((1-reloadT/1.3)*100)+'%';if(state==='playing'&&frame%3===0)radar();
+ hitDirFrame(dt);extraHUD();if(frame%4===0)audioTick();if(net.live)net.updateTags();
  if(firstFrame){firstFrame=false;$('loading').style.opacity=0;setTimeout(()=>$('loading').style.display='none',400)}
 }
 // Adaptive quality: below ~48 fps the render scale drops first, then shadows, then ambient detail.
@@ -1361,7 +1370,7 @@ Object.assign(net,(()=>{
    case'pk':if(host())pickups=pickups.filter(p=>p.id!==(ev.id|0));break;
    case'k':if(fromHost&&!host()&&net.live)clientKill(ev);break;
    case'eb':if(fromHost&&!host()&&net.live&&vec3(ev.o)&&vec3(ev.v)){bullets.push({p:ev.o.slice(),prev:ev.o.slice(),v:ev.v.slice(),life:5,damage:clamp(+ev.dm||10,0,25),color:ev.c|0||0xff6542});const a=spatial({x:ev.o[0],z:ev.o[2]});noise(.13,.2*a.gain,2300,a.pan)}break;
-   case'mh':if(fromHost&&ev.to===me)hurt(clamp(+ev.d||0,0,20));break;
+   case'mh':if(fromHost&&ev.to===me){const n=nearestEnemyTo(player.x,player.z);hurt(clamp(+ev.d||0,0,20),n?.x,n?.z)}break;
    case'ws':if(fromHost&&!host()&&net.live){wave=clamp(ev.w|0,1,5);waveLocal();resetBarrels()}break;
    case'wc':if(fromHost&&!host()&&net.live){roundDelay=3.5;waveClearLocal()}break;
    case'ex':if(fromHost&&!host()&&net.live)openExtraction();break;
@@ -1405,7 +1414,7 @@ Object.assign(net,(()=>{
  function pulsePilots(center){const now=performance.now();for(const p of peers.values()){if(!live(p,now)||(p.flags&F.dead))continue;const tp=[p.pos.x,p.pos.y-.5,p.pos.z];if(Math.hypot(tp[0]-center[0],tp[2]-center[2])<8&&clearLine(center,tp)){event({t:'h',to:p.id,d:P.DM.pulse,p:1});burst(tp,0xb1ffd4,13,6)}}}
  function pilotHit(from,ev,now){if(!net.live||net.mode!=='dm'||player.dead||protectT>0||phase!=='live'||net.frozen)return;const p=peers.get(from);if(!live(p,now)||(p.flags&F.dead))return;
   const dmg=pilotGuard.accept(from,Number(ev.d),now,Math.hypot(p.pos.x-player.x,p.pos.z-player.z));if(!dmg)return;
-  player.hp=Math.max(0,player.hp-dmg);damageAt=clock;damageFlash=.6;noise(.22,.4,1600);tone(90,.22,'triangle',.4,28);lastHud='';if(player.hp<=0)die(from)}
+  player.hp=Math.max(0,player.hp-dmg);damageAt=clock;damageFlash=.6;hitFrom(p.pos.x,p.pos.z);addShake(.16+dmg*.012);noise(.22,.4,1600);tone(90,.22,'triangle',.4,28);lastHud='';if(player.hp<=0)die(from)}
  function die(by){player.hp=0;player.dead=true;deaths++;respawnT=P.DM.respawn;mouseDown=false;reloadT=0;aim=false;const id=self()+':'+deaths+':'+roundN;board.kill(by,self(),id);event({t:'die',by,id});feedKill(by,self());
   $('down-banner').style.display='block';$('down-title').textContent=by?`${nameOf(by)} got you`:'Down';$('down-sub').textContent=`Respawn in ${P.DM.respawn}`;tone(140,.5,'triangle',.3,40);noise(.4,.3,900)}
  function dmDeath(from,ev){if(!net.live||net.mode!=='dm')return;const by=typeof ev.by==='string'?ev.by:null;if(!board.kill(by,from,String(ev.id||'')))return;const p=peers.get(from);if(p)burst([p.pos.x,p.pos.y-.6,p.pos.z],0xff9a6a,24,5);if(by===self())creditPilot(p);feedKill(by,from)}
