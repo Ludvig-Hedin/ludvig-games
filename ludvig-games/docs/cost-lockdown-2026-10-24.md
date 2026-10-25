@@ -38,3 +38,7 @@ All 13 game Workers and the hub API are prepared locally for the Free account (`
 ## Static redeploy, 24 Oct evening
 
 The new catalog design (dropdown filters, 8 categories, "Download for Mac") went live the same way as the lockdown deploy: built in a temporary copy with the 10 offline external games hidden, then `wrangler deploy -c wrangler.static.jsonc` (static files only, no Worker script). Checked live: 52 cards, `/api/scores` still 404. The download link points to the GitHub release of the Mac app (`github.com/Ludvig-Hedin/ludvig-games`), not to Cloudflare.
+
+## Static redeploy, 25 Oct
+
+The games polish round went live the same way (temporary copy, 10 offline external games hidden, `wrangler deploy -c wrangler.static.jsonc`, static files only). Checked live: 52 cards, `/api/scores` still 404, the Neon and Noodle fixes are in the served pages.
