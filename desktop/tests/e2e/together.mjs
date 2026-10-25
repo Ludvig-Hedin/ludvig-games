@@ -284,7 +284,7 @@ try {
           return route.abort("internetdisconnected");
         });
         const p = await ctx.newPage();
-        p.on("pageerror", (e) => r.errors.push(String(e.message || e).slice(0, 160)));
+        p.on("pageerror", (e) => r.errors.push(`${side} pageerror: ${String(e.message || e).slice(0, 160)} @ ${String(e.stack || "").split("\n").slice(1, 3).join(" | ").slice(0, 300)}`));
         p.on("console", (m) => { if (["error", "warning"].includes(m.type()) && r.errors.length < 30) r.errors.push(`${side} ${m.type()}: ${m.text().slice(0, 160)}`); });
         return p;
       };
