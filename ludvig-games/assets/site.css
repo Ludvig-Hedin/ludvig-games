@@ -117,6 +117,7 @@ button.nav-button { background: transparent; cursor: pointer; font: inherit; fon
 .policy p { margin: 0 0 16px; }
 .policy a { text-decoration: underline; text-decoration-color: var(--muted); text-underline-offset: 3px; }
 .policy strong { font-weight: 500; }
+.policy address { margin: 20px 0 32px; font-style: normal; }
 .policy code { overflow-wrap: anywhere; }
 .empty { padding-bottom: 48px; }
 .empty p { margin: 8px 0 24px; color: var(--muted); }

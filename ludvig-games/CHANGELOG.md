@@ -1,5 +1,6 @@
 # 2026-10-28: Terms, Privacy Policy and refund information
 
+- Owner-confirmed business address and phone are shown in one compact contact block in Terms.
 - Shortened the public copy after the owner's requested independent critique. Removed internal launch
   notes and unrelated scope references. Policies have a simpler header and reading column; muted Terms,
   Privacy, Refunds and Contact links sit at the bottom. Checked locally on desktop and phone.

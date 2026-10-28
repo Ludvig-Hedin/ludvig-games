@@ -19,8 +19,9 @@ No automatic access removal is promised.
 
 ## Sales blockers and owners
 
-- **Ludvig:** confirm the public business address and phone. A specific confirmation question was sent
-  in chat after reading Stripe; do not publish unconfirmed private account details. Owner supplied four
+- **Confirmed by Ludvig:** business address and phone from Stripe are correct (28 October 2026). They
+  are used only in the Terms' compact operator-contact block. No apartment number or personal identifier
+  is copied from Stripe. Owner supplied four
   Lemon Squeezy screenshots: Ludvig Games / ludviggames, SEK, in review/not activated, and no products in
   the displayed test-mode catalogue. These do not establish whether a separate live catalogue exists or
   what was written in the original application. The original application is still not visible.
@@ -100,7 +101,11 @@ Contact in a muted footer row. The homepage-footer-to-Terms journey and all thre
 checked at 390 px; desktop reading width and footer appearance were also inspected. Screenshots in
 `output/policy-privacy-preview.png` and `output/policy-footer-preview.png` are local app previews, not live.
 
-Publishing remains blocked. The owner was asked whether to add a narrowly scoped registered static
-publishing command, retaining the installed RAM limits and forbidding backend activation. The concrete
-proposal is in `output/static-publish-command-proposal.md`. No guard files have been modified. Those
-files contain peer changes, so their edit owner must be established before applying any approved repair.
+The owner approved adding the narrowly scoped registered static publishing command on 28 October 2026,
+retaining the installed RAM limits and forbidding backend activation. Implementation and fresh safety
+review are required before the publication retry. Existing guard-file differences must be preserved.
+
+The approved publisher is being implemented in delegated task `games-static-publish-guard-20261028-v1`.
+The current release candidate at `output/static-policy-release` is held for that in-progress publication;
+it contains only rebuildable static output and its manifest will be written to the final helper schema.
+The parent thread owns the callback, safety review, guarded checks, deployment and candidate cleanup.
