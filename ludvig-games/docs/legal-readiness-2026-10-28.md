@@ -105,7 +105,19 @@ The owner approved adding the narrowly scoped registered static publishing comma
 retaining the installed RAM limits and forbidding backend activation. Implementation and fresh safety
 review are required before the publication retry. Existing guard-file differences must be preserved.
 
-The approved publisher is being implemented in delegated task `games-static-publish-guard-20261028-v1`.
-The current release candidate at `output/static-policy-release` is held for that in-progress publication;
-it contains only rebuildable static output and its manifest will be written to the final helper schema.
-The parent thread owns the callback, safety review, guarded checks, deployment and candidate cleanup.
+The approved publisher is installed and saved in the dotfiles repository at `e53adae`. It preserves
+RAM admission, process registration and the heavy lock, pins the existing Cloudflare account/domain,
+and accepts only this site's static candidate. Fresh review accepted supervisor identity and lock
+checks. The subsequent auth review found Wrangler's legacy HOME fallback; the helper now fails closed
+if that folder exists immediately before every Wrangler launch. Auth uses a private XDG directory.
+Helper syntax, matching copies and wrapper pins passed. A guarded check accepted the 513-file candidate
+before the auth-only changes; a wrong candidate path was rejected. Later retries hit a busy scheduler.
+
+Publishing remains blocked on renewing expired Cloudflare OAuth. A guarded browser-free login prints
+an authorization link for Ludvig to open in Dia. No deployment has occurred. The parent owns completing
+login, account verification, guarded publication and live checks. Do not send the policy-review reply
+until its live URLs have been verified. The source build excludes local agent/Git metadata.
+
+The candidate at `output/static-policy-release` is retained solely for this pending publication. No
+preview server or task browser remains active. The parent owns deleting that exact rebuildable folder
+after publication or cancellation. Keep source policies and saved preview screenshots.
