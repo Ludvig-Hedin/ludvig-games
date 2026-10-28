@@ -1,3 +1,16 @@
+# 2026-10-28: Terms, Privacy Policy and refund information
+
+- Added policy pages at `/terms/`, `/privacy/` and `/refunds/`, with footer links, contact email and sitemap
+  entries. Source copy is retained through rebuilds. The pages describe the current free site and Mac app,
+  including paused online services, score request attempts, local saves, analytics, fonts and updates.
+- Optional extras have a 14-day full-refund policy, including after use; statutory remedies remain.
+  The pages do not claim checkout or fulfilment is available. Payment-to-code delivery is not built,
+  and current Ritkaos codes cannot be individually revoked. Sales blockers are in
+  `docs/legal-readiness-2026-10-28.md`.
+- Checked the footer-to-policy journey in installed Chrome and phone/desktop layouts. No full suite or
+  remote CI. Not live: the Cloudflare connector's JWT-authenticated asset upload returned `Unauthorized`;
+  the installed guard also refused a Wrangler invocation. Existing production version remains unchanged.
+
 # 2026-10-25: Pigeon rounds, Scrapyard on Normal, Bloop help on phones
 
 - Pigeon solo is now a 3-minute round. The clock sits under the score, and when it runs out a results card shows your chaos score, your best and "Play again". The score goes to the leaderboard then. Online squares keep their 4-minute rounds.

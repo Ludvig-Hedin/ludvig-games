@@ -4,6 +4,19 @@ A static collection of Ludvig's experimental browser games. Seventy-two public l
 
 Live: https://games.ludvighedin.com/. The custom domain is connected and responds over HTTPS.
 
+## Policies and current sales status (28 October 2026)
+
+The canonical policy copy is in `policies/terms.html`, `policies/privacy.html` and `policies/refunds.html`.
+`build.py` creates `/terms/`, `/privacy/` and `/refunds/`, adds footer links and includes them in the sitemap.
+The pages cover the current free hub and Mac app. The refund policy promises a full refund within 14 days,
+including after trying an optional extra, and preserves statutory remedies. Owner instruction: follow law,
+standards and user expectations (28 October 2026).
+
+Paid checkout is not ready. The current static-only deployment and paused services are described in
+`docs/cost-lockdown-2026-10-24.md`; older platform sections below describe capabilities in source, not an
+assertion that the live APIs are active. Before offering sales, complete the items in
+`docs/legal-readiness-2026-10-28.md`. Never use a normal Worker deploy to publish policy updates.
+
 ## Content
 
 - `games.json` is the catalog, in display order. `players` means capacity, never plays or active visitors.

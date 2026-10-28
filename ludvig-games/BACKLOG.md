@@ -1,5 +1,11 @@
 # Backlog
 
+- Payments and legal readiness (28 Oct): the current free-site policy pages are in `policies/`. Sales are
+  still blocked on the actual contracting business/product details, verified payment-to-code delivery,
+  refund operations, withdrawal function/confirmation, and rights checks for the paid deliverable. See
+  `docs/legal-readiness-2026-10-28.md`. Ludvig owns the business/product facts; implementer owns the flow
+  once those facts are supplied. Policy publication is not approval to enable checkout or paused Workers.
+
 - Physical-phone gameplay checks: verify each touch-enabled game's full controls on iOS Safari and Android Chrome. The hub's mobile layout and frame flow are covered. New-batch touch emulation covers entry flows and selected controls, not complete runs. Browser touch emulation also covers Paper's controls and HUMAN's seven-test run; physical iOS/Android gameplay remains unchecked. SKYLINE remains desktop-first.
 - Atlas: keep hidden until the owner resumes development and decides when to enable the Google API. Its separate site is unchanged.
 - Anything vs Anything: implement the protected interpretation endpoint, shared request limits, server-held key, cost reservations and automatic pause at 1,000 SEK/month before unhiding. See `docs/anything-vs-anything-launch.md`. Provider/model/datastore setup and media-recording checks remain open. Do not publish the standalone hidden file or call paid APIs while preparing it.

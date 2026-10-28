@@ -115,7 +115,11 @@ def masthead():
   </dialog>'''
 
 
-FOOTER = '<footer class="footer">© 2026 Ludvig Hedin</footer>'
+POLICIES = {
+    "terms": ("Terms", "Terms for using Ludvig Games and optional paid extras."),
+    "privacy": ("Privacy Policy", "How Ludvig Games handles game saves, technical data and support messages."),
+    "refunds": ("Refund information", "How to request a refund and exercise your consumer rights."),
+}
 
 
 def load_seo():
@@ -138,7 +142,25 @@ def footer(groups=()):
     label = lambda g: {"Board & cards": "Board and card", "Sports & racing": "Sports and racing"}.get(g, g)
     links = "".join(f'<a href="/category/{category_slug(g)}/">{escape(label(g))} games</a>' for g in groups)
     nav = f'<nav class="footer-cats" aria-label="Game categories">{links}</nav>' if links else ""
-    return f'<footer class="footer">{nav}<p>© 2026 Ludvig Hedin</p></footer>'
+    legal = "".join(f'<a href="/{slug}/">{escape(title)}</a>' for slug, (title, _) in POLICIES.items())
+    return f'<footer class="footer">{nav}<nav class="footer-cats" aria-label="Policies">{legal}</nav><p>© 2026 Ludvig Hedin · <a href="mailto:ludvig@ludvighedin.com">Contact</a></p></footer>'
+
+
+def policy_pages(output, groups):
+    """Keep policy copy in source, so rebuilding cannot remove the public pages."""
+    for slug, (title, description) in POLICIES.items():
+        content = (ROOT / "policies" / f"{slug}.html").read_text()
+        body = f'''<div class="shell">
+  {masthead()}
+  <main id="content" class="policy">
+    <h1 class="page-title">{escape(title)}</h1>
+    <p class="policy-date">Last updated: 28 October 2026</p>
+    {content}
+  </main>
+  {footer(groups)}
+</div>'''
+        (output / slug).mkdir()
+        (output / slug / "index.html").write_text(document(f"{title} · Ludvig Games", description, f"/{slug}/", body))
 
 
 def multiplayer(game):
@@ -559,7 +581,7 @@ def render(output):
         slug = game["slug"]
         if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or slug in slugs:
             raise ValueError(f"Invalid or duplicate slug: {slug}")
-        if slug in ("games", "assets", "me", "api", "mp"):
+        if slug in ("games", "assets", "me", "api", "mp", *POLICIES):
             raise ValueError(f"Slug collides with a site path: {slug}")
         slugs.add(slug)
         if not isinstance(game.get("hidden", False), bool):
@@ -661,11 +683,13 @@ def render(output):
     (OUT / "404.html").write_text(document("Page not found · Ludvig Games", "Return to all games.", "/404", error))
     (OUT / "me").mkdir()
     (OUT / "me" / "index.html").write_text(records_page(groups))
+    policy_pages(OUT, groups)
     local = [g for g in games if not g["external"]]
     sources = {g["slug"]: lastmod(ROOT / "source-games" / g["slug"] / "index.html") for g in local}
     newest = max(sources.values(), default=time.strftime("%Y-%m-%d"))
     entries = [("/", newest)] + [(f"/{g['slug']}/", sources[g["slug"]]) for g in local]
     entries += [(page, sources.get(page.split("/")[1], newest)) for page in seo_pages]
+    entries += [(f"/{slug}/", lastmod(ROOT / "policies" / f"{slug}.html")) for slug in POLICIES]
     (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                                      + "".join(f"<url><loc>{ORIGIN}{p}</loc><lastmod>{d}</lastmod></url>" for p, d in entries) + "</urlset>\n")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /games/\nDisallow: /api/\nDisallow: /mp/\nSitemap: {ORIGIN}/sitemap.xml\n")

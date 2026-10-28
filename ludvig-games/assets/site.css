@@ -102,6 +102,13 @@ button.nav-button { background: transparent; cursor: pointer; font: inherit; fon
 .footer { margin-top: 96px; padding-block: 24px max(32px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 
 .page-title { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -.01em; }
+.policy { max-width: 72ch; font-size: 15px; line-height: 1.7; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+.policy .page-title { font-size: 28px; line-height: 1.2; }
+.policy-date { color: var(--muted); font-size: 13px; margin: 12px 0 32px; }
+.policy h2 { margin: 32px 0 10px; font-size: 18px; font-weight: 500; line-height: 1.4; }
+.policy p { margin: 0 0 16px; }
+.policy a, .footer p a { text-decoration: underline; text-underline-offset: 3px; }
+.policy code { overflow-wrap: anywhere; }
 .empty { padding-bottom: 48px; }
 .empty p { margin: 8px 0 24px; color: var(--muted); }
 .empty a { color: var(--text); }
