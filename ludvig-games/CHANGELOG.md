@@ -1,3 +1,9 @@
+# 2026-10-28: simpler footer
+
+- Removed category links from the footer, keeping the muted Terms, Privacy, Refunds and Contact links.
+- Compared 509 served assets with the static candidate. Only 66 generated pages change, removing the
+  category navigation. Game files and policy text remain identical. Publication pending the guarded slot.
+
 # 2026-10-28: Terms, Privacy Policy and refund information
 
 - Owner-confirmed business address and phone are shown in one compact contact block in Terms.

@@ -138,13 +138,10 @@ def category_slug(group):
 
 
 def footer(groups=()):
-    """Footer with links to the category pages (search engines find every game through them)."""
-    label = lambda g: {"Board & cards": "Board and card", "Sports & racing": "Sports and racing"}.get(g, g)
-    links = "".join(f'<a href="/category/{category_slug(g)}/">{escape(label(g))} games</a>' for g in groups)
-    nav = f'<nav class="footer-cats" aria-label="Game categories">{links}</nav>' if links else ""
+    """Compact footer with policies and contact links."""
     labels = {"terms": "Terms", "privacy": "Privacy", "refunds": "Refunds"}
     legal = "".join(f'<a href="/{slug}/">{labels[slug]}</a>' for slug in POLICIES)
-    return f'<footer class="footer">{nav}<div class="footer-bottom"><p>© 2026 Ludvig Hedin</p><nav class="footer-legal" aria-label="Policies">{legal}<a href="mailto:ludvig@ludvighedin.com">Contact</a></nav></div></footer>'
+    return f'<footer class="footer"><div class="footer-bottom"><p>© 2026 Ludvig Hedin</p><nav class="footer-legal" aria-label="Policies">{legal}<a href="mailto:ludvig@ludvighedin.com">Contact</a></nav></div></footer>'
 
 
 def policy_pages(output, groups):
