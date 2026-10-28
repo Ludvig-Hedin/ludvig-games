@@ -12,9 +12,12 @@
   and current Ritkaos codes cannot be individually revoked. Sales blockers are in
   `docs/legal-readiness-2026-10-28.md`.
 - Game builds exclude local agent and Git metadata from published assets.
-- Checked the footer-to-policy journey in installed Chrome and phone/desktop layouts. No full suite or
-  remote CI. Not live: the Cloudflare connector's JWT-authenticated asset upload returned `Unauthorized`;
-  the installed guard also refused a Wrangler invocation. Existing production version remains unchanged.
+- Checked the footer-to-policy journey in installed Chrome and phone/desktop layouts locally. Published
+  through the approved guarded static lane, version `1fd7c97a-8a17-4e5e-9494-62c1eb1aa453`.
+  Live HTTP checks matched all three policies, homepage and CSS to the candidate; sampled games matched,
+  52 cards remain, both paused API endpoints return 404, and Cloudflare has no backend bindings.
+  No full suite or remote CI. Historical retention/transfer questions remain open before any claim
+  of full compliance. Paid delivery is still unbuilt.
 
 # 2026-10-25: Pigeon rounds, Scrapyard on Normal, Bloop help on phones
 

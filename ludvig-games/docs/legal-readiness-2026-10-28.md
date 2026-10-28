@@ -71,21 +71,15 @@ existing generated files against live HTTP responses found no unexpected game ch
 changes are limited to hub, category and about pages, the sitemap and stylesheet. Cloudflare's dynamically
 managed robots response must not be copied back into the source asset.
 
-Publication is blocked, not complete. The installed `agent-heavy-run heavy` entrypoint refused the
-Wrangler invocation as a broad-check lane. No override variable or alternative unregistered deploy
-process was used. The Cloudflare connector could register the static asset manifest, but the subsequent
-JWT-authenticated asset upload returned a non-JSON `Unauthorized` response. No final Worker upload was
-performed. The manifest contained 510 files; all unexpectedly missing assets were investigated before
-attempting upload (Cloudflare's managed robots response was excluded from the candidate).
+Published on 28 October 2026 through the approved guarded static lane. Previous production version
+`a116be06-07fa-4dd3-b6c2-60ee3b9a355d` was checked immediately before publishing. New version:
+`1fd7c97a-8a17-4e5e-9494-62c1eb1aa453`. The three policy URLs, homepage, stylesheet and three sample
+games returned 200 and matched the candidate bytes. All 52 game cards remain. Both paused API endpoints
+still return 404; Cloudflare settings contain no bindings. The earlier urllib client was rejected with
+403; curl returned the public pages successfully. This was a client-specific verification issue.
 
-The implementer owns retrying publication when a supported deployment path is available. Keep the
-static-only config, no bindings/backend, 52 game cards and offline APIs. Re-check the live version before
-publishing and repeat only verification affected by a changed candidate. Do not change machine safety
-guards or invent owner approval for a broad test/build lane. After publishing, verify all three URLs,
-footer links, unchanged games and `/api/scores` and `/api/me` still returning 404, then update this record.
-
-The temporary candidate, preview server and browser are task-owned and removed at task end. Source policy
-files and this record remain available; no new node_modules or .next folders were created.
+No new dev server or browser was started for publication. The rebuildable static release candidate was
+removed after verification. Source policies, screenshots and the release receipt remain.
 
 ## Shortened revision and independent roast
 
@@ -113,11 +107,10 @@ if that folder exists immediately before every Wrangler launch. Auth uses a priv
 Helper syntax, matching copies and wrapper pins passed. A guarded check accepted the 513-file candidate
 before the auth-only changes; a wrong candidate path was rejected. Later retries hit a busy scheduler.
 
-Publishing remains blocked on renewing expired Cloudflare OAuth. A guarded browser-free login prints
-an authorization link for Ludvig to open in Dia. No deployment has occurred. The parent owns completing
-login, account verification, guarded publication and live checks. Do not send the policy-review reply
-until its live URLs have been verified. The source build excludes local agent/Git metadata.
+Cloudflare OAuth was renewed successfully in the isolated auth directory. The guarded publisher then
+validated the snapshot and deployed static assets only. The publication and focused live checks are
+complete. The ready email wording is saved at `output/lemon-squeezy-reply.txt`; no email was sent.
 
-The candidate at `output/static-policy-release` is retained solely for this pending publication. No
-preview server or task browser remains active. The parent owns deleting that exact rebuildable folder
-after publication or cancellation. Keep source policies and saved preview screenshots.
+There is no remaining publication action for Ludvig. The sales blockers and privacy implementation
+limits above remain separate follow-up work. The task coordinator owns any requested payment work;
+checkout remains unavailable until a concrete product and functioning delivery/refund journey exist.
