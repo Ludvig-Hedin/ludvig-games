@@ -118,7 +118,7 @@ def masthead():
 POLICIES = {
     "terms": ("Terms", "Terms for using Ludvig Games and optional paid extras."),
     "privacy": ("Privacy Policy", "How Ludvig Games handles game saves, technical data and support messages."),
-    "refunds": ("Refund information", "How to request a refund and exercise your consumer rights."),
+    "refunds": ("Refund Policy", "How to request a refund and exercise your consumer rights."),
 }
 
 
@@ -142,16 +142,17 @@ def footer(groups=()):
     label = lambda g: {"Board & cards": "Board and card", "Sports & racing": "Sports and racing"}.get(g, g)
     links = "".join(f'<a href="/category/{category_slug(g)}/">{escape(label(g))} games</a>' for g in groups)
     nav = f'<nav class="footer-cats" aria-label="Game categories">{links}</nav>' if links else ""
-    legal = "".join(f'<a href="/{slug}/">{escape(title)}</a>' for slug, (title, _) in POLICIES.items())
-    return f'<footer class="footer">{nav}<nav class="footer-cats" aria-label="Policies">{legal}</nav><p>© 2026 Ludvig Hedin · <a href="mailto:ludvig@ludvighedin.com">Contact</a></p></footer>'
+    labels = {"terms": "Terms", "privacy": "Privacy", "refunds": "Refunds"}
+    legal = "".join(f'<a href="/{slug}/">{labels[slug]}</a>' for slug in POLICIES)
+    return f'<footer class="footer">{nav}<div class="footer-bottom"><p>© 2026 Ludvig Hedin</p><nav class="footer-legal" aria-label="Policies">{legal}<a href="mailto:ludvig@ludvighedin.com">Contact</a></nav></div></footer>'
 
 
 def policy_pages(output, groups):
     """Keep policy copy in source, so rebuilding cannot remove the public pages."""
     for slug, (title, description) in POLICIES.items():
         content = (ROOT / "policies" / f"{slug}.html").read_text()
-        body = f'''<div class="shell">
-  {masthead()}
+        body = f'''<div class="shell policy-shell">
+  <header class="policy-header"><a class="wordmark" href="/">Ludvig Games</a><a class="policy-back" href="/">All games</a></header>
   <main id="content" class="policy">
     <h1 class="page-title">{escape(title)}</h1>
     <p class="policy-date">Last updated: 28 October 2026</p>

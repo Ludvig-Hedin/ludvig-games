@@ -1,5 +1,8 @@
 # 2026-10-28: Terms, Privacy Policy and refund information
 
+- Shortened the public copy after the owner's requested independent critique. Removed internal launch
+  notes and unrelated scope references. Policies have a simpler header and reading column; muted Terms,
+  Privacy, Refunds and Contact links sit at the bottom. Checked locally on desktop and phone.
 - Added policy pages at `/terms/`, `/privacy/` and `/refunds/`, with footer links, contact email and sitemap
   entries. Source copy is retained through rebuilds. The pages describe the current free site and Mac app,
   including paused online services, score request attempts, local saves, analytics, fonts and updates.

@@ -8,8 +8,10 @@ of included third-party code, artwork, names or other assets.
 
 Source: `policies/terms.html`, `policies/privacy.html`, `policies/refunds.html`. The builder publishes them
 at `/terms/`, `/privacy/` and `/refunds/`. They describe the current free hub and Mac app, and identify the
-known operator as Ludvig Hedin, Stockholm, Sweden, contact ludvig@ludvighedin.com. They do not assert a
-registered business identity that has not been verified. They do not cover unrelated portfolio/client apps.
+operator as Ludvig Hedin, Stockholm, Sweden, contact ludvig@ludvighedin.com. The owner confirmed that
+Ludvig Hedin is the business name, 28 October 2026; the connected Stripe account's business name matches.
+Do not include references to the owner's portfolio or client work in the public policies (owner decision,
+same date). The public text was shortened after the requested independent critique.
 
 Refund choice: owner said to follow law, standards and user expectations. Implementation uses full refunds
 on request within 14 days, including after trying or redeeming an extra. Longer statutory remedies remain.
@@ -17,10 +19,11 @@ No automatic access removal is promised.
 
 ## Sales blockers and owners
 
-- **Ludvig:** supply the Lemon Squeezy application/store screenshots requested in chat. Confirm the legal
-  contracting name, business status and required public address/phone details, exact product being sold,
-  and which other portfolio apps belong to that operator. The site-scoped Dia login export failed twice;
-  the dashboard itself was not inspected. Do not say application facts were verified.
+- **Ludvig:** confirm the public business address and phone. A specific confirmation question was sent
+  in chat after reading Stripe; do not publish unconfirmed private account details. Owner supplied four
+  Lemon Squeezy screenshots: Ludvig Games / ludviggames, SEK, in review/not activated, and no products in
+  the displayed test-mode catalogue. These do not establish whether a separate live catalogue exists or
+  what was written in the original application. The original application is still not visible.
 - **Implementer, after product/store facts are known:** connect verified payment events to fulfilment.
   Ritkaos currently opens a generic `CHECKOUT_URL`, supports manually minted signed codes, and has no
   payment verification, order ledger, webhook or delivery. Do not enable checkout before the actual buyer
@@ -82,3 +85,22 @@ footer links, unchanged games and `/api/scores` and `/api/me` still returning 40
 
 The temporary candidate, preview server and browser are task-owned and removed at task end. Source policy
 files and this record remain available; no new node_modules or .next folders were created.
+
+## Shortened revision and independent roast
+
+The owner requested concise, professional public pages and muted text links at the bottom. A fresh
+reviewer called the initial draft too long and defensive. The revision removes internal launch
+instructions, unrelated scope disclaimers and AI liability commentary. Terms went from 769 to 332 words,
+Privacy from 1,395 to 641, and Refunds from 606 to about 190. A focused review accepted the cuts and asked
+only that refund order references remain optional; that wording is repaired. This does not resolve the
+known retention/transfer implementation questions or establish sales readiness.
+
+The revised layout uses a simple policy header and readable column, with Terms, Privacy, Refunds and
+Contact in a muted footer row. The homepage-footer-to-Terms journey and all three revised policies were
+checked at 390 px; desktop reading width and footer appearance were also inspected. Screenshots in
+`output/policy-privacy-preview.png` and `output/policy-footer-preview.png` are local app previews, not live.
+
+Publishing remains blocked. The owner was asked whether to add a narrowly scoped registered static
+publishing command, retaining the installed RAM limits and forbidding backend activation. The concrete
+proposal is in `output/static-publish-command-proposal.md`. No guard files have been modified. Those
+files contain peer changes, so their edit owner must be established before applying any approved repair.
