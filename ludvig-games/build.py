@@ -643,7 +643,7 @@ def render(output):
         # paths and old links. Editable source is kept locally, never included in the published game.
         for target, seo in ((OUT / game["slug"], True), (OUT / "games" / game["slug"], False)):
             shutil.copytree(ROOT / "source-games" / game["slug"], target, dirs_exist_ok=True,
-                            ignore=shutil.ignore_patterns("editable", "tests", "README.md", "QA.md"))
+                            ignore=shutil.ignore_patterns("editable", "tests", "README.md", "QA.md", ".claude", ".codex", ".git", ".DS_Store"))
             inject_platform(target / "index.html", game, boards, seo=seo)
     # Best first; ties keep catalog order (sorted() is stable).
     shown = sorted(games, key=lambda g: -g.get("quality", 0))
@@ -739,7 +739,7 @@ def refresh(slugs):
         game.setdefault("external", None)
         for target, seo in ((OUT / slug, True), (OUT / "games" / slug, False)):
             shutil.copytree(ROOT / "source-games" / slug, target, dirs_exist_ok=True,
-                            ignore=shutil.ignore_patterns("editable", "tests", "README.md", "QA.md"))
+                            ignore=shutil.ignore_patterns("editable", "tests", "README.md", "QA.md", ".claude", ".codex", ".git", ".DS_Store"))
             inject_platform(target / "index.html", game, boards, seo=seo)
         print(f"Refreshed {slug}")
 

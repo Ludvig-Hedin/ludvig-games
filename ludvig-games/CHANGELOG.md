@@ -11,6 +11,7 @@
   The pages do not claim checkout or fulfilment is available. Payment-to-code delivery is not built,
   and current Ritkaos codes cannot be individually revoked. Sales blockers are in
   `docs/legal-readiness-2026-10-28.md`.
+- Game builds exclude local agent and Git metadata from published assets.
 - Checked the footer-to-policy journey in installed Chrome and phone/desktop layouts. No full suite or
   remote CI. Not live: the Cloudflare connector's JWT-authenticated asset upload returned `Unauthorized`;
   the installed guard also refused a Wrangler invocation. Existing production version remains unchanged.
