@@ -114,3 +114,20 @@ complete. The ready email wording is saved at `output/lemon-squeezy-reply.txt`; 
 There is no remaining publication action for Ludvig. The sales blockers and privacy implementation
 limits above remain separate follow-up work. The task coordinator owns any requested payment work;
 checkout remains unavailable until a concrete product and functioning delivery/refund journey exist.
+
+## Footer simplification and Lemon Squeezy requirements check
+
+On the owner's request, removed category links from the shared footer while preserving muted policy
+and contact links. Published static-only version `bd238040-50e7-4627-857c-04f9b38fa6a4`. Compared 509
+served assets beforehand: differences were exclusively category navigation removal on 66 pages. All 66
+site footers then matched live. Paused API endpoints remain 404. Disposable candidate removed.
+
+Rechecked official activation, prohibited-product and refund documentation on 28 October 2026. The
+policy set addresses the reviewer email's request; the 14-day policy is compatible with sellers setting
+their refund policy. Activation also reviews business validity and eligible, deliverable digital goods.
+These pages cannot establish approval of a still-unspecified paid product, fulfilment or rights. Prior
+privacy retention/transfer verification gaps remain open. No policy wording changed in this revision.
+
+Sources: https://docs.lemonsqueezy.com/help/getting-started/activate-your-store
+https://docs.lemonsqueezy.com/help/getting-started/prohibited-products
+https://docs.lemonsqueezy.com/help/payments/refunds-chargebacks

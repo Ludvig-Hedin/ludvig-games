@@ -2,7 +2,8 @@
 
 - Removed category links from the footer, keeping the muted Terms, Privacy, Refunds and Contact links.
 - Compared 509 served assets with the static candidate. Only 66 generated pages change, removing the
-  category navigation. Game files and policy text remain identical. Publication pending the guarded slot.
+  category navigation. Game files and policy text remain identical. Live on version
+  `bd238040-50e7-4627-857c-04f9b38fa6a4`. Checked all 66 served site footers; APIs remain 404.
 
 # 2026-10-28: Terms, Privacy Policy and refund information
 
