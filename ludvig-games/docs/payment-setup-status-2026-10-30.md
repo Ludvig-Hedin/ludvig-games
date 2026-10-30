@@ -87,6 +87,16 @@ At the last checkpoint, focused guard checks could not run: the shared scheduler
 reclaimable memory was 17%, below the fixed 20% threshold. The emergency guard repeatedly stopped the
 local test server. Ludvig was asked to close unused heavy apps while keeping Dia open. No threshold
 was lowered and no peer process was stopped. No root-owned server remains listening on port 4322.
+Ludvig then confirmed the Dia permission dialog and said the other apps must remain open. Preserve
+those apps and do not repeat the request to close them. Two refreshed site-login exports still timed out;
+the old agent session redirects to sign-in. Public test checkout does not itself require that store login.
+The tax-policy focused check is also still blocked by another active focused job. Do not repeatedly
+restart the disposable server or infer a payment pass from the permission approval.
+
+The Cloudflare plugin can currently see only account 7e953f5245e669d7d7045be1b97ea295, not the approved
+Games Free account cffb5d1b12c3302ecc0745862fbf1f14. No resource was changed. A remote test environment is
+only a possible next route, not a verified/deployed fallback. Never deploy to the visible old account.
+
 The draft tax-only checkout policy has sensitive review; its frame/origin/referrer finding was repaired
 in the policy/tests. It is not activated in the connector until guarded checks pass and wiring is restored.
 Payment/Stripe requests remain blocked. Actual test receipts, recovery, final VAT total and game unlock
