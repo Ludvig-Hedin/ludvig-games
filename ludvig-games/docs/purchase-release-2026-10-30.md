@@ -5,7 +5,10 @@
 **Not ready for paid release. Purchases have not been activated.** The free site is already live.
 Ludvig supplied Lemon Squeezy's account-approval email on 30 October. This resolves the merchant
 approval wait recorded on 28 October. It does not prove a live product, working delivery or payout setup.
-No dashboard session, credentials, product configuration or payout details were inspected in this review.
+The original review did not inspect the dashboard. Subsequent Dia-login inspection confirmed Tax
+information displays Submitted, the live catalogue has no products, and enabling test mode is blocked
+by the read-only browser guard. No setup mutation or purchase test completed. Current evidence and
+remaining implementation work: [payment-setup-status-2026-10-30.md](payment-setup-status-2026-10-30.md).
 
 Owner decisions, 30 October: the paid launch must cover more games than Ritkaos. The earlier
 Ritkaos-only framing is superseded. Ludvig then approved the proposed lineup: Ritkaos+ extras,

@@ -1,5 +1,10 @@
 # 2026-10-30: purchase readiness review
 
+- Inspected the store via site-scoped Dia login after the owner's tax submission. Tax information
+  displays Submitted; no products are configured. Test-mode toggle is blocked by the installed browser
+  write guard. No successful checkout test or activation claimed. Saved the exact blocker, product
+  setup values, native-license architecture findings and a concrete 1,000 kr/month operating plan.
+
 - Owner accepted the researched starting prices and omitting tiny individual extras. Added a clear
   first-100-kr setup checklist and profitability plan, including the provider's US$50 payout threshold.
   New track packs and a new simulator remain proposals; this plan changes no app or production behavior.
