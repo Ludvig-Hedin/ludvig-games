@@ -621,7 +621,7 @@ def render(output):
     previews.mkdir(parents=True)
     base = api_base()
     for asset in ["site.css", "favicon.svg", "game-storage.js", "audio-resume.js",
-                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js"]:
+                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js", "store-client.js"]:
         shutil.copy2(ROOT / "assets" / asset, assets / asset)
     (assets / "ludvig.js").write_text(ludvig_script(base))
     boards = load_boards(games)

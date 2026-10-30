@@ -70,7 +70,7 @@ test('Ritkaos+ over a real WebSocket: store info, codes in hello, async redeem, 
  const server=spawn(process.execPath,['server.mjs'],{cwd:root,env:{...process.env,PORT:String(port),RITKAOS_UNLOCK_SECRET:secret,CHECKOUT_URL:'https://pay.example/ritkaos?p={product}'},stdio:'ignore'});const clients=[];
  try{
   let up=false;for(let i=0;i<100;i++){try{up=(await fetch(`http://127.0.0.1:${port}/health`)).ok;if(up)break;}catch{}await wait(25);}assert.ok(up);
-  const info=await (await fetch(`http://127.0.0.1:${port}/api/store`)).json();assert.equal(info.ready,true);assert.equal(info.checkout,'https://pay.example/ritkaos?p={product}');assert.ok(info.products.some(p=>p.id==='plus'&&p.price===79));
+ const info=await (await fetch(`http://127.0.0.1:${port}/api/store`)).json();assert.equal(info.ready,true);assert.equal(info.checkout,'','A generic checkout URL cannot activate purchasing');assert.equal(info.nativeReady,false);assert.ok(info.products.some(p=>p.id==='plus'&&p.price===59));
   assert.ok(!JSON.stringify(info).includes(secret),'The secret never leaves the server');
   for(const f of ['/lib/store.mjs','/lib/packs.mjs','/lib/packs/office.mjs','/scripts/mint-code.mjs'])assert.equal((await fetch(`http://127.0.0.1:${port}${f}`)).status,404,f);
   const host=await new Client().open(null,'sv',[await mintCode(secret,['office']),'RK-0000-0000-0000'],port);clients.push(host);

@@ -12,7 +12,8 @@ test('a quiet private room (studio drawing) needs no tick and survives a snapsho
  const {room}=g.handle(a,'create',{name:'Ludvig',avatar:2,visible:true});
  g.handle(b,'join',{code:room,name:'Albin'});
  g.handle(a,'settings',{mode:'studio',rounds:3,custom:'katt, hund'});
- a.owned.add('cosmetics');
+ // This fixture is an already-verified legacy grant, not provider ownership.
+ a.legacyOwned.add('cosmetics');a.owned.add('cosmetics');
  const r=g.rooms.get(room);
  g.handle(a,'start');assert.equal(r.phase,'studio');
  g.handle(a,'stroke.begin',{epoch:r.epoch,stroke:'s1',point:[.1,.2],width:.01,color:'#000000',cid:1});

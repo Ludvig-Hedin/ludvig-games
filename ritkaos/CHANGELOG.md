@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-30, local only
+
+- Native test-license support alongside legacy codes, revalidated ownership and ordered drawing commands during async validation. No provider checkout pass or deployment yet.
+
 ## 2026-10-24
 
 - Ready for the games' Workers Free account (not deployed). `wrangler.jsonc` has no route, custom domain or account id; workers.dev on, preview URLs and logs off; one fresh `v1` migration with the SQLite-backed `Lobby` class.

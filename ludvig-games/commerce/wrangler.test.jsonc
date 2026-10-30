@@ -1,0 +1,12 @@
+{
+  "name": "ludvig-games-store-test",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-30",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": { "TEST_MODE": "true", "ALLOW_LOCAL_TEST_ORIGINS": "true" },
+  "durable_objects": { "bindings": [{ "name": "LICENSES", "class_name": "Licenses" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Licenses"] }],
+  "ratelimits": [{ "name": "LICENSE_IP_LIMIT", "namespace_id": "4201", "simple": { "limit": 6, "period": 60 } }]
+}

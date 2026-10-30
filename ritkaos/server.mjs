@@ -8,10 +8,12 @@ import { Game } from './lib/game.mjs';
 import { networkKey } from './lib/network.mjs';
 import { t } from './lib/i18n.mjs';
 import { storeInfo, validSecret } from './lib/store.mjs';
+import { createLicenseResolver, configurationFromEnv } from '../ludvig-games/commerce/license.mjs';
 const root=path.join(path.dirname(fileURLToPath(import.meta.url)),'public');
 const port=Number(process.env.PORT)||3000;
-const secret=process.env.RITKAOS_UNLOCK_SECRET||'',checkout=process.env.CHECKOUT_URL||'';
-const game=new Game({secret});const peers=new Set();
+const secret=process.env.RITKAOS_UNLOCK_SECRET||'';
+const licenses=createLicenseResolver(configurationFromEnv(process.env));
+const game=new Game({secret,resolveLicense:licenses.catalog().ready?key=>licenses.resolve(key):null});const peers=new Set();
 const staticFiles=new Map([['/','index.html'],['/index.html','index.html'],['/app.js','app.js'],['/theme.js','theme.js'],['/style.css','style.css'],['/favicon.svg','favicon.svg']]);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 // A proxy on this machine (for example a tunnel) may forward the visitor's address; only trust it from loopback.
@@ -29,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
     res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
     res.end(JSON.stringify({lan:localHost?addresses():[],port,version:'1.0.0'}));return;
   }
-  if(pathname==='/api/store'){res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify(storeInfo({secret,checkout})));return;}
+  if(pathname==='/api/store'){res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify(storeInfo({secret,catalog:licenses.catalog()})));return;}
   if(pathname==='/api/rooms'){
     res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
     res.end(JSON.stringify({rooms:game.listRooms({network:clientNetwork(req)})}));return;

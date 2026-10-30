@@ -147,7 +147,7 @@ let lang=(()=>{const saved=store.get('ritkaos.lang','');if(saved==='sv'||saved==
 const PALETTES={base:colors,candy:['#3b2f4a','#ff6f91','#ff9671','#ffc75f','#f9f871','#c4fcef','#4ffbdf','#00c9a7','#845ec2','#d65db1','#b39cd0','#ffffff'],night:['#0b1026','#1f2a5a','#3a4f9a','#5f7fd6','#9ab8ff','#f2e9a0','#ffd166','#ef476f','#7b2cbf','#c77dff','#2ec4b6','#ffffff'],forest:['#1e2d24','#3a5a40','#588157','#a3b18a','#dad7cd','#7f5539','#b08968','#ddb892','#e9c46a','#f4a261','#bc4749','#ffffff']};
 const BRUSH_STYLES=['','marker','crayon','neon'],PAID_MODES=['blind','speed','telephone'],PAID_PACKS=['nineties','office','holidays','food','internet'];
 const codes={get:()=>{try{const l=JSON.parse(store.get('ritkaos.codes','[]'));return Array.isArray(l)?l.filter(c=>typeof c==='string').slice(-20):[];}catch{return [];}},add:c=>{const l=codes.get().filter(x=>x!==c);l.push(c);store.set('ritkaos.codes',JSON.stringify(l.slice(-20)));}};
-let owned=new Set(),shop={ready:false,checkout:'',products:[]},storeOpen=false,storeFocus='',chainData=null;
+let owned=new Set(),shop={ready:false,nativeReady:false,checkout:'',products:[]},storeOpen=false,storeFocus='',chainData=null;
 let brushStyle=store.get('ritkaos.brush',''),paletteId=store.get('ritkaos.palette','base');
 const has=id=>owned.has(id)||owned.has('plus'),isUnlocked=id=>!!state?.unlocked?.includes(id);
 const activePalette=()=>has('cosmetics')&&PALETTES[paletteId]?PALETTES[paletteId]:colors,activeStyle=()=>has('cosmetics')&&BRUSH_STYLES.includes(brushStyle)?brushStyle:'';
@@ -191,6 +191,7 @@ function connect(){
    case 'state':applyState(d);break;case 'board':loadBoard(d);break;case 'ink':receiveInk(d);break;case 'chat':appendChat(d);break;case 'cursor':remoteCursor(d);break;case 'effect':effect(d);break;
    case 'rooms':if(screen==='home')renderRooms(d.rooms||[]);break;
    case 'owned':owned=new Set(d.products||[]);if(typeof d.ready==='boolean')shop.ready=d.ready;renderPalette();refreshStore();if(state&&screen==='lobby')renderLobby();break;
+   case 'license-refresh':socket.send(JSON.stringify({type:'licenses',data:{codes:codes.get()}}));break;
    case 'chain':chainData=d;overlayKey='';if(state&&screen==='game')renderGame();break;
    case 'kicked':state=null;roomSeen='';showScreen('home');toast(T(d.vote?'votedOut':'kicked'));history.replaceState(null,'','/');loadRooms();break;
    case 'replaced':sessionStore.set('');toast(T('replaced'),true);socket.preventReconnect=true;break;
@@ -382,18 +383,18 @@ function saveDrawing(){const out=document.createElement('canvas');out.width=1500
 function modal(html){storeOpen=false;$('#modal-content').innerHTML=html;const d=$('#modal');if(!d.open)d.showModal();}
 function confirmAction(title,text,label,fn){modal(`<h2 class="modal-title">${esc(title)}</h2><p class="modal-text">${esc(text)}</p><div class="modal-buttons"><button class="button subtle" id="modal-cancel">${T('cancel')}</button><button class="button primary" id="modal-confirm">${esc(label)}</button></div>`);$('#modal-cancel').onclick=()=>$('#modal').close();$('#modal-confirm').onclick=()=>{$('#modal').close();act(fn);};}
 // Ritkaos+ sheet: prices, what you own, a code field, and Buy when a checkout link is configured.
-const productName=id=>T('products')[id]?.[0]||id,canBuy=()=>shop.ready&&!!shop.checkout;
-function buyUrl(id){const u=shop.checkout;return u.includes('{product}')?u.replaceAll('{product}',encodeURIComponent(id)):`${u}${u.includes('?')?'&':'?'}product=${encodeURIComponent(id)}&lang=${lang}`;}
+const productName=id=>T('products')[id]?.[0]||id,canBuy=()=>shop.nativeReady&&shop.environment==='test'&&!!shop.checkout;
+function buyUrl(id){return id==='plus'&&canBuy()?shop.checkout:'';}
 function storeRow(p){
  const mine=has(p.id),hostHas=!mine&&isUnlocked(p.id)&&!state?.you.host;
- const end=mine?`<span class="store-owned">${icon('check')}${T('ownedTag')}</span>`:hostHas?`<span class="store-owned">${icon('check')}${T('hostTag')}</span>`:`<span class="store-price">${T('price',p.price)}</span>${canBuy()?`<button class="button ${p.id==='plus'?'primary':'subtle'} store-buy" data-buy="${p.id}">${T('buy')}</button>`:''}`;
+ const end=mine?`<span class="store-owned">${icon('check')}${T('ownedTag')}</span>`:hostHas?`<span class="store-owned">${icon('check')}${T('hostTag')}</span>`:p.id==='plus'?`<span class="store-price">${T('price',p.price)}</span>${canBuy()?`<button class="button primary store-buy" data-buy="plus">${T('buy')}</button>`:''}`:'';
  return `<div class="store-row${p.id==='plus'?' store-plus':''}${storeFocus===p.id?' focus':''}"><div class="store-copy"><strong>${esc(productName(p.id))}</strong><small>${esc(T('products')[p.id]?.[1]||'')}</small></div>${end}</div>`;
 }
 function renderStore(){
  const groups=[['bundle',''],['pack','storePacks'],['mode','storeModes'],['cosmetic','storeCosmetics']];
- modal(`<div class="modal-icon">${icon('sparkle')}</div><h2 class="modal-title">Ritkaos+</h2><p class="modal-text">${T('storeText')}</p>${groups.map(([kind,head])=>{const items=shop.products.filter(p=>p.kind===kind);return items.length?`<div class="store-group">${head?`<span class="card-kicker">${T(head)}</span>`:''}${items.map(storeRow).join('')}</div>`:'';}).join('')}<form id="unlock-form" class="join-row store-code"><label class="sr-only" for="unlock-code">${T('unlockCode')}</label><input id="unlock-code" class="large-input code-input" maxlength="24" placeholder="RK-XXXX-XXXX-XXXX" autocomplete="off" aria-label="${T('unlockCode')}"><button class="button dark" type="submit">${T('unlockButton')}</button></form><p id="unlock-error" class="inline-error" role="alert"></p><p class="modal-content-small">${canBuy()?T('storeAfterBuy'):T('storeSoon')}</p>`);
+ modal(`<div class="modal-icon">${icon('sparkle')}</div><h2 class="modal-title">Ritkaos+</h2><p class="modal-text">${T('storeText')}</p>${groups.map(([kind,head])=>{const items=shop.products.filter(p=>p.kind===kind);return items.length?`<div class="store-group">${head?`<span class="card-kicker">${T(head)}</span>`:''}${items.map(storeRow).join('')}</div>`:'';}).join('')}<form id="unlock-form" class="join-row store-code"><label class="sr-only" for="unlock-code">${T('unlockCode')}</label><input id="unlock-code" class="large-input code-input" maxlength="80" placeholder="${T('unlockCode')}" autocomplete="off" spellcheck="false" aria-label="${T('unlockCode')}"><button class="button dark" type="submit">${T('unlockButton')}</button></form><p id="unlock-error" class="inline-error" role="alert"></p><p class="modal-content-small">${canBuy()?T('storeAfterBuy'):T('storeSoon')} <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener">${lang==='sv'?'Hämta din köpkod':'Recover your purchase code'}</a></p>`);
  storeOpen=true;
- for(const b of $$('[data-buy]'))b.onclick=()=>window.open(buyUrl(b.dataset.buy),'_blank','noopener');
+ for(const b of $$('[data-buy]'))b.onclick=()=>{const url=buyUrl(b.dataset.buy);if(url)window.open(url,'_blank','noopener');};
  $('#unlock-form').onsubmit=async e=>{e.preventDefault();const input=$('#unlock-code'),code=input.value.trim().toUpperCase();if(!code)return;$('#unlock-error').textContent='';
   try{await command('redeem',{code});codes.add(code);input.value='';toast(T('unlockedToast'));sound('correct');renderStore();}catch(err){$('#unlock-error').textContent=err.message;}};
  $('.store-row.focus')?.scrollIntoView({block:'nearest'});
@@ -514,4 +515,4 @@ $('#lang').onclick=()=>{
  if(state){if(screen==='lobby')renderLobby();else if(screen==='results')renderResults(false);else if(screen==='game')renderGame();}
  send('lang',{lang});loadRooms();
 };
-translatePage();renderAvatars();renderPalette();updateSound();applyTheme();fetch('/api/connection').then(r=>r.json()).then(d=>lan=d.lan||[]).catch(()=>{});fetch('/api/store').then(r=>r.json()).then(d=>{shop={ready:!!d.ready,checkout:d.checkout||'',products:Array.isArray(d.products)?d.products:[]};refreshStore();}).catch(()=>{});loadRooms();let roomPolls=0;setInterval(()=>{if(!ready&&++roomPolls%5===0)loadRooms();},3000);connect();requestAnimationFrame(frame);
+translatePage();renderAvatars();renderPalette();updateSound();applyTheme();fetch('/api/connection').then(r=>r.json()).then(d=>lan=d.lan||[]).catch(()=>{});fetch('/api/store').then(r=>r.json()).then(d=>{shop={ready:!!d.ready,nativeReady:d.nativeReady===true,environment:d.environment,checkout:d.checkout||'',products:Array.isArray(d.products)?d.products:[]};refreshStore();}).catch(()=>{});loadRooms();let roomPolls=0;setInterval(()=>{if(!ready&&++roomPolls%5===0)loadRooms();},3000);connect();requestAnimationFrame(frame);

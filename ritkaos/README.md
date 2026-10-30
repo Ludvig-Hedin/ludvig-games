@@ -84,24 +84,26 @@ Known limitation: devices on the same wifi can still get different keys if one c
 Tests: `tests/game.test.mjs` covers private rooms, network visibility, network keys, quick match, auto-start, late joins, vote-kick and English rooms. `tests/remote.test.mjs` creates its room with network visibility on, since all of its clients share one address.
 
 
-## Ritkaos+ (23 October 2026)
+## Ritkaos+ (test-mode integration, 30 October 2026)
 
 **The game stays free.** Rooms, quick match and the four original modes never cost anything. Ritkaos+ only adds extras:
 
 | Product id | Swedish / English | Price |
 |---|---|---|
-| `plus` | Ritkaos+ (everything below) | 79 kr |
-| `nineties` | 90-talet / The 90s | 25 kr |
-| `office` | Kontoret / The Office | 25 kr |
-| `holidays` | Jul / Holidays | 19 kr |
-| `food` | Svensk mat / Food | 19 kr |
-| `internet` | Internet | 29 kr |
-| `blind` | Blindritning / Blind draw | 19 kr |
-| `speed` | Snabbrunda / Speed round | 19 kr |
-| `telephone` | Telefonleken / Telephone | 29 kr |
-| `cosmetics` | Penslar & färger / Brushes & colours | 29 kr |
+| `plus` | Ritkaos+ (everything below) | 59 kr |
+| `nineties` | 90-talet / The 90s | Included |
+| `office` | Kontoret / The Office | Included |
+| `holidays` | Jul / Holidays | Included |
+| `food` | Svensk mat / Food | Included |
+| `internet` | Internet | Included |
+| `blind` | Blindritning / Blind draw | Included |
+| `speed` | Snabbrunda / Speed round | Included |
+| `telephone` | Telefonleken / Telephone | Included |
+| `cosmetics` | Penslar & färger / Brushes & colours | Included |
 
-Prices live in one place, `PRODUCTS` in `lib/store.mjs`.
+Only the complete Ritkaos+ pack is sold. The nine individual extras retain their IDs for existing codes,
+but their individual prices and Buy buttons are not shown. The cross-game bundle also grants Ritkaos+.
+Provider offers and checkout mappings come from `../ludvig-games/commerce/license.mjs`.
 
 **Who gets what.** Packs and modes follow the host of a private room: if the host owns one, everyone in that room plays it for free. A guest's own packs never unlock a room. If the host changes, the new host cannot start a locked pack or mode until they pick something they own. Open matches (quick match) keep their fixed free settings. Cosmetics are personal: only the owner can draw with marker, crayon or neon, and everyone in the room sees those strokes. The three extra palettes are a convenience in the owner's toolbar.
 
@@ -112,7 +114,24 @@ Prices live in one place, `PRODUCTS` in `lib/store.mjs`.
 - *Snabbrunda / Speed round*: 8 s to pick, 30 s to draw (the time setting is ignored), 3.5 s reveal, twice the rounds (max 10), and +150 for a correct guess in the first 10 seconds.
 - *Telefonleken / Telephone* (3+ players): everyone writes a prompt, then the chains rotate: draw the text you got, describe the drawing you got, draw that, and so on, until every player has added one step to every chain. Each step has its own private canvas (ink goes only to its owner). Missing prompts are filled in from the word bank, missing guesses become "(no guess)", and offline players never block a step. At the end the host shows the chains one by one (or they advance after a while), then everyone is back in the lobby. Telephone canvases are capped at 5,000 points to keep the reveal small. There are no scores in this mode.
 
-**Unlock codes.** Codes look like `RK-XXXX-XXXX-XXXX`: 60 bits of Crockford base32 holding a version, a bitmask of product ids, a 14-bit random nonce and a 34-bit truncated HMAC-SHA256 made with the server secret. Verification uses Web Crypto, so the same code runs in the Worker and in Node 22. The browser keeps redeemed codes in `localStorage` (`ritkaos.codes`) and sends them in `hello`. The server verifies them and keeps the result on the session only; the client's own claims are never trusted. A code can be redeemed from the store sheet (`redeem` message, 6 tries a minute). Codes cannot be revoked, and anyone with a code can share it; that is the trade-off for having no accounts.
+**Native purchase codes.** Lemon Squeezy supplies the buyer's UUID-format license key in its receipt and
+My Orders. The browser remembers entered keys in `localStorage` (`ritkaos.codes`) and sends them in
+`hello`. Only the server's environment-specific store/product/variant validation grants access. The
+native `ritkaos` entitlement, including the three-game bundle's entitlement, maps to all Ritkaos+ extras.
+Pigeon-only and Karts-only keys grant nothing here. The server returns no provider/customer metadata.
+
+Native permissions are rebuilt after checks, not accumulated forever. Keys remain in browser storage
+and process memory, never Durable Object snapshots. Reconnection drops provider grants until keys are
+checked again. On a Durable Object wake, the browser is asked to present its saved keys again. Deliberate
+settings/start/stroke-begin actions revalidate after 30 seconds, not every draw point or tick. Provider
+failure removes native grants and leaves free play and verified legacy grants available. Existing rounds
+are not advertised as instantly revocable. Refunds do not automatically promise access removal.
+
+**Legacy unlock codes.** Existing codes look like `RK-XXXX-XXXX-XXXX`: 60 bits of Crockford base32 holding
+a version, a bitmask of product ids, a random nonce and a truncated HMAC-SHA256 made with the server
+secret. They remain shareable and cannot be individually revoked. Legacy ownership is kept separately
+and survives snapshots. Native keys are never converted into permanent legacy codes. Both kinds of
+code can be entered in the same field (`redeem`, six attempts a minute).
 
 Mint codes (the secret must match the server's; it is never printed):
 
@@ -121,12 +140,28 @@ RITKAOS_UNLOCK_SECRET='…' node scripts/mint-code.mjs plus
 RITKAOS_UNLOCK_SECRET='…' node scripts/mint-code.mjs nineties office --count 5
 ```
 
-**Store sheet.** The "Ritkaos+" button in the header opens a sheet with prices, what you own (and what the host is treating the room to), a code field and a Buy button. Locked packs and modes show a small lock to the host; clicking one opens the sheet. Guests only see the paid pack or mode that is active. Buy opens `CHECKOUT_URL` in a new tab: `{product}` in the URL is replaced with the product id, otherwise `?product=<id>&lang=<sv|en>` is appended. Without a checkout link, or without a secret, Buy is replaced by a short "Soon" note.
+**Store sheet.** The "Ritkaos+" button shows its 59 kr price, included extras, ownership, a field accepting
+native or legacy codes and a My Orders recovery link. Locked packs/modes still open that sheet. Buy
+opens only the exact inspected Ritkaos checkout in a new tab. No product slug is appended to an arbitrary
+URL. Buy stays unavailable without the complete, valid test catalogue; a legacy secret alone cannot
+activate buying. Individual extras have no separate price or Buy button.
 
 **Environment variables.**
-- `RITKAOS_UNLOCK_SECRET`: 16+ random characters. Worker: `bunx wrangler@latest secret put RITKAOS_UNLOCK_SECRET`. Local: set it before `npm start`. Without it every code is rejected (fail closed) and free play is unaffected.
-- `CHECKOUT_URL`: an `https://` checkout link from the payment provider. Worker: add it as a plain variable (dashboard or `vars` in `wrangler.jsonc`). Local: set it before `npm start`. `/api/store` passes it to the browser; the secret never leaves the server.
+- `RITKAOS_UNLOCK_SECRET`: 16+ random characters, only for already-issued legacy RK codes. Native provider
+  codes do not need it. Keep it private. Missing/short secrets reject legacy codes without affecting free play.
+- `TEST_MODE=true`, `LS_STORE_ID` and `LS_TEST_PRODUCTS`: the inspected test configuration documented in
+  `../ludvig-games/commerce/README.md`. Native validation has no merchant API secret. Each test product
+  maps to exact product/variant IDs and checkout URL. Missing, malformed or non-test configuration fails
+  closed. Local Node 22 may load an owner-private environment file with its `--env-file` argument.
+- `CHECKOUT_URL` is ignored by the Node/Worker hosts. It cannot activate purchases.
 
-**Payment provider.** Lemon Squeezy approved Ludvig Games on 30 October 2026. The integration is not built: after verified payment, the buyer must immediately receive usable access, such as a code made with `mintCode()` from `lib/store.mjs`. Setting `CHECKOUT_URL` alone does not provide fulfilment. See the [current release review and owner checklist](../ludvig-games/docs/purchase-release-2026-10-30.md).
+**Payment provider.** Lemon Squeezy approved Ludvig Games on 30 October 2026. Native licence validation
+is implemented in source for test mode. This is not proof of a successful provider checkout, delivered
+receipt, recovery, refund, production deployment or live game. The coordinator owns the guarded checks
+and test-mode buyer journey. Keep current deployment/cost holds and the [release gates](../ludvig-games/docs/purchase-release-2026-10-30.md).
+
+New focused file `tests/native-license.test.mjs` covers native single/bundle grants, wrong game/environment,
+provider rejection, legacy preservation, reconnection, hibernation privacy, stale async results and
+checkout gating. No test execution is claimed by this implementation pass.
 
 Tests: `tests/game.test.mjs` covers valid, tampered, wrong-secret and wrong-product codes, fail-closed without a secret, redeem, host-owned packs for guests, guest-owned packs not unlocking a room, server-side rejection of locked packs, modes and brush styles, blind draw, speed round and telephone (including a player dropping out). `tests/network.test.mjs` checks `/api/store`, codes in `hello`, async redeem and a host-owned pack over a real WebSocket.

@@ -1,3 +1,8 @@
+# 2026-10-30: test purchase integration, local only
+
+- Added native test-license validation, shared purchase/code entry, new Pigeon styles and Karts paint. Existing free content stays free.
+- Focused local checks and sensitive review completed. Provider products, receipts and end-to-end checkout remain pending; nothing deployed.
+
 # 2026-10-30: purchase readiness review
 
 - Inspected the store via site-scoped Dia login after the owner's tax submission. Tax information

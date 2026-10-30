@@ -2,8 +2,9 @@
 // Codes look like RK-XXXX-XXXX-XXXX: 60 bits of Crockford base32 holding a version, a product bitmask,
 // a random nonce and a truncated HMAC-SHA256 made with a server secret. Web Crypto only, so the same
 // code runs in Cloudflare Workers and Node 22. Without a secret every code is rejected (fail closed).
+export { normalizeLicense } from '../../ludvig-games/commerce/license.mjs';
 export const PRODUCTS = [
-  { id: 'plus', kind: 'bundle', price: 79 },
+  { id: 'plus', kind: 'bundle', price: 59 },
   { id: 'nineties', kind: 'pack', price: 25 }, { id: 'office', kind: 'pack', price: 25 },
   { id: 'holidays', kind: 'pack', price: 19 }, { id: 'food', kind: 'pack', price: 19 },
   { id: 'internet', kind: 'pack', price: 29 },
@@ -69,4 +70,14 @@ export async function verifyCode(secret, code) {
   } catch { return null; }
 }
 /** What /api/store sends to the browser: prices, whether codes work, and the checkout link if any. */
-export const storeInfo = ({ secret, checkout }) => ({ ready: !!validSecret(secret), checkout: validCheckout(checkout), products: PRODUCTS });
+export function storeInfo({ secret, checkout, catalog } = {}) {
+  // Legacy helper callers retain their shape; actual hosts always supply the inspected provider catalogue.
+  if (!catalog) return { ready: !!validSecret(secret), checkout: validCheckout(checkout), products: PRODUCTS };
+  const nativeReady = catalog.environment === 'test' && catalog.ready === true;
+  const offer = catalog.products?.find(p => p.id === 'ritkaos');
+  return {
+    ready: !!validSecret(secret) || nativeReady, nativeReady, environment: 'test',
+    checkout: nativeReady ? validCheckout(offer?.checkout) : '', products: PRODUCTS,
+    recoveryUrl: 'https://app.lemonsqueezy.com/my-orders',
+  };
+}

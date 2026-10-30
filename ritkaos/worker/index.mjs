@@ -10,6 +10,7 @@ import { networkKey, setSalt } from '../lib/network.mjs';
 import { t } from '../lib/i18n.mjs';
 import { storeInfo } from '../lib/store.mjs';
 import { snapshot, restore, isEmpty } from '../lib/snapshot.mjs';
+import { createLicenseResolver, configurationFromEnv } from '../../ludvig-games/commerce/license.mjs';
 
 const MAX_PEERS = 250;
 const CLIENT_IP = 'X-Ritkaos-Client-IP';
@@ -24,8 +25,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url), { pathname } = url;
     if (pathname === '/health') return json({ ok: true, game: 'ritkaos' });
-    // Ritkaos+: prices, whether codes work, and the checkout link (if CHECKOUT_URL is set). Never the secret.
-    if (pathname === '/api/store') return json(storeInfo({ secret: env.RITKAOS_UNLOCK_SECRET, checkout: env.CHECKOUT_URL }));
+    // Only inspected test-mode product mappings can expose checkout. Legacy codes need no checkout.
+    if (pathname === '/api/store') return json(storeInfo({ secret: env.RITKAOS_UNLOCK_SECRET, catalog: createLicenseResolver(configurationFromEnv(env)).catalog() }));
     if (pathname === '/ws' || pathname === '/api/rooms') {
       // Everything that can be refused is refused here, before the Lobby wakes.
       if (pathname === '/ws') {
@@ -51,7 +52,8 @@ export default {
 export class Lobby extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
-    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET });
+    this.licenses = createLicenseResolver(configurationFromEnv(env));
+    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET, resolveLicense: this.licenses.catalog().ready ? key => this.licenses.resolve(key) : null });
     this.peers = new Map(); // WebSocket -> peer adapter used by Game.
     this.tickTimer = null; this.quietTimer = null; this.dirty = false; this.chunks = 0;
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
@@ -100,7 +102,11 @@ export class Lobby extends DurableObject {
     const peer = this.peerFor(ws), { token = '', network = null } = ws.deserializeAttachment() || {};
     if (!token) return;
     const p = this.game.sessions.get(token);
-    if (p) { p.peer = peer; p.connected = true; p.disconnectedAt = 0; peer.session = p; return; }
+    if (p) {
+      p.peer = peer; p.connected = true; p.disconnectedAt = 0; peer.session = p;
+      peer.send({ type: 'license-refresh', data: {} });
+      return;
+    }
     peer.session = this.game.connect(peer, token, { network });
     ws.serializeAttachment({ network, token: peer.session.token });
   }

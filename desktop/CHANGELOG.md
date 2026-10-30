@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Include the shared native-license module when staging Ritkaos. Packaging source checked; no Mac build run for this change.
+
 ## 0.4.2 — 25 October 2026
 
 - Pigeon solo is a 3-minute round with a results card and "Play again". Scrapyard starts on Normal for new players. Bloop shows How to play on phones.

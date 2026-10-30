@@ -11,6 +11,7 @@ Simulation uses 120 Hz fixed steps; rAF interpolates both position and altitude.
 <html lang="en">
 <head>
 <script src="../../assets/game-storage.js" data-game="citrus-circuit-coastline"></script>
+<script src="/assets/store-client.js"></script>
 <script>/* Optional online client. A missing file only hides "Race online". */window.Ludvig||document.write('<script src="/assets/ludvig.js"><\/script>')</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -108,6 +109,14 @@ html,body{height:100dvh}#app{height:100dvh}.icon-button{position:relative}.icon-
 html.back-tl .race-top{left:max(62px,calc(env(safe-area-inset-left) + 50px))}
 /* The small brake keeps its look but gets a 44 px touch area. */
 .touch-brake::after{content:"";position:absolute;inset:-6px -6px -3px;border-radius:50%}
+.kart-styles-entry{display:block;color:#d4e1d8;margin:-8px 0 10px;padding:5px 0;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+#kart-style-dialog{width:min(440px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow:auto;overscroll-behavior:contain;border:0;border-radius:12px;background:var(--paper);color:var(--ink);padding:24px;touch-action:pan-y}
+#kart-style-dialog::backdrop{background:rgba(11,34,41,.65)}
+.kart-style-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.kart-style-heading h2{font-size:23px;margin:0}.kart-style-heading button{min-width:44px;min-height:44px;font-size:23px}
+.kart-style-preview{display:flex;align-items:center;gap:18px;margin:15px 0 20px}.kart-style-preview svg{width:105px;height:80px;flex-shrink:0;fill:none;stroke:none}.kart-style-preview p{margin:0;font-size:12px;line-height:1.5}.kart-style-preview strong{display:block;font-size:15px;margin-bottom:3px}
+.kart-pack-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kart-pack-choice{display:flex;align-items:center;gap:9px;text-align:left;padding:11px 9px;border:1px solid var(--line);border-radius:5px;min-height:44px;background:transparent;font-size:12px}.kart-pack-choice[aria-pressed=true]{border-color:var(--ink);background:rgba(47,65,48,.05)}.kart-pack-choice i{width:21px;height:21px;flex-shrink:0;border-radius:50%;background:var(--paint)}.kart-pack-choice[data-design=stripes] i{background:repeating-linear-gradient(90deg,#203b3f 0 5px,#f4eedc 5px 8px)}.kart-pack-choice[data-design=checks] i{border-radius:2px;background:repeating-conic-gradient(#f4eedc 0 25%,#203b3f 0 50%) 0 0/10px 10px}
+#kart-style-status{font-size:12px;line-height:1.5;min-height:18px;margin:17px 0 12px}.kart-style-actions{display:flex;gap:10px;flex-wrap:wrap}.kart-style-actions .primary-button{min-width:0;font-size:12px;padding:13px 17px}.kart-style-actions .text-button{min-height:44px;font-size:12px}
+@media(max-height:430px) and (orientation:landscape){.kart-styles-entry{margin:1px 0;padding:3px 0;font-size:10px}}
 </style>
 </head>
 <body>
@@ -141,6 +150,7 @@ html.back-tl .race-top{left:max(62px,calc(env(safe-area-inset-left) + 50px))}
   
   <div class="home-copy"><h1><span class="title-bottom">Karts.</span></h1>
     <div class="color-label">Your colors <span id="color-name">Tangerine</span></div><div class="swatches" role="group" aria-label="Choose kart color"><button class="swatch" style="--swatch:#ef7047" data-color="#ef7047" data-name="Tangerine" aria-label="Tangerine kart" aria-pressed="true"></button><button class="swatch" style="--swatch:#42aab1" data-color="#42aab1" data-name="Lagoon" aria-label="Lagoon kart" aria-pressed="false"></button><button class="swatch" style="--swatch:#c65e86" data-color="#c65e86" data-name="Berry" aria-label="Berry kart" aria-pressed="false"></button><button class="swatch" style="--swatch:#8a7bc5" data-color="#8a7bc5" data-name="Lilac" aria-label="Lilac kart" aria-pressed="false"></button></div>
+    <button id="kart-styles" class="text-button kart-styles-entry" type="button">More kart styles</button>
     <div class="race-options"><div class="difficulty" role="group" aria-label="Race difficulty"><button data-difficulty="cruise" aria-pressed="false">Cruise</button><button data-difficulty="race" aria-pressed="true">Race</button><button data-difficulty="expert" aria-pressed="false">Expert</button></div><label class="auto-gas-label"><input id="auto-gas" type="checkbox"><span>Auto accelerate</span></label></div>
     <button id="start-button" class="primary-button"><span>Start race</span><svg class="icon"><use href="#i-arrow"/></svg></button><button id="online-button" class="online-button" hidden><svg class="icon"><use href="#i-wheel"/></svg><span>Race online</span></button><div id="home-best" class="best-time" hidden><svg class="icon"><use href="#i-trophy"/></svg><span>Personal best <strong id="home-best-value"></strong></span></div>
   </div>
@@ -167,6 +177,13 @@ html.back-tl .race-top{left:max(62px,calc(env(safe-area-inset-left) + 50px))}
 <div id="live-announcement" class="sr-only" aria-live="polite"></div>
 <noscript><div class="error-screen"><div><h2>Ready when you are.</h2><p>Enable JavaScript to play Karts. The game runs locally and needs no downloads or internet connection.</p></div></div></noscript>
 </main>
+<dialog id="kart-style-dialog" aria-labelledby="kart-style-title">
+  <div class="kart-style-heading"><h2 id="kart-style-title">Karts style pack</h2><button id="kart-style-close" type="button" aria-label="Close kart styles">×</button></div>
+  <div class="kart-style-preview"><svg viewBox="0 0 120 90" role="img" aria-label="Kart paint preview"><rect x="17" y="14" width="20" height="23" rx="5" fill="#263742"/><rect x="83" y="14" width="20" height="23" rx="5" fill="#263742"/><rect x="17" y="57" width="20" height="23" rx="5" fill="#263742"/><rect x="83" y="57" width="20" height="23" rx="5" fill="#263742"/><path id="kart-preview-paint" d="M39 17 Q60 4 81 17 L88 72 L32 72 Z" fill="#203b3f"/><g id="kart-preview-stripes" fill="#f4eedc" hidden><rect x="47" y="13" width="7" height="59"/><rect x="66" y="13" width="7" height="59"/></g><g id="kart-preview-checks" fill="#f4eedc" hidden><path d="M38 22h11v11H38zm22 0h11v11H60zM49 33h11v11H49zm22 0h11v11H71zM38 44h11v11H38zm22 0h11v11H60zM49 55h11v11H49zm22 0h11v11H71z"/></g><circle cx="60" cy="51" r="13" fill="#f4eedc"/><circle cx="60" cy="51" r="9" fill="#263742"/></svg><p><strong id="kart-preview-name">Midnight</strong><span id="kart-preview-note">Preview only</span></p></div>
+  <div id="kart-pack-options" class="kart-pack-options" role="group" aria-label="Style pack previews"></div>
+  <p id="kart-style-status" role="status"></p>
+  <div class="kart-style-actions"><button id="kart-style-use" class="primary-button" type="button">Use this style</button><button id="kart-style-buy" class="text-button" type="button">Get pack · 39 kr</button><button id="kart-style-plain" class="text-button" type="button">Use free colours</button></div>
+</dialog>
 <script>
 'use strict';
 /*
@@ -7427,6 +7444,25 @@ void main() {
     }
     makeKart(id){
       const k=super.makeKart(id);
+      // These paint details attach to the rendered body only, never the simulation.
+      // Every existing kart keeps its original look until its owner selects a pack style.
+      if(id===0){
+        k.paintPatterns={stripes:new T.Group(),checks:new T.Group()};
+        const light=new T.MeshStandardMaterial({color:'#fff1d2',roughness:.55});
+        const dark=new T.MeshStandardMaterial({color:'#203b3f',roughness:.55});
+        const stripeParts=[],checkerParts=[[],[]];
+        for(const side of[-1,1]){
+          for(const offset of[-.045,.045]){
+            stripeParts.push([this.geo.box,-.18,.518,side*.53+offset,1.15,.012,.045]);
+          }
+          for(let x=0;x<8;x++)for(let z=0;z<2;z++){
+            checkerParts[(x+z)%2].push([this.geo.box,-.66+x*.137,.518,side*.53+(z-.5)*.092,.135,.012,.09]);
+          }
+        }
+        k.paintPatterns.stripes.add(new T.Mesh(this.mergeParts(stripeParts),light));
+        checkerParts.forEach((parts,index)=>k.paintPatterns.checks.add(new T.Mesh(this.mergeParts(parts),index?light:dark)));
+        for(const group of Object.values(k.paintPatterns)){group.visible=false;k.body.add(group);}
+      }
       const helmet=new T.Mesh(new T.SphereGeometry(.343,20,10,0,TAU,0,Math.PI*.50),k.color);helmet.position.set(-.15,1.10,0);k.body.add(helmet);
       k.color.roughness=.28;k.color.metalness=.18;k.color.envMap=this.carEnvironment;k.color.envMapIntensity=.68;
       // Smooth bumpers and front fairing details read at chase-camera distance.
@@ -7576,12 +7612,23 @@ void main() {
   const MAX_FRAME_TIME = 0.1;
   const STORAGE_KEY = 'citrus-circuit-coastline-v4';
   const NORMAL_SPEED = window.RACE_TUNING?.topSpeed || 430;
-  const settings = { color: '#ef7047', colorName: 'Tangerine', sound: true, music: true, musicVolume: .60, effectsVolume: .70, best: null, bests: {}, difficulty: 'race', autoGas: matchMedia('(pointer:coarse)').matches, quality: 'auto' };
+  const FREE_KART_COLORS = ['#ef7047', '#42aab1', '#c65e86', '#8a7bc5'];
+  const KART_STYLES = [
+    { id:'midnight', name:'Midnight', color:'#203b3f' },
+    { id:'sunshine', name:'Sunshine', color:'#f2d45b' },
+    { id:'ice', name:'Ice blue', color:'#b6dfed' },
+    { id:'cherry', name:'Cherry', color:'#9f354e' },
+    { id:'stripes', name:'Racing stripes', color:'#204f63', design:'stripes' },
+    { id:'checks', name:'Checker panels', color:'#f0ead9', design:'checks' }
+  ];
+  const settings = { color: '#ef7047', colorName: 'Tangerine', freeColor:'#ef7047', kartStyle:'plain', sound: true, music: true, musicVolume: .60, effectsVolume: .70, best: null, bests: {}, difficulty: 'race', autoGas: matchMedia('(pointer:coarse)').matches, quality: 'auto' };
   try {
     const current = localStorage.getItem(STORAGE_KEY);
     const stored = JSON.parse(current || localStorage.getItem('citrus-circuit-island-v3') || localStorage.getItem('citrus-circuit-3d-v2') || 'null');
     if (stored && typeof stored === 'object') {
       if (['#ef7047', '#42aab1', '#c65e86', '#8a7bc5'].includes(stored.color)) settings.color = stored.color;
+      settings.freeColor = FREE_KART_COLORS.includes(stored.freeColor) ? stored.freeColor : settings.color;
+      if(KART_STYLES.some(s=>s.id===stored.kartStyle)) settings.kartStyle=stored.kartStyle;
       if (typeof stored.sound === 'boolean') settings.sound = stored.sound;
       if (typeof stored.music === 'boolean') settings.music = stored.music;
       for (const key of ['musicVolume','effectsVolume']) if (typeof stored[key] === 'number' && Number.isFinite(stored[key])) settings[key] = clamp(stored[key], 0, 1);
@@ -7710,14 +7757,89 @@ void main() {
     else sound.setEffectsVolume(settings[key]);
     updateMusicButtons(); saveSettings();
   }
-  function applyColor(color) {
+  function applyColor(color, keepStylePreference = false) {
+    if(!FREE_KART_COLORS.includes(color)) return;
     for (const b of document.querySelectorAll('.swatch')) {
       const active = b.dataset.color === color;
       b.setAttribute('aria-pressed', String(active));
       if (active) { settings.color = color; settings.colorName = b.dataset.name; $('color-name').textContent = settings.colorName; }
     }
+    settings.freeColor=color;
+    if(!keepStylePreference) settings.kartStyle='plain';
+    setKartPattern(null);
     if (mode === 'home') sim.reset({ color: settings.color, name: 'YOU', difficulty: settings.difficulty });
+    else if(sim.karts[0]) sim.karts[0].color=settings.color;
     saveSettings();
+  }
+  function ownsKartPack() {
+    try { return window.LudvigStore?.owns?.('karts') === true; }
+    catch (_) { return false; }
+  }
+  function setKartPattern(design) {
+    for(const [id,group] of Object.entries(scene.karts?.[0]?.paintPatterns || {})) group.visible=id===design;
+  }
+  function useKartStyle(id) {
+    const style=KART_STYLES.find(s=>s.id===id);
+    if(!style || !ownsKartPack()) return false;
+    settings.kartStyle=id;settings.color=style.color;settings.colorName=style.name;
+    $('color-name').textContent=style.name;
+    for(const b of document.querySelectorAll('.swatch')) b.setAttribute('aria-pressed','false');
+    setKartPattern(style.design || null);
+    if(mode==='home') sim.reset({color:settings.color,name:'YOU',difficulty:settings.difficulty});
+    else if(sim.karts[0]) sim.karts[0].color=settings.color;
+    saveSettings();return true;
+  }
+  const kartStyleDialog=$('kart-style-dialog');
+  let previewKartStyle='midnight';
+  function renderKartStylePreview() {
+    const style=KART_STYLES.find(s=>s.id===previewKartStyle) || KART_STYLES[0];
+    const owned=ownsKartPack();
+    $('kart-preview-paint').setAttribute('fill',style.color);
+    $('kart-preview-stripes').removeAttribute('hidden');
+    $('kart-preview-checks').removeAttribute('hidden');
+    $('kart-preview-stripes').style.display=style.design==='stripes'?'':'none';
+    $('kart-preview-checks').style.display=style.design==='checks'?'':'none';
+    $('kart-preview-name').textContent=style.name;
+    $('kart-preview-note').textContent='Preview only';
+    for(const b of $('kart-pack-options').querySelectorAll('button')) b.setAttribute('aria-pressed',String(b.dataset.style===style.id));
+    $('kart-style-use').hidden=!owned;$('kart-style-buy').hidden=owned;
+    $('kart-style-status').textContent=owned?'Choose a style for your kart.':'Four colours and two paint designs. Your free colours stay free.';
+  }
+  function closeKartStyles() {
+    kartStyleDialog.close();$('kart-styles').focus();
+  }
+  function openKartStyles() {
+    previewKartStyle=KART_STYLES.some(s=>s.id===settings.kartStyle)?settings.kartStyle:'midnight';
+    renderKartStylePreview();kartStyleDialog.showModal();
+    $('kart-style-close').focus();
+  }
+  function syncKartOwnership() {
+    if(ownsKartPack() && KART_STYLES.some(s=>s.id===settings.kartStyle)) useKartStyle(settings.kartStyle);
+    else if(!FREE_KART_COLORS.includes(settings.color)) applyColor(settings.freeColor,true);
+    else if(!ownsKartPack()) setKartPattern(null);
+    if(kartStyleDialog.open) renderKartStylePreview();
+  }
+  function setupKartStyles() {
+    for(const style of KART_STYLES){
+      const b=document.createElement('button');b.type='button';b.className='kart-pack-choice';
+      b.dataset.style=style.id;b.dataset.design=style.design || '';b.setAttribute('aria-pressed','false');
+      const chip=document.createElement('i');chip.style.setProperty('--paint',style.color);chip.setAttribute('aria-hidden','true');
+      const label=document.createElement('span');label.textContent=style.name;b.append(chip,label);
+      b.onclick=()=>{previewKartStyle=style.id;renderKartStylePreview();};$('kart-pack-options').append(b);
+    }
+    $('kart-styles').onclick=openKartStyles;$('kart-style-close').onclick=closeKartStyles;
+    kartStyleDialog.addEventListener('cancel',()=>{$('kart-styles').focus();});
+    $('kart-style-use').onclick=()=>{if(useKartStyle(previewKartStyle)) closeKartStyles();};
+    $('kart-style-plain').onclick=()=>{applyColor(settings.freeColor);closeKartStyles();};
+    $('kart-style-buy').onclick=()=>{
+      if(typeof window.LudvigStore?.open !== 'function'){
+        $('kart-style-status').textContent='Purchases are unavailable right now. You can still race with every free colour.';return;
+      }
+      closeKartStyles();window.LudvigStore.open('karts');
+    };
+    window.addEventListener('ludvig:store',syncKartOwnership);
+    if(typeof window.LudvigStore?.subscribe==='function') window.LudvigStore.subscribe(syncKartOwnership);
+    syncKartOwnership();
   }
   function resetInput() {
     keyDown.clear(); touchDown.clear(); itemPending = false; trickPending = false;
@@ -8079,6 +8201,7 @@ void main() {
   }
   const managedKeys = new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight','Enter','ControlLeft','ControlRight','Escape','KeyP','KeyM','KeyN','KeyR','KeyF','KeyG']);
   window.addEventListener('keydown', e => {
+    if(kartStyleDialog.open) return; // Native dialog owns focus, Escape and menu activation.
     // The online sheet owns the keyboard while open (typing a race code).
     if (net.handleKey(e)) return;
     // Browser shortcuts remain usable (Ctrl+R, Cmd+R, etc.). A lone Ctrl is an item.
@@ -8107,6 +8230,7 @@ void main() {
   });
   window.addEventListener('keyup', e => {
     keyDown.delete(e.code);
+    if(kartStyleDialog.open) return;
     const dialogOpen = !$('help-screen').hidden || !$('pause-screen').hidden;
     if ((dialogOpen || mode !== 'race') && document.activeElement?.tagName === 'INPUT' && e.code.startsWith('Arrow')) return;
     if (mode === 'race' && !e.metaKey && !e.altKey && managedKeys.has(e.code)) e.preventDefault();
@@ -8801,7 +8925,8 @@ void main() {
       debug: () => ({ connected: !!room, code: room?.code || null, host: isHost(), phase, quick, peers: peers().length, inRace: !!race, latency: Math.round(latency) })
     };
   })();
-  updateSoundButtons(); updateMusicButtons(); applyColor(settings.color); setDifficulty(settings.difficulty);
+  updateSoundButtons(); updateMusicButtons(); applyColor(settings.freeColor,true); setDifficulty(settings.difficulty);
+  setupKartStyles();
   $('quality-button').textContent = 'Graphics: ' + qualityLabel();
   resize(); setScreen('home');
   requestAnimationFrame(frame);

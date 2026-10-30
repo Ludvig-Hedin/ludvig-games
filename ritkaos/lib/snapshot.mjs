@@ -5,7 +5,9 @@
  * windows and connection flags are not saved: the host rebinds sockets on wake.
  */
 const replacer = function (key, value) {
-  if (key === 'peer' || key === 'limits') return undefined;
+  if (key === 'peer' || key === 'limits' || key === 'nativeOwned' || key === 'nativeUntil') return undefined;
+  // Store only legacy grants. Native licences must be presented and checked again after hibernation.
+  if (key === 'owned' && this.legacyOwned instanceof Set) return { $s: [...this.legacyOwned] };
   if (key === 'players' && value instanceof Map) return { $p: [...value.keys()] };
   if (value instanceof Map) return { $m: [...value.entries()] };
   if (value instanceof Set) return { $s: [...value] };
@@ -37,6 +39,8 @@ export function restore(game, text, now = Date.now()) {
     if (p.connected) p.disconnectedAt = now;
     p.peer = null; p.connected = false; p.limits = new Map(); p.lobbyKey = '';
     if (!(p.owned instanceof Set)) p.owned = new Set();
+    if (!(p.legacyOwned instanceof Set)) p.legacyOwned = new Set(p.owned);
+    p.nativeOwned = new Set(); p.nativeUntil = 0; p.owned = new Set(p.legacyOwned);
     game.sessions.set(p.token, p); byId.set(p.id, p);
   }
   for (const r of data.rooms) {

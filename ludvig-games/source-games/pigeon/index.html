@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <!-- Shared Ludvig Games relay + leaderboards. Optional: if it fails to load, window.Ludvig stays undefined and PIGEON runs solo exactly as before. -->
-<script src="/assets/ludvig.js"></script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ede9dd"><meta name="description" content="Small bird. Big problem. An original, playable pigeon playground. Steal lunch, get chased, ruin a perfectly lovely afternoon."><title>Pigeon</title>
+<script src="/assets/ludvig.js"></script><script src="/assets/store-client.js"></script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ede9dd"><meta name="description" content="Small bird. Big problem. An original, playable pigeon playground. Steal lunch, get chased, ruin a perfectly lovely afternoon."><title>Pigeon</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2332473c'/%3E%3Cellipse cx='15' cy='21' rx='9' ry='7' fill='%23b7c0ba'/%3E%3Ccircle cx='20' cy='12' r='7' fill='%236b7c74'/%3E%3Cpath d='M25 12L32 15L25 16' fill='%23d9cba6'/%3E%3Ccircle cx='22' cy='11' r='2' fill='%23e4a663'/%3E%3Ccircle cx='22' cy='11' r='1' fill='%2320332c'/%3E%3C/svg%3E">
 <style>:root{--ink:#283f35;--quiet:#677467;--paper:#f5f2e8;--green:#395344;--line:rgba(47,65,48,.15);--red:#b95f43}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e5dfca;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}button,a{touch-action:manipulation}button{font:inherit;cursor:pointer;color:inherit;border:0;background:none}button:focus-visible,a:focus-visible{outline:2px solid #466756;outline-offset:4px}button:disabled{opacity:.4;cursor:default}svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.svg-sprite{position:absolute;width:0;height:0;overflow:hidden}#game{position:fixed;inset:0;width:100%;height:100%;outline:0;touch-action:none}#game:focus-visible{outline:none}.edge-shade{position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(245,241,226,.45),transparent 18%,transparent 85%,rgba(245,241,226,.4))}.topbar{position:fixed;top:28px;left:34px;right:32px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:10}.identity{line-height:1}.wordmark{font-size:35px;font-weight:850;letter-spacing:-2.1px}.wordmark-dot{color:#aa6548}.tagline{display:block;font-size:8px;letter-spacing:2px;font-weight:700;margin-top:9px}.toolbar{display:flex;align-items:center;gap:6px;pointer-events:auto;padding-top:0}.icon-button{height:40px;width:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;position:relative;background:rgba(250,247,236,.64);border:1px solid rgba(255,255,255,.25);transition:background .15s,transform .15s}.icon-button:hover{background:var(--paper);transform:translateY(-1px)}.icon-button svg{width:18px;height:18px}.record-button{display:flex;align-items:center;gap:8px;height:40px;padding:0 15px;border-radius:24px;background:rgba(250,247,236,.75);font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.3)}.record-button i{width:7px;height:7px;border-radius:50%;background:#b6624e}.record-button.recording{background:#ad4e36;color:#fff4e2}.record-button.recording i{background:#fff2dd;animation:pulse 1s infinite}.toolbar-separator{height:18px;width:1px;background:var(--line);margin:0 4px}.help-button{font-family:Georgia,serif;font-weight:bold;font-size:18px}.mute-slash{position:absolute;width:25px;height:1.5px;background:var(--ink);transform:rotate(-45deg);display:none;box-shadow:0 1px #eee8d8}.muted .mute-slash{display:block}.play-only{display:none!important}body.playing .play-only{display:flex!important}#intro{position:fixed;left:6.2vw;bottom:16.8vh;z-index:5;max-width:600px;pointer-events:none}#intro:before{content:"";position:absolute;z-index:-1;left:-10vw;bottom:-16.8vh;right:-75px;top:-60px;background:radial-gradient(ellipse at 28% 64%,rgba(239,234,215,.92) 8%,rgba(239,234,215,.62) 48%,transparent 73%);pointer-events:none}.intro-kicker{display:flex;align-items:center;gap:8px;font-size:9px;font-weight:650;letter-spacing:2.2px}.intro-kicker span{width:6px;height:6px;border-radius:50%;background:#4e7157}h1{font-size:clamp(54px,5.3vw,81px);letter-spacing:-4.5px;line-height:.99;font-weight:650;margin:23px 0 23px}h1>span{color:#ad674b}.intro-description{font-size:15px;line-height:1.6;letter-spacing:-.15px;margin:0 0 27px;color:#4c5e4e}.primary-button{display:inline-flex;align-items:center;justify-content:space-between;gap:36px;border:1px solid rgba(0,0,0,.05);border-radius:9px;background:var(--ink);color:#faf5e7;font-size:13px;font-weight:600;padding:18px 22px;pointer-events:auto;text-decoration:none;transition:background .16s,transform .16s;box-shadow:0 4px 12px rgba(30,43,23,.07)}.primary-button:hover{background:#3d5948;transform:translateY(-1px)}.primary-button svg{width:18px;height:18px}.intro-footnote{font-size:10px;line-height:1.85;color:#67715f;margin:19px 0 0}.intro-footnote .desktop-hint{color:#415443}.mobile-hint{display:none}.daily-panel{position:fixed;right:34px;top:102px;width:265px;border:1px solid rgba(246,243,229,.65);border-radius:12px;background:rgba(246,243,232,.85);backdrop-filter:blur(12px);padding:3px 15px;box-shadow:0 6px 30px rgba(39,49,26,.025);z-index:6}#quests-toggle{width:100%;padding:13px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;gap:8px}.daily-heading{display:flex;align-items:center;gap:7px;font-weight:650;font-size:11px;white-space:nowrap}.daily-heading i{width:6px;height:6px;border:1.4px solid #758966;border-radius:50%}.daily-small{display:flex;align-items:center;gap:7px;color:var(--quiet);font-size:9px;white-space:nowrap}.daily-small svg{width:10px;height:10px;stroke-width:1.3}.quest{display:grid;grid-template-columns:12px 1fr 24px;gap:8px;align-items:center;min-height:41px;border-top:1px solid var(--line);font-size:10px;line-height:1.45;letter-spacing:-.05px}.quest-dot{height:11px;width:11px;border:1px solid #a4ae95;border-radius:50%;font-size:8px;text-align:center;line-height:10px}.quest-count{text-align:right;font-size:9px;font-variant-numeric:tabular-nums;color:#74806b}.quest.done>span:nth-child(2){text-decoration:line-through;color:#85917e}.quest.done .quest-dot{background:#5f7758;color:var(--paper);border-color:#5f7758}.daily-footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;padding:11px 0;font-size:7px;letter-spacing:1.1px;color:#7c8872}.daily-footer #quest-total{font-size:9px;letter-spacing:0}.daily-panel.collapsed #quest-list,.daily-panel.collapsed .daily-footer{display:none}.daily-panel.collapsed .daily-small svg{transform:rotate(180deg)}#score-panel{position:fixed;top:30px;left:50%;transform:translateX(-50%);min-width:195px;flex-direction:column;align-items:center;pointer-events:none;z-index:5}.score-label{font-size:8px;letter-spacing:2.1px;font-weight:600;color:#4b5a46}.score-line{display:flex;align-items:center;gap:12px;height:51px}#score{font-size:41px;letter-spacing:-2px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1}#multiplier{font-size:20px;font-weight:600;color:#8a927a;min-width:30px}#multiplier.active{color:#b5693c}.combo-track{width:124px;height:2px;background:rgba(74,87,53,.16);overflow:hidden;margin:1px 0 9px}.combo-track i{display:block;width:100%;height:100%;background:#b57a4d;transform-origin:left;transform:scaleX(0)}#heat{display:flex;align-items:center;gap:5px;font-size:7px;letter-spacing:1.1px;font-weight:600;color:#63714e}.heat-dot{width:4px;height:4px;border-radius:50%;background:currentColor}#heat.hot{color:#aa5137}.bottom-bar{position:fixed;bottom:22px;left:34px;right:34px;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:8px;color:#5d6d54;pointer-events:none;z-index:5}.square-label{display:flex;align-items:center;gap:8px;letter-spacing:1.3px;font-size:7px;font-weight:600}.location-dot{display:block;width:4px;height:4px;border-radius:50%;background:#6f8864}.separator{opacity:.4;padding:0 2px}.version{font-size:6px;letter-spacing:.9px;font-weight:400}.control-strip{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:13px;align-items:center;font-size:9px;white-space:nowrap}.control-strip>span{display:flex;align-items:center;gap:5px}kbd{font-family:inherit;font-size:8px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(75,92,61,.2);border-bottom-width:2px;border-radius:4px;min-height:19px;min-width:20px;padding:1px 4px;line-height:1;letter-spacing:.15px;background:rgba(250,247,233,.54);font-weight:500}.flight-status{margin-left:auto;align-items:center;gap:10px;letter-spacing:1px;font-size:7px}.flight-status #height-value{font-size:9px;font-variant-numeric:tabular-nums;letter-spacing:0;border-left:1px solid var(--line);padding-left:10px}.personal-best{position:fixed;top:102px;left:35px;align-items:center;gap:9px;font-size:7px;letter-spacing:1.1px;color:#6d795f;pointer-events:none}.personal-best span{font-size:10px;letter-spacing:.1px;color:#3c5640;font-weight:600}#carry{position:fixed;bottom:69px;left:34px;align-items:center;gap:10px;padding:11px 15px 11px 11px;border:1px solid rgba(246,243,229,.56);border-radius:10px;background:rgba(247,244,232,.83);backdrop-filter:blur(8px);min-width:205px;pointer-events:none}.carry-icon{display:flex;align-items:center;justify-content:center;width:33px;height:33px;background:rgba(92,110,70,.07);border-radius:7px}.carry-icon svg{width:17px;height:17px;color:#788265}#carry>div{display:flex;flex-direction:column;gap:5px}#carry-name{font-size:11px;font-weight:600}#carry-weight{font-size:8px;color:#7e8871}.loaded .carry-icon{background:#dce3cd}.loaded .carry-icon svg{color:#3d6749}#poop-meter{position:fixed;bottom:70px;right:34px;align-items:center;gap:10px;border:1px solid rgba(246,243,229,.56);border-radius:10px;background:rgba(247,244,232,.83);backdrop-filter:blur(8px);padding:16px 13px;pointer-events:none}#poop-meter>svg{height:18px;width:18px;color:#657558}#poop-meter>div{width:126px}.poop-label{display:flex;justify-content:space-between;font-size:6px;letter-spacing:.8px;gap:8px}.poop-label #poop-state{font-size:7px;letter-spacing:.4px;color:#6d815a;min-width:29px;text-align:right}.poop-track{height:3px;width:100%;background:#d7dcca;margin-top:8px;overflow:hidden}.poop-track i{display:block;width:100%;height:100%;background:#61794c;transform-origin:left}.npc-bubble{position:fixed;top:0;left:0;background:#faf6e9;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:750;letter-spacing:.25px;color:#456247;white-space:nowrap;box-shadow:0 2px 9px rgba(40,46,25,.07);will-change:transform;pointer-events:none}.npc-bubble:after{content:"";position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:inherit;transform:translateX(-50%) rotate(45deg)}.npc-bubble.angry{background:#ad5238;color:#fff5df}.score-popup{position:fixed;left:0;top:0;font-size:11px;font-weight:750;color:#344f37;text-align:center;white-space:nowrap;text-shadow:0 1px 2px #f2ecd2,1px 0 2px #f2ecd2,-1px 0 2px #f2ecd2;pointer-events:none;z-index:4;letter-spacing:.2px}#interact{position:fixed;top:0;left:0;align-items:center;gap:7px;border:1px solid #f5f0de;background:rgba(247,244,232,.96);padding:7px 10px 7px 7px;border-radius:8px;font-size:10px;pointer-events:none;white-space:nowrap;box-shadow:0 3px 14px #2a372115;z-index:6}#interact kbd{background:var(--ink);color:#f6f1df;border:0;font-weight:650;font-size:10px;min-height:23px;min-width:23px}#event-feed{position:fixed;bottom:152px;left:36px;white-space:pre-line;line-height:2.25;font-size:8px;letter-spacing:1px;font-weight:550;color:#3f5940;max-width:310px;text-shadow:0 1px 5px #f4ecd7;pointer-events:none}#toast{position:fixed;bottom:129px;left:50%;transform:translate(-50%,8px);padding:11px 17px;background:rgba(45,62,43,.94);border:1px solid rgba(255,255,255,.1);color:#f8f2df;border-radius:7px;font-size:10px;line-height:1.45;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;z-index:12}#toast.shown{opacity:1;transform:translate(-50%,0)}.modal-backdrop{position:fixed;inset:0;display:grid;place-items:center;background:rgba(46,56,38,.2);backdrop-filter:blur(8px);z-index:25;padding:20px}.modal{width:480px;max-width:100%;max-height:calc(100dvh - 36px);overflow:auto;padding:34px;border:1px solid #fff9;background:#f6f2e6;border-radius:17px;box-shadow:0 24px 80px #22352624}.eyebrow{font-size:8px;font-weight:650;letter-spacing:1.8px;color:#879174}.modal h2{font-size:39px;line-height:1;letter-spacing:-1.9px;margin:14px 0 12px;font-weight:650}.modal>p{color:#77806b;font-size:11px;line-height:1.6}.control-grid{margin:25px 0;display:grid;grid-template-columns:1fr 1fr;gap:13px 18px}.control-grid>span{font-size:10px;display:flex;align-items:center;gap:8px}.control-grid kbd{font-size:7px;min-width:34px;height:21px;background:#faf7ed}.pause-tip{padding-top:17px;border-top:1px solid var(--line);font-size:10px!important}.modal-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:23px}.modal-actions .primary-button{font-size:11px;padding:15px 16px;gap:30px}.quiet-button{color:#6e7c5f;font-size:10px;text-decoration:underline;text-underline-offset:4px}#clip-result{position:fixed;bottom:95px;right:30px;width:300px;border-radius:13px;background:#f7f2e5;border:1px solid #fffc;padding:15px;box-shadow:0 8px 45px #24382024;z-index:30}.clip-heading{display:flex;align-items:center;gap:10px;margin-bottom:13px}.clip-heading>div{flex:1;display:flex;flex-direction:column;gap:4px}.clip-heading strong{font-size:12px}.clip-heading #clip-size{font-size:9px;color:#899276}.clip-icon{display:grid;place-items:center;background:#e3e8d4;width:34px;height:34px;border-radius:9px;font-size:20px}.clip-heading .icon-button{width:28px;height:28px;font-size:22px}.clip-heading~.primary-button{width:100%;font-size:11px;padding:13px 15px}#fatal{position:fixed;inset:0;display:grid;place-content:center;text-align:center;background:#f5f1e6;padding:30px;z-index:100;font-size:16px;line-height:1.6}#fatal p{max-width:420px}#touch{display:none!important}.clean-hud .topbar,.clean-hud #score-panel,.clean-hud #daily-panel,.clean-hud .bottom-bar,.clean-hud #carry,.clean-hud #poop-meter,.clean-hud #event-feed,.clean-hud .personal-best,.clean-hud #interact,.clean-hud #toast{opacity:0;pointer-events:none}.clean-hud #popups,.clean-hud #bubbles{opacity:0}[hidden]{display:none!important}body.playing [hidden].play-only{display:none!important}@keyframes pulse{50%{opacity:.3}}@media(min-width:1450px){#intro{bottom:20vh}.topbar{top:34px}.daily-panel{top:112px}}
 @media(max-width:1200px){.square-label .separator,.square-label .version{display:none}.control-strip{gap:9px}.control-strip>span{font-size:8px}.daily-panel{width:240px;right:25px}.topbar{left:27px;right:25px}h1{font-size:67px}.wordmark{font-size:30px}.tagline{font-size:7px}}
@@ -123,6 +123,15 @@ body.playing #carry{top:20px;bottom:auto;left:24px;max-width:190px}
 .identity{padding-left:34px}
 @media(max-width:600px){.identity{padding-left:38px}body.playing #score-panel{left:max(64px,calc(env(safe-area-inset-left) + 52px))}}
 @media(max-height:500px) and (pointer:coarse){body.playing #carry{left:max(66px,calc(env(safe-area-inset-left) + 54px))}}
+/* The style sheet uses the same paper and green as the existing pause menu. */
+#bird-style-dialog{width:440px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);padding:22px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:auto}
+#bird-style-dialog::backdrop{background:rgba(35,49,39,.35)}
+.bird-style-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.bird-style-heading h2{font-size:25px;letter-spacing:-1px;margin:0}
+#bird-style-preview{display:block;width:100%;height:170px;margin:12px 0;background:#e9e6d9;border-radius:7px}
+.bird-style-group{border:0;padding:0;margin:17px 0}.bird-style-group legend{font-size:12px;font-weight:600;margin-bottom:8px}
+.bird-style-options{display:flex;gap:7px;flex-wrap:wrap}.bird-style-choice{font-size:12px;min-height:42px;padding:9px 11px;border:1px solid var(--line);border-radius:6px}.bird-style-choice[aria-pressed=true]{border-color:var(--ink);background:#e0e7dc}.bird-style-choice small{display:block;font-size:9px;color:var(--quiet);margin-top:3px}
+.bird-style-footer{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}.bird-style-footer .primary-button{width:auto;min-height:44px;padding:12px 16px;font-size:12px;gap:10px}.bird-style-footer .quiet-button{min-height:44px;font-size:12px;padding:6px 0}#bird-style-note{font-size:11px;line-height:1.5;color:var(--quiet);margin:14px 0 0}
+#bird-style-dialog .icon-button{min-width:40px;min-height:40px}
 </style>
 </head><body>
 <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -140,6 +149,7 @@ body.playing #carry{top:20px;bottom:auto;left:24px;max-width:190px}
 <header class="topbar">
   <div class="identity"><div class="wordmark">Pigeon<span class="wordmark-dot">.</span></div></div>
   <div class="toolbar" aria-label="Game settings">
+    <button id="bird-style" class="icon-button" aria-label="Bird style" title="Bird style"><svg><use href="#icon-feather"/></svg></button>
     <button id="sound" class="icon-button" aria-label="Toggle sound" aria-pressed="true" title="Mute sound"><svg><use href="#icon-sound"/></svg><span class="mute-slash"></span></button>
     <button id="photo" class="icon-button" aria-label="Take a screenshot" title="Screenshot · P"><svg><use href="#icon-camera"/></svg></button>
     <button id="record" class="record-button" title="Record the next 12 seconds · V"><i aria-hidden="true"></i><span id="record-label">Record 12s</span></button>
@@ -186,6 +196,14 @@ body.playing #carry{top:20px;bottom:auto;left:24px;max-width:190px}
 <div id="mp-podium" hidden><section class="podium-card" role="status"><button id="podium-board" class="icon-button lg-trophy lg-corner" aria-label="Leaderboard" title="Leaderboard" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4m8-4h3a3 3 0 0 1-3 4M12 13v4m-4 3h8m-6-3h4"/></svg></button><h2 id="podium-title">Round over.</h2><div class="podium" id="podium-steps"></div><ol id="podium-list"></ol><div class="podium-foot"><span id="podium-next">Next round soon</span><button id="podium-leave" class="quiet-button">Leave square</button><button id="podium-again" class="primary-button" hidden>Play again <svg><use href="#icon-arrow"/></svg></button></div></section></div>
 <div id="clip-result" hidden role="status"><div class="clip-heading"><span class="clip-icon"><svg><use href="#icon-arrow"/></svg></span><div><strong>Clip ready</strong><span id="clip-size">Your clip is ready.</span></div><button id="close-clip" class="icon-button" aria-label="Close clip result"><svg><use href="#icon-close"/></svg></button></div><a id="clip-download" download="Pigeon-chaos.webm" class="primary-button">Save clip <svg><use href="#icon-arrow"/></svg></a></div>
 <div id="fatal" hidden role="alert"></div>
+<dialog id="bird-style-dialog" aria-labelledby="bird-style-title">
+ <div class="bird-style-heading"><h2 id="bird-style-title">Bird style</h2><button id="bird-style-close" class="icon-button" aria-label="Close bird style"><svg><use href="#icon-close"/></svg></button></div>
+ <canvas id="bird-style-preview" width="720" height="340" role="img" aria-label="Selected pigeon style preview"></canvas>
+ <fieldset class="bird-style-group"><legend>Hat</legend><div id="bird-style-hats" class="bird-style-options"></div></fieldset>
+ <fieldset class="bird-style-group"><legend>Feathers</legend><div id="bird-style-feathers" class="bird-style-options"></div></fieldset>
+ <div class="bird-style-footer"><button id="bird-style-apply" class="primary-button">Use this style</button><button id="bird-style-buy" class="quiet-button">Buy or restore · 39 kr</button></div>
+ <p id="bird-style-note" role="status"></p>
+</dialog>
 <script>"use strict";
 var Pigeon;
 (function (Pigeon) {
@@ -1783,6 +1801,7 @@ var Pigeon;
             document.querySelectorAll('[id]').forEach(el => this.hud[el.id] = el);
             this.bindUI();
             Pigeon.setupOnline?.(this);
+            Pigeon.setupStyles?.(this);
             this.loadQuests();
             this.physics.onImpact = (a, b, speed) => this.impact(a, b, speed);
             this.world.npcs.forEach(n => { const el = document.createElement('div'); el.className = 'npc-bubble'; el.hidden = true; this.hud.bubbles?.append(el); this.npcBubbles.set(n.id, el); });
@@ -2831,6 +2850,7 @@ var Pigeon;
             const portrait = innerWidth / innerHeight < .8, distance = this.mode === 'intro' ? portrait ? 29 : 30 : this.cameraDistance * (portrait ? 1.18 : 1);
             this.renderer.eye = [this.renderer.target[0] + Math.sin(this.cameraYaw) * distance, this.renderer.target[1] + distance * .8, this.renderer.target[2] + Math.cos(this.cameraYaw) * distance];
             this.online?.frame(realDt);
+            this.syncBirdStyle?.();
             this.renderer.render();
             this.updateUI(realDt);
             this.online?.ui();
@@ -4007,6 +4027,228 @@ var Pigeon;
         refresh();
     }
     Pigeon.setupOnline = setupOnline;
+})(Pigeon || (Pigeon = {}));
+var Pigeon;
+(function (Pigeon) {
+    const HATS = [
+        { id: 'none', name: 'Original' },
+        { id: 'sun', name: 'Sun hat' },
+        { id: 'beanie', name: 'Beanie' },
+        { id: 'crown', name: 'Crown' },
+        { id: 'top', name: 'Top hat' }
+    ];
+    const FEATHERS = [
+        { id: 'original', name: 'Original', colors: null },
+        { id: 'snow', name: 'Snow', colors: ['#e7e5da', '#aaaeb2', '#faf6e9', '#9ba8ab', '#d5cbd9', '#dce2dd'] },
+        { id: 'cinnamon', name: 'Cinnamon', colors: ['#b87953', '#71483b', '#e7b287', '#9e644d', '#89574d', '#c58c65'] },
+        { id: 'midnight', name: 'Midnight', colors: ['#35485e', '#243143', '#687b8c', '#506a75', '#76677d', '#4b6178'] },
+        { id: 'mint', name: 'Mint', colors: ['#94b4a0', '#4d7264', '#c9d8bf', '#65988b', '#7f8f97', '#a8c1a6'] }
+    ];
+    const ORIGINAL_FEATHERS = ['#80949e', '#3d5463', '#a7b2b4', '#527b70', '#6c657c', '#9ca7a9'];
+    const STYLE_STORAGE = 'pigeon:style:v1';
+
+    function readStyle() {
+        try {
+            const value = JSON.parse(Pigeon.storageGet(STYLE_STORAGE, '{}'));
+            return {
+                hat: HATS.some(x => x.id === value?.hat) ? value.hat : 'none',
+                feathers: FEATHERS.some(x => x.id === value?.feathers) ? value.feathers : 'original'
+            };
+        } catch { return { hat: 'none', feathers: 'original' }; }
+    }
+
+    // Keep references to the original feather nodes. Eyes, beak, feet and free online gear stay intact.
+    function styleModel(bird) {
+        const originals = ORIGINAL_FEATHERS.map(hex => Pigeon.rgb(hex).join(','));
+        const feathers = [];
+        const visit = node => {
+            if (node.shape) {
+                const index = originals.indexOf(node.color.join(','));
+                if (index >= 0) feathers.push({ node, index, original: [...node.color] });
+            }
+            node.children.forEach(visit);
+        };
+        visit(bird.root);
+        return { feathers, hat: Pigeon.group(bird.head).at(0, 1.35, -.3) };
+    }
+
+    function applyStyle(model, style) {
+        const look = FEATHERS.find(x => x.id === style.feathers) || FEATHERS[0];
+        for (const feather of model.feathers)
+            feather.node.color = look.colors ? Pigeon.rgb(look.colors[feather.index]) : [...feather.original];
+        model.hat.children.length = 0;
+        const part = (kind, color, position, size, rotation) => Pigeon.shape(model.hat, kind, color, position, size, rotation);
+        if (style.hat === 'sun') {
+            part('cylinder', '#d9b982', [0, .015, 0], [.77, .045, .68]);
+            part('cylinder', '#e4c991', [0, .1, 0], [.46, .18, .43]);
+            part('cylinder', '#8f604b', [0, .055, 0], [.47, .045, .44]);
+        } else if (style.hat === 'beanie') {
+            part('sphere', '#b85e42', [0, .09, 0], [.5, .35, .48]);
+            part('cylinder', '#843f32', [0, .015, 0], [.53, .095, .5]);
+            part('sphere', '#e3b478', [0, .29, 0], [.15, .15, .15]);
+        } else if (style.hat === 'crown') {
+            part('cylinder', '#dcae43', [0, .055, 0], [.52, .12, .49]);
+            for (let i = 0; i < 5; i++) {
+                const angle = i * Pigeon.TAU / 5;
+                part('cone', '#edc967', [Math.sin(angle) * .2, .17, Math.cos(angle) * .19], [.13, .22, .13]);
+            }
+            part('sphere', '#b75e49', [0, .075, -.25], [.09, .09, .04]);
+        } else if (style.hat === 'top') {
+            part('cylinder', '#26383c', [0, .02, 0], [.7, .055, .61]);
+            part('cylinder', '#35494b', [0, .17, 0], [.43, .29, .41]);
+            part('cylinder', '#a65d48', [0, .065, 0], [.45, .065, .43]);
+        }
+    }
+
+    function setupStyles(game) {
+        const dialog = document.querySelector('#bird-style-dialog');
+        const trigger = document.querySelector('#bird-style');
+        const apply = document.querySelector('#bird-style-apply');
+        const buy = document.querySelector('#bird-style-buy');
+        const note = document.querySelector('#bird-style-note');
+        const canvas = document.querySelector('#bird-style-preview');
+        const previewContext = canvas.getContext('2d');
+        const localModel = styleModel(game.bird);
+        const previewRoot = Pigeon.group();
+        const previewBird = Pigeon.makeBird(previewRoot);
+        const previewModel = styleModel(previewBird);
+        let saved = readStyle(), selected = { ...saved }, resumeOnClose = false;
+        let previousOwned, previousGear, connectedStore;
+        const originalStyle = { hat: 'none', feathers: 'original' };
+        const owns = () => {
+            try { return window.LudvigStore?.owns?.('pigeon') === true; }
+            catch { return false; }
+        };
+        const isPaid = style => style.hat !== 'none' || style.feathers !== 'original';
+
+        // Render the preview with the actual game geometry, then restore the scene immediately.
+        // Only the preview bird changes when a locked item is selected.
+        function paintPreview() {
+            if (!previewContext) return;
+            const r = game.renderer;
+            const previous = { root: r.root, eye: r.eye, target: r.target, fov: r.fov, shadows: r.shadows };
+            const width = r.canvas.width, height = r.canvas.height;
+            try {
+                applyStyle(previewModel, selected);
+                r.canvas.width = canvas.width;
+                r.canvas.height = canvas.height;
+                r.root = previewRoot;
+                r.eye = [2.3, 2.2, -3.7];
+                r.target = [0, .8, 0];
+                r.shadows = false;
+                r.render();
+                previewContext.drawImage(r.canvas, 0, 0, canvas.width, canvas.height);
+                const hat = HATS.find(x => x.id === selected.hat)?.name || 'Original';
+                const feathers = FEATHERS.find(x => x.id === selected.feathers)?.name || 'Original';
+                canvas.setAttribute('aria-label', `${hat} hat, ${feathers.toLowerCase()} feathers${isPaid(selected) && !owns() ? ', preview only' : ''}`);
+            } catch {
+                previewContext.clearRect(0, 0, canvas.width, canvas.height);
+                note.textContent = 'Preview unavailable. Your game is unchanged.';
+            } finally {
+                Object.assign(r, previous);
+                r.canvas.width = width;
+                r.canvas.height = height;
+                r.render();
+            }
+        }
+
+        function updateSheet() {
+            if (!dialog.open) return;
+            const owned = owns();
+            dialog.querySelectorAll('[data-style-choice]').forEach(button => {
+                const kind = button.dataset.styleKind;
+                button.setAttribute('aria-pressed', String(selected[kind] === button.dataset.styleChoice));
+                button.querySelector('small').hidden = owned || button.dataset.free === 'true';
+            });
+            apply.disabled = isPaid(selected) && !owned;
+            buy.hidden = owned;
+            buy.disabled = typeof window.LudvigStore?.open !== 'function';
+            note.textContent = owned ? 'Your style is saved on this device.'
+                : buy.disabled ? 'Purchases are unavailable. Free play still works.'
+                : '4 hats and 4 feather looks. 39 kr once. Locked styles are previews.';
+            paintPreview();
+        }
+
+        function sync(force = false) {
+            const owned = owns(), gear = game.online?.gear;
+            if (!force && owned === previousOwned && gear === previousGear) return;
+            previousOwned = owned;
+            previousGear = gear;
+            const current = owned ? saved : originalStyle;
+            applyStyle(localModel, current);
+            // The original online party hat stays free. A chosen paid hat replaces only its visuals.
+            for (const [parent, node] of gear?.all || [])
+                if (parent === game.bird.head) node.visible = current.hat === 'none';
+            updateSheet();
+        }
+
+        function fillChoices(id, items, kind) {
+            const container = document.getElementById(id);
+            for (let index = 0; index < items.length; index++) {
+                const item = items[index], button = document.createElement('button'), hint = document.createElement('small');
+                button.type = 'button';
+                button.className = 'bird-style-choice';
+                button.dataset.styleChoice = item.id;
+                button.dataset.styleKind = kind;
+                button.dataset.free = String(index === 0);
+                button.setAttribute('aria-pressed', 'false');
+                button.append(document.createTextNode(item.name));
+                hint.textContent = 'Preview';
+                hint.hidden = index === 0;
+                button.append(hint);
+                button.addEventListener('click', () => { selected[kind] = item.id; updateSheet(); });
+                container.append(button);
+            }
+        }
+        fillChoices('bird-style-hats', HATS, 'hat');
+        fillChoices('bird-style-feathers', FEATHERS, 'feathers');
+        trigger.addEventListener('click', () => {
+            resumeOnClose = game.mode === 'playing';
+            if (resumeOnClose) game.pause();
+            game.input.clear();
+            selected = { ...saved };
+            dialog.showModal();
+            updateSheet();
+            document.getElementById('bird-style-close').focus();
+        });
+        document.getElementById('bird-style-close').addEventListener('click', () => dialog.close());
+        dialog.addEventListener('keydown', event => event.stopPropagation());
+        dialog.addEventListener('close', () => {
+            game.input.clear();
+            if (resumeOnClose && game.mode === 'paused') game.pause();
+            resumeOnClose = false;
+            trigger.focus({ preventScroll: true });
+        });
+        apply.addEventListener('click', () => {
+            if (isPaid(selected) && !owns()) return;
+            saved = { ...selected };
+            Pigeon.storageSet(STYLE_STORAGE, JSON.stringify(saved));
+            sync(true);
+            dialog.close();
+        });
+        buy.addEventListener('click', () => {
+            const store = window.LudvigStore;
+            if (typeof store?.open !== 'function') return;
+            resumeOnClose = false;
+            dialog.close();
+            try { store.open('pigeon'); }
+            catch { game.toast('Purchases are unavailable. Try again later.', 4); }
+        });
+        const connectStore = () => {
+            const store = window.LudvigStore;
+            if (store && store !== connectedStore) {
+                connectedStore = store;
+                try { store.subscribe?.(() => sync(true)); }
+                catch { /* A failed store cannot stop free play. */ }
+            }
+            sync(true);
+        };
+        game.syncBirdStyle = sync;
+        addEventListener('load', connectStore);
+        addEventListener('ludvig:store', connectStore);
+        connectStore();
+    }
+    Pigeon.setupStyles = setupStyles;
 })(Pigeon || (Pigeon = {}));
 var Pigeon;
 (function (Pigeon) {

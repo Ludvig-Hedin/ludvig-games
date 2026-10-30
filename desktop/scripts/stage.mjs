@@ -177,6 +177,11 @@ function stageRitkaos() {
   for (const part of ["server.mjs", "lib", "public", "package.json"]) {
     fs.cpSync(path.join(gamesDir, "ritkaos", part), path.join(out, "app", part), { recursive: true });
   }
+  // Preserve the same sibling import layout as the source checkout. With no
+  // store configuration the offline app stays free and makes no licence calls.
+  const commerce = path.join(out, "ludvig-games", "commerce");
+  fs.mkdirSync(commerce, { recursive: true });
+  fs.copyFileSync(path.join(gamesDir, "ludvig-games", "commerce", "license.mjs"), path.join(commerce, "license.mjs"));
   writeConfig("ritkaos", { kind: "node", main: "app/server.mjs" });
 }
 

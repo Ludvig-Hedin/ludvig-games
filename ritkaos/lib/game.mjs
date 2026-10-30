@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { getChoices, matches, almost, normalize } from './prompts.mjs';
 import { t, modifierText, lang as validLang } from './i18n.mjs';
-import { verifyCode, normalizeCode, validSecret, expand, owns, PAID_PACKS, PAID_MODES, BRUSHES } from './store.mjs';
+import { verifyCode, normalizeCode, normalizeLicense, validSecret, expand, owns, PAID_PACKS, PAID_MODES, BRUSHES } from './store.mjs';
 const id = (n=8) => randomBytes(n).toString('hex');
 const clean = (v,n) => typeof v === 'string' ? v.replace(/[\x00-\x1f\x7f<>]/g,'').trim().slice(0,n) : '';
 // Errors carry a message id; handle() turns it into the player's language.
@@ -22,7 +22,12 @@ export const TEL = { write:45000, guess:35000, show:6000, points:5000 };
 const TEL_PHASES = ['twrite','tdraw','tguess'], PLAY_PHASES = ['choosing','drawing','reveal',...TEL_PHASES,'treveal'];
 const MODIFIERS = [{id:'tiny',duration:10000},{id:'mono',duration:10000},{id:'mirror',duration:8000},{id:'blind',duration:8000},{id:'shake',duration:7000}];
 export class Game {
-  constructor({ now=()=>Date.now(), secret='' }={}) { this.now=now; this.rooms=new Map(); this.sessions=new Map(); this.secret=validSecret(secret); }
+  constructor({ now=()=>Date.now(), secret='', resolveLicense=null }={}) {
+    this.now=now; this.rooms=new Map(); this.sessions=new Map(); this.secret=validSecret(secret);
+    this.resolveLicense=typeof resolveLicense==='function'?resolveLicense:null;
+    // Bearer keys stay in process memory only, never players or Durable Object snapshots.
+    this.nativeCodes=new WeakMap(); this.unlockVersions=new WeakMap(); this.pendingCommands=new WeakMap();
+  }
   send(p,type,data={}) { p.peer?.send({type,data}); }
   broadcast(r,type,data) { for (const p of r.players.values()) this.send(p,type,data); }
   online(r) { return [...r.players.values()].filter(p=>p.connected); }
@@ -32,7 +37,10 @@ export class Game {
   max(r) { return r.public?PUBLIC_MAX:PRIVATE_MAX; }
   connect(peer,token,{network=null,lang}={}) {
     let p = typeof token==='string' ? this.sessions.get(token) : null;
-    if (!p) { p={id:id(5),token:id(24),name:t(lang,'defaultName'),avatar:0,score:0,connected:true,peer:null,room:null,spectator:false,lastSeen:this.now(),limits:new Map(),lang:'sv',owned:new Set()}; this.sessions.set(p.token,p); }
+    if (!p) { p={id:id(5),token:id(24),name:t(lang,'defaultName'),avatar:0,score:0,connected:true,peer:null,room:null,spectator:false,lastSeen:this.now(),limits:new Map(),lang:'sv',owned:new Set(),legacyOwned:new Set(),nativeOwned:new Set()}; this.sessions.set(p.token,p); }
+    if (!(p.legacyOwned instanceof Set)) p.legacyOwned=new Set(p.owned);
+    p.nativeOwned=new Set(); p.owned=new Set(p.legacyOwned); p.nativeUntil=0;
+    this.nativeCodes.set(p,[]); this.unlockVersions.set(p,(this.unlockVersions.get(p)||0)+1);
     const old=p.peer; p.peer=peer; p.connected=true; p.disconnectedAt=0; p.lastSeen=this.now(); p.network=network||null; p.lobbyKey='';
     if(validLang(lang)) p.lang=lang;
     if(old && old!==peer) { old.send({type:'replaced',data:{}}); old.close(); }
@@ -57,11 +65,26 @@ export class Game {
   /** Returns the result, or a Promise for async messages (code redemption). Errors arrive in the player's language either way. */
   handle(p,type,data={}) {
     const fail=e=>{ if(e.key) e.message=t(p.lang,e.key,e.vars); throw e; };
-    try { const out=this.dispatch(p,type,data); return out instanceof Promise?out.catch(fail):out; }
+    try {
+      p.lastSeen=this.now(); this.limit(p,'all',220);
+      const previous=this.pendingCommands.get(p);
+      if(previous?.count>=64)error('slowDown');
+      const execute=()=>{
+        // A begin/points/end sequence must keep its wire order while a provider
+        // check is pending. The bounded per-player tail never enters snapshots.
+        const refresh=['settings','start','stroke.begin'].includes(type)&&this.nativeCodes.get(p)?.length&&this.now()>=(p.nativeUntil||0);
+        return refresh?this.unlock(p,this.nativeCodes.get(p)).then(()=>this.dispatch(p,type,data)):this.dispatch(p,type,data);
+      };
+      const out=previous?previous.promise.catch(()=>{}).then(execute):execute();
+      if(!(out instanceof Promise))return out;
+      const pending={count:(previous?.count||0)+1,promise:null};
+      pending.promise=out.finally(()=>{if(this.pendingCommands.get(p)===pending)this.pendingCommands.delete(p);});
+      this.pendingCommands.set(p,pending);
+      return pending.promise.catch(fail);
+    }
     catch(e) { fail(e); }
   }
   dispatch(p,type,data) {
-    p.lastSeen=this.now(); this.limit(p,'all',220);
     if(!data || typeof data!=='object' || Array.isArray(data)) error('invalid');
     if(type==='ping') return {serverTime:this.now()};
     if(type==='rooms') return {rooms:this.listRooms(p)};
@@ -70,6 +93,7 @@ export class Game {
     if(type==='join') return this.join(p,data);
     if(type==='quick') return this.quick(p,data);
     if(type==='redeem') return this.redeem(p,data);
+    if(type==='licenses') { this.limit(p,'licenses',6,60000); return this.unlock(p,data.codes); }
     if(type==='leave') { this.leave(p); return {}; }
     const r=this.room(p); r.lastActive=this.now();
     switch(type){
@@ -92,21 +116,46 @@ export class Game {
       default: error('unknown');
     }
   }
-  /** Ritkaos+: verifies codes the client kept in localStorage. Only server-verified codes count; the client's own claims never do. */
+  /** Legacy grants remain valid; provider ownership is rebuilt from freshly checked keys. */
   async unlock(p,codes) {
-    const list=[...new Set((Array.isArray(codes)?codes:[]).slice(0,40).map(normalizeCode).filter(Boolean))].slice(0,20);
-    let added=false;
-    for(const code of list){const products=await verifyCode(this.secret,code);if(products)for(const id of products)if(!p.owned.has(id)){p.owned.add(id);added=true;}}
-    this.send(p,'owned',{products:expand(p.owned),ready:!!this.secret});
-    const r=this.rooms.get(p.room);if(added&&r)this.stateAll(r);
+    const version=(this.unlockVersions.get(p)||0)+1; this.unlockVersions.set(p,version);
+    const list=[...new Set((Array.isArray(codes)?codes:[]).slice(0,40).filter(x=>typeof x==='string'&&x.length<=80).map(x=>normalizeLicense(x)||normalizeCode(x)).filter(Boolean))].slice(0,20);
+    if (!(p.legacyOwned instanceof Set)) p.legacyOwned=new Set(p.owned);
+    const before=[...p.owned].sort().join(','), native=new Set(), nativeKeys=list.filter(normalizeLicense);
+    for(const code of list.filter(x=>!normalizeLicense(x))){const products=await verifyCode(this.secret,code);if(products)for(const id of products)p.legacyOwned.add(id);}
+    if(this.resolveLicense)for(const code of nativeKeys){
+      try{const result=await this.resolveLicense(code);if(result?.ok===true&&result.environment==='test'&&result.entitlements?.includes('ritkaos'))native.add('plus');}
+      catch { /* Revalidation failures remove provider grants; free play and legacy grants remain. */ }
+    }
+    if(this.unlockVersions.get(p)!==version)return expand(p.owned);
+    this.nativeCodes.set(p,nativeKeys); p.nativeOwned=native; p.nativeUntil=this.now()+30000;
+    p.owned=new Set([...p.legacyOwned,...native]);
+    this.send(p,'owned',{products:expand(p.owned),ready:!!this.secret||!!this.resolveLicense});
+    const r=this.rooms.get(p.room);if(before!==[...p.owned].sort().join(',')&&r)this.stateAll(r);
     return expand(p.owned);
   }
   async redeem(p,data) {
     this.limit(p,'redeem',6,60000);
+    const native=normalizeLicense(data.code);
+    if(native){
+      if(!this.resolveLicense)error('codesOff');
+      let result;
+      try{result=await this.resolveLicense(native);}
+      catch(e){
+        await this.unlock(p,(this.nativeCodes.get(p)||[]).filter(x=>x!==native));
+        error(e?.code==='invalid-license'?'badCode':'codesOff');
+      }
+      if(result?.ok!==true||result.environment!=='test'||!result.entitlements?.includes('ritkaos')){
+        await this.unlock(p,(this.nativeCodes.get(p)||[]).filter(x=>x!==native));error('badCode');
+      }
+      const products=await this.unlock(p,[...(this.nativeCodes.get(p)||[]),native]);
+      if(!products.includes('plus'))error('codesOff');
+      return {products,added:['plus']};
+    }
     if(!this.secret)error('codesOff');
     const code=normalizeCode(data.code);if(!code)error('badCode');
     const products=await verifyCode(this.secret,code);if(!products)error('badCode');
-    return {products:await this.unlock(p,[code]),added:products};
+    return {products:await this.unlock(p,[...(this.nativeCodes.get(p)||[]),code]),added:products};
   }
   /** Packs and modes follow the host: if the host owns one, everyone in the private room plays it. Open matches stay free. */
   unlocked(r,id) { const host=r.players.get(r.host); return !r.public&&!!host&&owns(host.owned,id); }
