@@ -11,17 +11,20 @@ Owner decisions, 30 October: the paid launch must cover more games than Ritkaos.
 Ritkaos-only framing is superseded. Ludvig then approved the proposed lineup: Ritkaos+ extras,
 new Pigeon hats/looks, new Karts colours/designs, and a bundle containing those three packs.
 Existing games/content stay free; the bundle makes no promise to include every future release.
-Exact pack contents and prices remain to be proposed. Implementation and test/release gates remain.
+Ludvig subsequently accepted the proposed 59/39/39/99 SEK starting prices and omitting the individual
+19–29 SEK extras. Exact new pack contents still need a concrete preview and owner review.
+Implementation and test/release gates remain. Current owner checklist and first-sales plan:
+[first-100kr-plan.md](first-100kr-plan.md).
 
-The lineup is approved; final contents and prices still need Ludvig's confirmation. The implementation contains
-Ritkaos+ at 79 SEK and nine individual extras at 19–29 SEK. These are existing source values, not newly
-approved launch prices. The game stays free to play, with optional paid extras, under the 22 October
-owner decision. A concrete product question was raised in chat; dependent activation is pending.
+The lineup and starting prices are approved. The implementation still contains Ritkaos+ at 79 SEK and
+nine individual extras at 19–29 SEK; it has not yet been updated for the approved launch offer. The game
+stays free to play, with optional paid extras, under the 22 October owner decision. Activation is pending.
 
 ## Checklist for Ludvig
 
 - [x] Approve the multi-game lineup: Ritkaos+, Pigeon style pack, Karts style pack and their bundle.
-- [ ] Confirm the exact pack contents and final customer prices after the requested market research.
+- [x] Accept starting prices 59/39/39/99 SEK and omit individual 19–29 SEK extras.
+- [ ] Review the exact new pack contents in a concrete preview from the implementing agent.
 - [ ] In [Lemon Squeezy](https://app.lemonsqueezy.com), check that the approved Ludvig Games store
   offers Live mode and has no outstanding account tasks. Keep customer checkout unlinked until testing passes.
 - [ ] Check **Settings → Payout** and complete any bank/PayPal, identity or tax-form tasks shown there.
@@ -105,9 +108,9 @@ No disposable development data was created, so none remains to clean up.
 
 Research requested on 30 October is complete and reviewed:
 [AI-games business research and proposed operating plan](ai-games-business-research-2026-10-30.md).
-Proposed prices are 59/39/39/99 SEK for Ritkaos+/Pigeon/Karts/bundle, pending owner decision. The
-recommendation is a demand test, not a revenue forecast; no marketing automation is active.
+Starting prices 59/39/39/99 SEK for Ritkaos+/Pigeon/Karts/bundle were subsequently accepted by Ludvig.
+This is a demand test, not a revenue forecast; no marketing automation is active.
 
-Next: Ludvig decides final contents/prices and completes any account-only tasks above. The
+Next: Ludvig completes account-only tasks and reviews concrete pack previews when ready. The
 implementing agent owns payment integration, focused verification and preparation for activation. Paid release
 remains blocked until those steps are complete; this document does not authorize bypassing cost holds.

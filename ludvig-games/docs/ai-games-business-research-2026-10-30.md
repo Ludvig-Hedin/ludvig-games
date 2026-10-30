@@ -4,6 +4,10 @@ Independent Opus research, reviewed and corrected by the coordinating agent. Res
 No app or production change, purchase, post or deployment.
 Paid checkout is still **not** integrated or live (see [purchase-release-2026-10-30.md](purchase-release-2026-10-30.md)).
 
+Subsequent owner decision: Ludvig accepted the proposed 59/39/39/99 SEK starting prices and omitting
+the individual 19–29 SEK extras. Approval labels below describe the research-stage state, not a reason
+to reopen that decision. Current setup checklist and first-sales plan: [first-100kr-plan.md](first-100kr-plan.md).
+
 Labels used in this report:
 
 - **Approved** = an owner decision already recorded in the repo.

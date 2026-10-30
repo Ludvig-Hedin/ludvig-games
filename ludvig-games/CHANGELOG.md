@@ -1,5 +1,9 @@
 # 2026-10-30: purchase readiness review
 
+- Owner accepted the researched starting prices and omitting tiny individual extras. Added a clear
+  first-100-kr setup checklist and profitability plan, including the provider's US$50 payout threshold.
+  New track packs and a new simulator remain proposals; this plan changes no app or production behavior.
+
 - Recorded Lemon Squeezy account approval and the remaining paid-release blockers. Purchases stay off:
   verified payment-to-code delivery is unbuilt and the planned Ritkaos service still returns 404.
 - Added a release checklist separating owner decisions/account tasks from implementation and verification.
