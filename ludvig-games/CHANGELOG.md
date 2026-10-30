@@ -7,6 +7,8 @@
   remain pending; no existing free content has been restricted.
 - Subsequently approved Ritkaos+, new Pigeon and Karts style packs and their bundle, with current
   free content preserved. Requested revenue, pricing and agent-run marketing research before final pricing.
+- Saved independent Opus business research with coordinator corrections, official fee/currency checks,
+  proposed pricing and a 90-day plan. Prices and public marketing remain unapproved; no automation active.
 - Read-only source review, independent purchase review and fresh HTTP checks; no checkout test or new
   gameplay test pass claimed. No production configuration, code, deployment or remote CI changed.
 

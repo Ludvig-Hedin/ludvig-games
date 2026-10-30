@@ -103,7 +103,11 @@ No disposable development data was created, so none remains to clean up.
 - [Payout setup](https://docs.lemonsqueezy.com/help/getting-started/getting-paid)
 - [Refunds](https://docs.lemonsqueezy.com/help/payments/refunds-chargebacks)
 
-Next: the agent researches comparable businesses, pricing and an agent-run marketing plan as requested
-on 30 October. Ludvig decides final contents/prices and completes any account-only tasks above. The
+Research requested on 30 October is complete and reviewed:
+[AI-games business research and proposed operating plan](ai-games-business-research-2026-10-30.md).
+Proposed prices are 59/39/39/99 SEK for Ritkaos+/Pigeon/Karts/bundle, pending owner decision. The
+recommendation is a demand test, not a revenue forecast; no marketing automation is active.
+
+Next: Ludvig decides final contents/prices and completes any account-only tasks above. The
 implementing agent owns payment integration, focused verification and preparation for activation. Paid release
 remains blocked until those steps are complete; this document does not authorize bypassing cost holds.
