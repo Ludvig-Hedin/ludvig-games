@@ -1,119 +1,75 @@
-# Purchase release review, 30 October 2026
+# Purchase release review
 
-## Decision
+Updated 31 October 2026, Stockholm. **The bundle's test purchase, receipt, licence and local game
+unlocks work. Paid production is not live.** The free public site is unchanged.
 
-**Not ready for paid release. Purchases have not been activated.** The free site is already live.
-Ludvig supplied Lemon Squeezy's account-approval email on 30 October. This resolves the merchant
-approval wait recorded on 28 October. It does not prove a live product, working delivery or payout setup.
-The original review did not inspect the dashboard. Subsequent Dia-login inspection confirmed Tax
-information displays Submitted, the live catalogue has no products, and enabling test mode is blocked
-by the read-only browser guard. No setup mutation or purchase test completed. Current evidence and
-remaining implementation work: [payment-setup-status-2026-10-30.md](payment-setup-status-2026-10-30.md).
+## What is verified
 
-Owner decisions, 30 October: the paid launch must cover more games than Ritkaos. The earlier
-Ritkaos-only framing is superseded. Ludvig then approved the proposed lineup: Ritkaos+ extras,
-new Pigeon hats/looks, new Karts colours/designs, and a bundle containing those three packs.
-Existing games/content stay free; the bundle makes no promise to include every future release.
-Ludvig subsequently accepted the proposed 59/39/39/99 SEK starting prices and omitting the individual
-19–29 SEK extras. Exact new pack contents still need a concrete preview and owner review.
-Implementation and test/release gates remain. Current owner checklist and first-sales plan:
-[first-100kr-plan.md](first-100kr-plan.md).
+- Four hidden test products exist in approved store 504842: Ritkaos+ 59 SEK, Pigeon style pack 39 SEK,
+  Karts style pack 39 SEK and the three-pack bundle 99 SEK. Single payments, native perpetual keys.
+- Ludvig completed the bundle purchase in provider test mode. Receipt order 5048421 arrived in the
+  owner's inbox, explicitly marked Test Mode, and contains the native licence key.
+- The private key validates against the actual provider and exact test bundle product/variant. It has
+  no expiry. The service returns all three game entitlements and rejects a wrong-store configuration.
+- In the actual local browser: Pigeon applied Crown/Midnight; Karts applied Checker panels and started
+  a race; Ritkaos showed all ten ownership rows and restored them after reload without another paste.
+  All three purchase/style dialogs fit a 390px viewport without horizontal overflow.
+- Focused backend/game/network checks, independent sensitive review, and the opt-in real-provider
+  integration check passed. Test keys never entered source or output. No remote CI, push or deployment.
 
-The lineup and starting prices are approved. The implementation still contains Ritkaos+ at 79 SEK and
-nine individual extras at 19–29 SEK; it has not yet been updated for the approved launch offer. The game
-stays free to play, with optional paid extras, under the 22 October owner decision. Activation is pending.
+This proves the **bundle success path in the test environment**. Separate single-pack purchases,
+failed/cancelled payments, real disabled-key/refund operations and fresh-device My Orders recovery
+are not claimed as provider-tested. Single-pack and invalid/disabled mapping have focused mock coverage.
+Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
-## Checklist for Ludvig
+## What remains before real sales
 
-- [x] Approve the multi-game lineup: Ritkaos+, Pigeon style pack, Karts style pack and their bundle.
-- [x] Accept starting prices 59/39/39/99 SEK and omit individual 19–29 SEK extras.
-- [ ] Review the exact new pack contents in a concrete preview from the implementing agent.
-- [ ] In [Lemon Squeezy](https://app.lemonsqueezy.com), check that the approved Ludvig Games store
-  offers Live mode and has no outstanding account tasks. Keep customer checkout unlinked until testing passes.
-- [ ] Check **Settings → Payout** and complete any bank/PayPal, identity or tax-form tasks shown there.
-  Account approval does not establish that these details are complete. Do not send bank details or keys in chat.
-- [ ] Verify the email on the separate games Cloudflare Free account if still pending. The latest saved
-  deployment attempt failed with error 10034. This review does not establish today's dashboard status.
-  Preserve the Free-plan decision and the existing hold on the Paid account's game backends.
-- [ ] Confirm rights and licences for the chosen paid content, including any supplied assets. Keep
-  third-party notices. The repository includes a separate GPL Chess exception; AI generation is not
-  evidence of rights clearance. See [the existing readiness record](legal-readiness-2026-10-28.md).
-- [ ] When the test checkout is ready, try the buyer journey in **test mode**, including receipt,
-  delivered code, unlocking and recovering the code. Follow the approval email: never use your real card
-  to test your own store. The implementer owns technical checks; this step is owner acceptance.
+- [ ] Prepare live-mode support. The present integration deliberately accepts test configuration only.
+  Copy the approved products to live mode and inspect their new IDs/URLs; never reuse the test IDs.
+- [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
+  with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
+  of correct production VAT. Preserve the approved intended prices until a real product decision.
+- [ ] Check the Games Free account's current verification/plan and prepare only the required hosting.
+  Keep the Paid-account backend hold and all unrelated paused services. Direct deployment needs the
+  owner's explicit release authorization. The current Cloudflare plugin only sees the old account.
+- [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
+  Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
+  access until revalidation/reload. Legacy RK codes have separate revocation limitations.
+- [ ] Finish the existing purchase-confirmation/withdrawal work in
+  [legal readiness](legal-readiness-2026-10-28.md), and update free-only public policy wording with the
+  actual paid release. No fresh legal clearance is claimed by the technical test.
+- [ ] Set the public support/reply address to ludvig@ludvighedin.com. The test receipt currently replies
+  to the owner's personal Gmail address. Do not change bank, identity or tax forms for this.
+- [ ] After the release gates and applicable authorization, deploy and verify the customer journey on
+  the intended public origins. Do not expose customer Buy links before then.
 
-Product creation, checkout wiring, testing and deployment are implementation tasks, not extra dashboard
-homework for Ludvig. If access prevents a specific setup action, identify that exact action when needed.
+Native Lemon Squeezy licences supply durable orders, delivery and recovery. There is no custom code
+email service or fulfilment webhook in this implementation. Do not reopen that superseded architecture.
 
-## Implementation work before activation
+## Ludvig's short checklist
 
-- [ ] Map the confirmed products to actual Lemon Squeezy products/variants and prices. A generic
-  `?product=office` appended to a checkout URL does not establish provider-side product selection.
-- [ ] Complete verified payment-to-entitlement fulfilment and immediate customer delivery. Verify
-  signatures, store/product identity, payment state and test/live separation. Record orders durably,
-  make repeated events safe, and recover failed delivery without requiring a second purchase.
-- [ ] Provide receipt/code recovery and verify re-entering a purchased code on another device. Existing
-  access depends on local browser codes; there is no account-based restore or order lookup in the app.
-- [ ] Document refund/support operations consistent with the published full 14-day refund policy.
-  Existing codes are shareable and cannot be individually revoked, so do not promise automatic access
-  removal. A paid launch must not depend on an unbuilt revocation feature.
-- [ ] Finish the checkout confirmation and withdrawal work already tracked in the legal-readiness
-  record. Update the public statement that paid checkout is unavailable only as part of the paid launch.
-  This review is not a fresh legal clearance of the purchase flow.
-- [ ] Resolve the Free-account deployment hold, deploy only the required approved backend, and check
-  free play, a purchased host's room access and purchased cosmetics. Do not restore all paused services
-  or deploy the old combined hub configuration as a side effect.
-- [ ] Prove test checkout, failed/cancelled payment, immediate delivery, redemption, wrong-product
-  rejection, repeated events, refund handling and recovery. Keep one verification owner and local checks.
-- [ ] Only after acceptance, configure live products, live credentials and live webhooks where needed.
-  Copied live products get new IDs and checkout URLs. Verify the final mapping and deployed configuration
-  before exposing Buy. No real-card self-purchase as a release test.
+- [x] Approve lineup and 59/39/39/99 starting prices, with free content preserved and tiny SKUs omitted.
+- [x] Complete account-only bank/identity/tax setup, as reported and previously observed. Do not repeat it.
+- [x] Enable Test mode, complete the bundle test purchase and provide its key through private entry.
+- [ ] Review the two local app previews below before the paid launch.
+- [ ] Verify the Games Free account's email only if a fresh account check still shows that requirement.
+- [ ] Give explicit authorization for production publishing when the remaining release gates are ready.
 
-## Review evidence and limits
+The implementing agent owns live-mode preparation, product mapping, final-price investigation, support
+settings, hosting preparation and verification. These are not extra dashboard homework for Ludvig.
+Marketing posts still require separate authorization for the account/batch; none were sent.
 
-Independent read-only purchase review and primary source inspection agree on these blockers:
+## Local app previews, not live screens
 
-- `ritkaos/public/app.js:385`: Buy is enabled by a configured secret plus HTTPS checkout URL, not by
-  proof that payment/delivery is operational. Do not activate it just by setting `CHECKOUT_URL`.
-- `ritkaos/worker/index.mjs:23`: routes cover store information, rooms and WebSockets; no commerce
-  webhook or order/delivery route exists. `ritkaos/README.md` explicitly records the missing glue.
-- `ritkaos/lib/store.mjs:50`: manually minted HMAC codes encode products, without order linkage or
-  individual revocation. `ritkaos/lib/game.mjs:96` verifies them and accumulates session permissions.
-- `ritkaos/public/app.js:146`: redeemed codes persist locally. Recovery requires the original code.
-- `policies/refunds.html:1`: public copy still says paid checkout is unavailable.
+Pigeon includes four hats and four feather looks. Karts includes four colours and two paint designs.
+All original free choices remain free; the bundle promises only these three named packs.
 
-Fresh read-only HTTP checks on 30 October:
+![Pigeon local app preview](previews/pigeon-style-pack-local.png)
 
-- Homepage, Terms, Privacy and Refunds: HTTP 200. Homepage contains no Ritkaos or Lemon Squeezy link.
-- Hub `/api/scores` and `/api/me`: HTTP 404.
-- Planned Free-account Ritkaos homepage and `/api/store`: HTTP 404.
-- Planned Free-account hub API `/api/scores`: HTTP 404.
+![Karts local app preview](previews/karts-style-pack-local.png)
 
-GitHub has no open PRs in this repository at review time. Latest published Mac release is 0.4.2,
-25 October, with Apple Silicon DMG/ZIP assets. This is release metadata, not a fresh installation or
-signing/notarization check. The root README still describes an unsigned app.
+Business plans: [first 100 kr](first-100kr-plan.md), [1,000 kr per month](1000kr-month-plan.md).
+The test payment is not real revenue. These plans are demand experiments, not earnings promises.
 
-No purchase, webhook delivery, refund, dashboard setup, physical-device journey or gameplay was tested
-in this review. Existing test files do not prove a provider checkout works. No new test pass is claimed;
-the installed focused-test guard currently accepts Vitest files, not this project's Node `.mjs` tests.
-The implementer must arrange an approved guarded focused-check route when implementing payments.
-No remote CI, deployment, push, browser, dev server, dependency install or build was started.
-No disposable development data was created, so none remains to clean up.
-
-## Provider references checked today
-
-- [Activation](https://docs.lemonsqueezy.com/help/getting-started/activate-your-store)
-- [Testing and going live](https://docs.lemonsqueezy.com/guides/developer-guide/testing-going-live):
-  separate test/live keys, products and webhooks; live copies have new checkout URLs.
-- [Test mode](https://docs.lemonsqueezy.com/help/getting-started/test-mode)
-- [Payout setup](https://docs.lemonsqueezy.com/help/getting-started/getting-paid)
-- [Refunds](https://docs.lemonsqueezy.com/help/payments/refunds-chargebacks)
-
-Research requested on 30 October is complete and reviewed:
-[AI-games business research and proposed operating plan](ai-games-business-research-2026-10-30.md).
-Starting prices 59/39/39/99 SEK for Ritkaos+/Pigeon/Karts/bundle were subsequently accepted by Ludvig.
-This is a demand test, not a revenue forecast; no marketing automation is active.
-
-Next: Ludvig completes account-only tasks and reviews concrete pack previews when ready. The
-implementing agent owns payment integration, focused verification and preparation for activation. Paid release
-remains blocked until those steps are complete; this document does not authorize bypassing cost holds.
+Next owner: the coordinator prepares the remaining live release work; Ludvig owns the pack review and
+production-publishing decision. No production or marketing authorization is inferred from test success.

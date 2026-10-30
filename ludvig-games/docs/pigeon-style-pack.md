@@ -1,7 +1,10 @@
 # Pigeon style pack
 
 Implementation in `source-games/pigeon/index.html`, prepared locally for the approved 39 SEK pack.
-Not a statement that checkout, ownership verification, deployment or browser checks have passed.
+Coordinator check, 31 October: the purchased test-bundle key restored ownership in the actual local
+browser. Crown/Midnight applied and saved. The 390px dialog had no horizontal overflow. Shared-client
+automatic reload recovery was interrupted by server shutdown, so that part remains unverified.
+Nothing is deployed. [Local app preview](previews/pigeon-style-pack-local.png).
 
 ## Included items
 

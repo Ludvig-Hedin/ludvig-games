@@ -1,140 +1,109 @@
-# Payment setup status, 30 October 2026
+# Payment setup and test evidence
 
-Owner resumed setup after completing W-8/W-9 certification and requested test-mode setup and purchase
-testing. This is authorization for the store setup/test work, not live charges or unrelated account changes.
+Updated 31 October 2026, Stockholm. **The purchased test bundle unlocks all three local games.
+Production is unchanged and purchases are not live.** No live payment or hosting deployment occurred.
 
-## Current state, 21:20 UTC
+## Provider configuration
 
-### Latest resumed checkpoint (supersedes earlier resource/guard status below)
+Store 504842, Ludvig Games. All four products were saved and freshly read back in test mode: published
+in that test namespace, hidden from storefront, single payment, native keys, unlimited duration and
+activation, Video Game category. Existing free game content remains free.
 
-- Reconnected to Dia successfully. Four existing test products remain configured. No live changes.
-- Rebuilt the current assets successfully. The configured local commerce API returned ready=true with
-  all four exact provider checkout links. Ritkaos returned nativeReady=true with the real test catalog.
-  Both disposable servers were later stopped by the emergency memory guard; neither remains listening.
-- Actual browser proof: tax cart update returned 200 after preserving original request headers and
-  following the provider's Inertia 302 with one explicit GET to the exact same signed test cart.
-  Ten focused tax-gate tests passed, with independent sensitive review. No POST replay or foreign redirect.
-- Actual Stripe test-key Link lookup returned 200. Seven focused lookup tests passed after repairing
-  the review finding about authorization/account-routing headers. Other Stripe writes remain blocked.
-- The payment fields accepted the dummy card. Stripe Elements submit resolved without a field error,
-  and the checkout attempted POST /checkout/validate?cart=...&type=stripe. That route remains blocked.
-  No agent-completed payment, receipt or native key has been observed.
-- A fixed-dummy-data validation gate has independent review but its two focused tests could not run:
-  memory was 14–15%, then another heavy/push job owned the scheduler. It stays **inactive**. The exact
-  future wiring is saved as lemon-checkout-validation.wiring.patch in agent-dotfiles. Run its guarded
-  tests before applying that patch. Existing checked tax/lookup gates stay installed.
-- Test cart was SE with tax_status=non_taxable, tax=0 and tax_inclusive=false. This does not establish
-  production Swedish VAT handling or final live prices. That release check is still open.
-- Pigeon mobile preview verification is unfinished. The attempted exact Crown locator omitted its
-  Preview text; no product failure was established by that attempt.
-- Ludvig was offered the verified bundle TEST checkout as an optional manual route while resources are
-  blocked. Completion is not assumed. He needs his apps open; do not ask him to close them again.
+| Offer | Price | Test product | Test variant |
+|---|---:|---:|---:|
+| Ritkaos+ | 59 SEK | 1488379 | 2319068 |
+| Pigeon style pack | 39 SEK | 1488395 | 2319091 |
+| Karts style pack | 39 SEK | 1488397 | 2319094 |
+| Three-pack bundle | 99 SEK | 1488399 | 2319096 |
 
-Next owner: coordinator runs the pending validation checks when admission allows, then finishes the
-actual checkout/receipt/native-key and in-game unlock journey. If Ludvig completes the optional test
-purchase, verify that order instead of assuming it succeeded. No production deployment is authorized.
+`commerce/.env.test.example` contains these public identifiers and exact provider checkout URLs, no
+secret. Test/live copies have different IDs. The current implementation intentionally accepts only
+test configuration; live-mode support still needs preparation.
 
-Local implementation exists and has passed focused checks, but it is not deployed and no actual test
-checkout has completed. All four test products are saved and their IDs are wired into the opt-in local test configuration. Purchases are not ready.
+Owner account approval and Tax information Submitted were observed earlier. Ludvig reported finishing
+bank/identity/tax setup and enabled Test mode. Do not ask him to repeat those completed steps.
 
-- Fresh site-scoped Dia login succeeded. The official Products page confirms store **504842** and
-  **isTestMode: true** after Ludvig enabled Test mode himself. Personal tabs were not controlled.
-- Earlier Payout settings showed Tax information **Submitted**. No identifier or bank data is saved here.
-- Four products were saved and freshly read back: published in test mode, hidden from storefront,
-  single payment, native keys, unlimited duration/activation, Video Game tax category. No live products.
-- Verified product/variant IDs: Ritkaos 1488379/2319068, Pigeon 1488395/2319091,
-  Karts 1488397/2319094, bundle 1488399/2319096. The opt-in environment example contains public IDs only.
-- Ludvig explicitly approved a narrow exception for this store's test products and dummy-card checkout.
-  The product guard checks fresh official server proof of test mode and exact product/variant/price IDs.
-  Its form-payload adaptation passed independent review and seven guarded focused checks.
-  Payment, live-mode changes, account, bank, tax and marketing writes remain blocked.
-- The general Products API is read/list only. No merchant API key was requested as a creation shortcut.
-- Bundle checkout displays Test mode, cart.test_mode is true and its Stripe key is a test key.
-  Public checkout's generic isTestMode prop is false and must not be used as its mode proof.
-  Tax-calculation POST is still blocked and Pay is disabled. No payment submitted.
-- Cart tax_inclusive is false. The displayed 99 SEK before tax calculation does not establish the final
-  Swedish customer total. Tax-inclusive pricing remains a release blocker.
+## Actual paid-test evidence
 
-## Prepared product settings
+- Ludvig completed the dummy-card bundle purchase and reported success.
+- Gmail receipt for order **5048421**, dated **30 October 2026 22:44 UTC**, arrived in the owner's inbox.
+  Its subject explicitly says Test Mode. Read-only inspection confirmed a licence-key section containing
+  a native key. The sale-notification email arrived too. No mail was sent, edited, labelled or archived.
+- The key was supplied through T3 private secret entry, never chat/source/output. The public native
+  License API returned valid=true, inactive (unused), no expiry, store 504842, product 1488399,
+  variant 2319096. These match the inspected test bundle.
+- The existing resolver accepted that real key and returned exactly ritkaos/pigeon/karts. An opt-in
+  guarded integration check exercised the actual Ritkaos Game grant and selected the paid Office pack.
+  The wrong-store configuration rejected the same valid key. Messages and room snapshots contain no key.
 
-Common: SEK, single payment, standard pricing, no subscription, no discount required, no email marketing,
-native license-key generation, perpetual duration, no new activation/device limit, and hidden from the
-storefront until the corresponding in-game content and purchase journey are verified.
+### Actual local browser results
 
-| Internal product | Store name | Starting customer price | Status |
-|---|---|---:|---|
-| ritkaos-plus | Ritkaos+ | 59 SEK | Local native-license integration built; provider delivery unchecked |
-| pigeon-style | Pigeon style pack | 39 SEK | Local content, preview and entitlement integration built |
-| karts-style | Karts style pack | 39 SEK | Local content, preview and entitlement integration built |
-| games-bundle | Ludvig Games extras bundle | 99 SEK | Local entitlement mapping built; provider purchase unchecked |
+- **Pigeon:** entered the real key in the purchase dialog; it reported Purchase restored. All three
+  entitlement IDs were owned. Crown plus Midnight feathers were selected and saved.
+- **Karts:** restored the same key, selected Checker panels, applied it and started a race.
+- **Ritkaos:** redeemed the same key over the real server connection. All ten ownership rows appeared,
+  no buy button remained, and no unlock error appeared. After reload all ten returned automatically
+  without another paste; the input was empty.
+- At a 390px viewport, dialog client/scroll widths matched: Pigeon 356px, Karts 352px, Ritkaos 368px.
+  These are mobile-width desktop-browser checks, not a physical-phone test.
+- Automatic shared-client reload recovery was attempted but remained inconclusive when the disposable
+  server was stopped by the memory guard. Manual receipt-key restore is verified in Pigeon and Karts;
+  automatic reload restore is verified in Ritkaos. Do not report the interrupted attempt as a game bug.
 
-Use tax-inclusive store pricing if these are the final customer totals; verify the actual product tax
-category rather than keeping the Add Product form's default SaaS category by assumption. Do not publish
-test products in live mode to work around the blocked toggle. Test/live copies have different IDs.
+Local app previews for owner review are in [the release review](purchase-release-2026-10-30.md).
 
-## Payment integration recommendation and required tests
+## Checks and limits
 
-Independent architecture research recommends native Lemon Squeezy license keys, delivered in provider
-receipts/My Orders, instead of building a new email service to deliver custom RK codes. The public
-License API can validate keys without a merchant API secret. The backend must enforce store/product/
-variant allowlists per environment and return only our entitlement IDs. Do not expose customer metadata.
-Do not mint permanent RK tokens from a native key, which would discard provider status checks.
+- Earlier focused backend/game/network/snapshot checks: 65 passed, plus the client restore-race test.
+  Affected commerce/client checks were rerun after adapting the actual checkout URL format: 14 passed.
+- Current assets rebuilt successfully: 62 catalogue entries and 52 full-screen games. Both local
+  service catalogues returned ready/nativeReady with the actual test product configuration.
+- Independent sensitive review findings were repaired: missing shared asset, drawing-command ordering,
+  desktop package path, startup restore race and scoped request-header/redirect handling.
+- Browser guard focused checks passed: product 7, tax/update 10, Stripe test lookup 7, fixed dummy-form
+  validation 2. The validation extension remains inactive; its reviewed wiring patch is saved separately.
+- `commerce/tests/paid-bundle.test.mjs` passed with the real private key. It is skipped unless explicitly
+  given a private file path as LS_TEST_LICENSE_FILE. Never put a key into environment text, arguments,
+  assertions, snapshots or fixtures. The native provider validation is not a new merchant API secret.
 
-Ritkaos now accepts native UUID keys alongside legacy RK codes and revalidates native ownership without
-persisting it into snapshots. Pigeon and Karts have new paid cosmetic previews and a shared code entry
-screen. The shared test-only service checks exact store/product/variant IDs and returns only entitlement
-IDs. It accepts unused valid inactive keys and rejects disabled/expired/wrong-store keys. No deployment.
+The owner performed the payment. The agent's automated checkout reached successful tax and test-key
+Link lookup responses, then stopped at the guarded validation route. No agent-automated payment pass
+is claimed. No CI, push or deployment occurred.
 
-Focused local checks passed: 65 backend/game/network/snapshot checks, plus one browser-client race
-regression. After matching the real provider checkout URL format, the affected 14 commerce/client checks
-passed again. Independent sensitive review findings were repaired: asset inclusion, drawing order while
-validating, desktop packaging and startup-code restore race. These are mock/local results, not payment proof.
-Karts preview, simulated local ownership application, race start and ownership removal were observed in
-the browser. Mobile and actual purchase unlock remain unchecked. The emergency memory guard repeatedly
-stopped the disposable local server, so a server exit is not a game test failure or a provider test pass.
+The success-path bundle test does not establish separate single-pack purchases, failed/cancelled
+payments, actual disabled-key/refund handling or a fresh-device My Orders sign-in/recovery journey.
+Single/invalid/disabled/provider-failure mappings have focused mock coverage. Native receipt delivery
+and re-entering the real bundle key are verified.
 
-Before release: valid/invalid/disabled key, exact single-pack/bundle mapping, wrong store/product/variant,
-cross-environment rejection, provider outage/rate limit, receipt delivery, recovery on another device,
-failed/cancelled test payment, repeat event/request safety and refund handling. Test payment must use
-provider dummy cards. No end-to-end test pass has occurred.
+## Open production gates
 
-Sources from independent research:
-- https://docs.lemonsqueezy.com/help/licensing/generating-license-keys
-- https://docs.lemonsqueezy.com/api/license-api/validate-license-key
-- https://docs.lemonsqueezy.com/guides/developer-guide/testing-going-live
-- https://docs.lemonsqueezy.com/api/license-keys/update-license-key
-- https://docs.lemonsqueezy.com/help/orders/resend-receipt
+- Test receipt lists **99.05 SEK** and a **10.08 USD** payment for the 99 SEK offer. No cause or live
+  currency behavior is asserted. The inspected test cart was SE, non_taxable, tax 0, tax_inclusive=false.
+  This is not production VAT proof. Resolve final customer prices/currency/VAT before live checkout.
+- Receipt Reply-To currently uses the owner's personal Gmail. Use public support address
+  ludvig@ludvighedin.com for the paid launch.
+- Prepare live-mode support and inspect copied live products/new IDs, then hosting and policy updates.
+  Existing code is test-only. No public Buy link should point to a test checkout.
+- Native keys support disabling, but refund does not imply automatic revocation. Document support and
+  refund operations before release; loaded cosmetic pages can retain access until revalidation/reload.
+- Only Games Free account cffb5d1b12c3302ecc0745862fbf1f14 may host the required new services. The current
+  Cloudflare plugin only sees old account 7e953f5245e669d7d7045be1b97ea295. Fresh Free-account email/plan
+  status is not established. Do not use the old account or revive unrelated paused backends.
+- Production publishing needs the owner's explicit authorization. Marketing sends need separate
+  account/batch authorization. The [1,000 kr/month plan](1000kr-month-plan.md) remains an experiment.
 
-## Next ownership
+## Resources and next ownership
 
-Products are saved and their settings were read back successfully. Coordinator owns the separately scoped dummy-card checkout gate,
-actual receipts/licence validation and browser checks, then saving the stable source and proof. Ludvig
-has already submitted tax information and enabled Test mode. No repeat account action is requested.
-Production deployment and live charging remain outside this test run.
+The owner needs his other apps open; do not repeat requests to close them. RAM/process/browser guards
+stayed enforced. Disposable servers were stopped by the emergency guard between browser actions and
+restarted only through the registered dev lane. Test results above separate completed actions from
+interrupted checks. Test codes were removed from the isolated browser's two local origins after use.
+The owner's personal Dia tabs and stored purchase were not changed. Private auth storage is preserved.
+The temporary local test-product write capability was revoked after testing; site-login cookies were
+preserved. No provider account mode or setting was changed by this cleanup.
+No disposable node_modules/.next copy was created. Temporary controller/debug artifacts are removed;
+the two intended app-preview PNGs remain as review artifacts.
 
-At the last checkpoint, focused guard checks could not run: the shared scheduler was occupied and then
-reclaimable memory was 17%, below the fixed 20% threshold. The emergency guard repeatedly stopped the
-local test server. Ludvig was asked to close unused heavy apps while keeping Dia open. No threshold
-was lowered and no peer process was stopped. No root-owned server remains listening on port 4322.
-Ludvig then confirmed the Dia permission dialog and said the other apps must remain open. Preserve
-those apps and do not repeat the request to close them. Two refreshed site-login exports still timed out;
-the old agent session redirects to sign-in. Public test checkout does not itself require that store login.
-The tax-policy focused check is also still blocked by another active focused job. Do not repeatedly
-restart the disposable server or infer a payment pass from the permission approval.
-
-The Cloudflare plugin can currently see only account 7e953f5245e669d7d7045be1b97ea295, not the approved
-Games Free account cffb5d1b12c3302ecc0745862fbf1f14. No resource was changed. A remote test environment is
-only a possible next route, not a verified/deployed fallback. Never deploy to the visible old account.
-
-The draft tax-only checkout policy has sensitive review; its frame/origin/referrer finding was repaired
-in the policy/tests. It is not activated in the connector until guarded checks pass and wiring is restored.
-Payment/Stripe requests remain blocked. Actual test receipts, recovery, final VAT total and game unlock
-are unfinished. This is a resource blocker, not a passed end-to-end test.
-
-Source saved locally in commits `c761aa4` and `53292f3`. No push, hosted CI or deployment. The browser
-policy/source directory is a symlink into agent-dotfiles; source edits affect installed files, and
-existing connector processes keep their loaded modules until reconnect. Keep the last checked connector
-policy installed while the next stage is unverified. The disposable connector client was removed.
-
-The [1,000 kr/month plan](1000kr-month-plan.md) is prepared separately and makes no sales promise.
-No disposable dependency/build copy was created. Private login storage stays private and preserved.
+Next owner: coordinator prepares the remaining live release work and investigates currency/VAT.
+Ludvig reviews the pack previews and owns the production-publishing decision. Account forms already
+completed are not extra homework. The technical bundle success path in test mode is now verified.

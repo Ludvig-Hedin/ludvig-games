@@ -1,14 +1,14 @@
 # First 100 kr and a profitable Ludvig Games business
 
-Plan dated 30 October 2026. Plan only: no payment integration, new game, production activation,
-public marketing, spending or scheduling was performed by this task.
+Plan dated 30 October 2026, updated 31 October. Test products, a bundle test purchase, receipt and
+local game unlocks are now verified. Production, public marketing, spending and scheduling remain off.
 
 ## Agreed starting point
 
 Ludvig accepted the proposed starting prices and omitting the individual 19–29 kr extras after the
 research recommendation: Ritkaos+ 59 kr, Pigeon style pack 39 kr, Karts style pack 39 kr, bundle 99 kr.
 All are one-time purchases. Existing free content stays free. The bundle includes only those three
-named packs. Exact new pack designs still need a concrete owner review before implementation.
+named packs. New pack designs are implemented; local previews are in the [release review](purchase-release-2026-10-30.md).
 This is a price test, not proven demand. Rights and fulfilment checks remain.
 
 Your friend's graffiti game reportedly sold 1,000 kr of maps in one week using simple TikTok clips.
@@ -23,8 +23,8 @@ US$9.99; checkout price and the reported sales are unverified. See the
 
 - [ ] Open [Lemon Squeezy](https://app.lemonsqueezy.com). Confirm Ludvig Games can switch to Live mode
   and has no outstanding account requirements. Do not expose checkout links yet.
-- [ ] Open **Settings → Payout**. Complete any bank/PayPal, identity and tax-form requirements shown.
-  Keep private details in the provider's own form, not chat.
+- [x] Complete bank/identity/tax setup. Owner reported completion and tax submission was observed.
+  Do not repeat those forms unless the provider reports a new requirement.
 - [ ] Confirm which existing business will receive the revenue and how it will be booked. If unclear,
   ask Skatteverket or your accountant about registration/tax treatment. Do not assume a small amount
   or merchant-of-record approval makes this tax-free or automatically a hobby.
@@ -33,8 +33,8 @@ US$9.99; checkout price and the reported sales are unverified. See the
   dashboard finding. The implementing agent checks its actual current state.
 - [ ] Review one concrete pack preview showing exactly what the customer gets. Confirm any supplied
   assets' rights. Agent prepares the preview and performs the licence/source checks.
-- [ ] When the implementer supplies a working test checkout, make one **test-mode** purchase. Confirm
-  price, receipt, immediate access and code recovery make sense. Never use a real card to self-test.
+- [x] Make one test-mode bundle purchase. Receipt and private licence delivery are verified, and the
+  key unlocked all three local games. Final live currency/VAT and full recovery/refund checks remain.
 - [ ] Review a batch of six real gameplay clips and captions. Either post the approved batch yourself
   or authorize a specific account, batch and posting limit. Marketing work is currently drafts only.
 
@@ -51,18 +51,18 @@ secret entry at the point of use. Do not ask Ludvig to paste secrets or perform 
   Check traffic by game path and beacon coverage; do not confuse views with players or returning users.
 - [ ] Prepare the exact Pigeon/Karts pack preview and purchase-page contents for owner review. Keep
   the first set bounded; do not build a large inventory before anyone buys.
-- [ ] Build/map the four products in test mode, using separate test/live provider identifiers.
-- [ ] Build verified payment-to-access delivery, durable orders, safe repeated events, retry/recovery
-  and customer receipt/access instructions. No manual code minting after each sale.
+- [x] Build/map the four test products. Live copies/identifiers remain separate and are not configured.
+- [x] Verify bundle payment-to-access and provider receipt delivery. Native licences use the provider's
+  durable orders and recovery, with no manual code minting. Live recovery/refund operations remain.
 - [ ] Finish refund/withdrawal operations and purchase confirmations consistent with the published
-  14-day refund policy. Existing shareable codes cannot be individually revoked.
+  14-day refund policy. Native keys can be disabled; legacy RK codes retain their separate limitations.
 - [ ] Resolve the recorded account hold, prepare the approved Free-account deployment, and check
   Ritkaos rooms and included extras. Never sell a bundle containing an unusable entitlement.
 - [ ] Complete focused guarded local checks and test checkout, cancellation/failure, exact product
   unlock, lost-code recovery, duplicate events and refund handling. Use an independent sensitive review
   according to project policy. No remote CI and no real-card self-purchase.
 - [ ] After the release gates and applicable owner release authorization, configure the live products,
-  credentials and webhooks, update the free-only policy statements for the actual paid flow, deploy
+  configuration, update the free-only policy statements for the actual paid flow, deploy
   through the correct cost-safe lane and inspect the final configuration. Only then expose Buy.
 - [ ] Prepare six 10–20 second real screen recordings: two different hooks for each launch game.
   Show the game immediately and clearly identify which extras cost money. Use cleared audio/assets,

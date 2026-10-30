@@ -1,6 +1,7 @@
 # Test-only native licence service
 
-Local implementation, not deployed or end-to-end verified. Root ran guarded focused checks and local previews.
+Local implementation, not deployed. The owner's bundle test purchase, emailed receipt/native key and
+all three local browser unlocks are verified. Ritkaos also restored ownership after reload.
 The coordinator owns guarded checks, independent review, actual store configuration and browser evidence.
 
 ## Integration contract
@@ -86,12 +87,16 @@ was attempted here. Do not activate unrelated paused games or hub APIs.
 Mocked tests cover configuration/allowlists, single/bundle grants, inactive/disabled/expired keys,
 wrong environments, no data leakage, provider errors/type/size/timeout, caching/duplicate/budget bounds,
 and request/origin validation. Root ran the 13 service tests and client race regression successfully through the guarded local lane.
-These mock results are not a provider purchase pass.
+An opt-in real-provider check is also available in `tests/paid-bundle.test.mjs`. Supply only the private
+secret-card file path as `LS_TEST_LICENSE_FILE`, then run that explicit file through the guarded Games
+lane. It validates the purchased bundle, exercises the actual Ritkaos grant and a paid room setting,
+checks no raw key enters snapshots/messages, and rejects a wrong-store configuration. It passed.
 
-Before end-to-end acceptance: guarded focused tests, sensitive independent review, browser test purchase,
-real native test-key validation, receipt and My Orders recovery, single/bundle mapping, disabled key,
-and refund behavior. Current status/entitlements may remain cached up to 30 seconds. Refunding is not
-assumed to disable a native key, and these adapters do not process refunds or send mail.
+The bundle success path is verified. Remaining release checks include single-pack provider purchases,
+failed/cancelled payments, fresh-device My Orders recovery, real disabled keys and refund operations.
+Provider validation is cached for 30 seconds; loaded style pages can retain in-memory ownership until
+the next restore/reload. Refunding is not assumed to disable a native key. These adapters do not process
+refunds or send mail. Live mode is deliberately unsupported until separately prepared and authorized.
 
 Official references checked 30 October 2026:
 - https://docs.lemonsqueezy.com/api/license-api

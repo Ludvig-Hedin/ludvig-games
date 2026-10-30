@@ -1,6 +1,9 @@
 # Karts style pack
 
 Implementation in `source-games/citrus-circuit-coastline/index.html`, local and unshipped.
+Coordinator check, 31 October: the actual purchased test-bundle key restored ownership, Checker panels
+applied, and a race started. The 390px dialog had no horizontal overflow. Automatic reload recovery was
+interrupted by server shutdown; no pass claimed. [Local app preview](previews/karts-style-pack-local.png).
 Approved product: one-time 39 SEK style pack. Checkout and licence verification belong to the shared
 store client/backend, not to this game file.
 

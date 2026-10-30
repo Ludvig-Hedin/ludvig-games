@@ -1,3 +1,10 @@
+# 2026-10-31: purchased test bundle verified, local only
+
+- The owner's test order produced an emailed native licence. The real key restored Pigeon and Karts
+  styles in the browser, started a styled race, and unlocked Ritkaos. Ritkaos restored access after reload.
+- Added an opt-in guarded real-provider integration check and saved local pack previews. No secret is
+  in source or output. Live support, currency/VAT and production publishing remain open; nothing deployed.
+
 # 2026-10-30: test purchase integration, local only
 
 - Added native test-license validation, shared purchase/code entry, new Pigeon styles and Karts paint. Existing free content stays free.
