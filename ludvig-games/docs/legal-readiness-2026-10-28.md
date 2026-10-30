@@ -1,5 +1,9 @@
 # Policies and payment readiness, 28 October 2026
 
+Update, 30 October: Ludvig supplied Lemon Squeezy's account-approval email. The merchant approval wait
+below is historical; fulfilment and paid-release blockers remain. Current review and owner checklist:
+[purchase-release-2026-10-30.md](purchase-release-2026-10-30.md).
+
 Owner request: create and publish Terms, Privacy Policy and refund information; check paid delivery and
 refunds. Owner confirms the games were AI-generated. This is not proof of exclusive ownership or clearance
 of included third-party code, artwork, names or other assets.

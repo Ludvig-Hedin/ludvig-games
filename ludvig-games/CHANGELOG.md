@@ -1,3 +1,11 @@
+# 2026-10-30: purchase readiness review
+
+- Recorded Lemon Squeezy account approval and the remaining paid-release blockers. Purchases stay off:
+  verified payment-to-code delivery is unbuilt and the planned Ritkaos service still returns 404.
+- Added a release checklist separating owner decisions/account tasks from implementation and verification.
+- Read-only source review, independent purchase review and fresh HTTP checks; no checkout test or new
+  gameplay test pass claimed. No production configuration, code, deployment or remote CI changed.
+
 # 2026-10-28: simpler footer
 
 - Removed category links from the footer, keeping the muted Terms, Privacy, Refunds and Contact links.
