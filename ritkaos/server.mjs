@@ -73,7 +73,8 @@ server.on('error',e=>{
 server.listen(port,'0.0.0.0',()=>{
   console.log(`\n  ✎  R I T K A O S\n\n  Du:       http://localhost:${port}\n`);
   for(const addr of addresses())console.log(`  Samma wifi: ${addr}`);
-  if(!validSecret(secret))console.log('\n  Ritkaos+: koder är avstängda (RITKAOS_UNLOCK_SECRET saknas). Allt gratis fungerar som vanligt.');
+  if(licenses.catalog().ready)console.log('\n  Ritkaos+: Lemon Squeezy-testkoder är aktiva. Inga riktiga betalningar.');
+  else if(!validSecret(secret))console.log('\n  Ritkaos+: koder är avstängda (RITKAOS_UNLOCK_SECRET saknas). Allt gratis fungerar som vanligt.');
   console.log('\n  Skapa ett rum och klicka Bjud in.\n  Behåll detta fönster öppet medan ni spelar.\n  Olika nätverk: se SPELA-IKVALL.md eller kör npm run online.\n  Avsluta: Ctrl+C\n');
 });
 function shutdown(){clearInterval(tick);clearInterval(heartbeat);for(const p of peers)p.close(1001);server.close(()=>process.exit());setTimeout(()=>process.exit(),1500).unref();}
