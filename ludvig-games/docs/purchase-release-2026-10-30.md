@@ -7,19 +7,21 @@ Ludvig supplied Lemon Squeezy's account-approval email on 30 October. This resol
 approval wait recorded on 28 October. It does not prove a live product, working delivery or payout setup.
 No dashboard session, credentials, product configuration or payout details were inspected in this review.
 
-Owner clarification, 30 October: the paid launch must cover more games than Ritkaos. The earlier
-Ritkaos-only framing is superseded. Exact games, paid extras, bundles and prices are still unconfirmed;
-this clarification does not approve specific new cosmetics or restricting existing free content.
+Owner decisions, 30 October: the paid launch must cover more games than Ritkaos. The earlier
+Ritkaos-only framing is superseded. Ludvig then approved the proposed lineup: Ritkaos+ extras,
+new Pigeon hats/looks, new Karts colours/designs, and a bundle containing those three packs.
+Existing games/content stay free; the bundle makes no promise to include every future release.
+Exact pack contents and prices remain to be proposed. Implementation and test/release gates remain.
 
-The first paid offers and their prices still need Ludvig's confirmation. The implementation contains
+The lineup is approved; final contents and prices still need Ludvig's confirmation. The implementation contains
 Ritkaos+ at 79 SEK and nine individual extras at 19–29 SEK. These are existing source values, not newly
 approved launch prices. The game stays free to play, with optional paid extras, under the 22 October
 owner decision. A concrete product question was raised in chat; dependent activation is pending.
 
 ## Checklist for Ludvig
 
-- [ ] Confirm the launch products across multiple games, included extras and final customer prices.
-  Choose whether individual extras and a cross-game bundle go on sale.
+- [x] Approve the multi-game lineup: Ritkaos+, Pigeon style pack, Karts style pack and their bundle.
+- [ ] Confirm the exact pack contents and final customer prices after the requested market research.
 - [ ] In [Lemon Squeezy](https://app.lemonsqueezy.com), check that the approved Ludvig Games store
   offers Live mode and has no outstanding account tasks. Keep customer checkout unlinked until testing passes.
 - [ ] Check **Settings → Payout** and complete any bank/PayPal, identity or tax-form tasks shown there.
@@ -101,6 +103,7 @@ No disposable development data was created, so none remains to clean up.
 - [Payout setup](https://docs.lemonsqueezy.com/help/getting-started/getting-paid)
 - [Refunds](https://docs.lemonsqueezy.com/help/payments/refunds-chargebacks)
 
-Next: Ludvig confirms the paid offer and completes any account-only tasks above. The implementing
-agent owns payment integration, focused verification and preparation for activation. Paid release
+Next: the agent researches comparable businesses, pricing and an agent-run marketing plan as requested
+on 30 October. Ludvig decides final contents/prices and completes any account-only tasks above. The
+implementing agent owns payment integration, focused verification and preparation for activation. Paid release
 remains blocked until those steps are complete; this document does not authorize bypassing cost holds.

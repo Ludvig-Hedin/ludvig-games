@@ -5,6 +5,8 @@
 - Added a release checklist separating owner decisions/account tasks from implementation and verification.
 - Owner clarified that paid launch must cover more games than Ritkaos. Specific new offers and prices
   remain pending; no existing free content has been restricted.
+- Subsequently approved Ritkaos+, new Pigeon and Karts style packs and their bundle, with current
+  free content preserved. Requested revenue, pricing and agent-run marketing research before final pricing.
 - Read-only source review, independent purchase review and fresh HTTP checks; no checkout test or new
   gameplay test pass claimed. No production configuration, code, deployment or remote CI changed.
 
