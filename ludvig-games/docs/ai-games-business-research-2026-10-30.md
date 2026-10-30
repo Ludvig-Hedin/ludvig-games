@@ -184,6 +184,34 @@ estimate from review counts, it says so. Where a person reports their own revenu
   ([Pulse Signal](https://getpulsesignal.com/pricing/rosebud)). Their jam sponsorships and success stories are
   marketing for the tool. That is a different business from selling games to players.
 
+### 3.10 TrainWars, owner-supplied comparable (checked 30 October)
+
+Ludvig supplied `trainwars.com` as the likely friend's site. The reachable public homepage is indeed a
+3D train graffiti simulator. This matches the described game, but does not independently confirm who
+made it, how much AI was used, its TikTok account or revenue.
+
+[Public site](https://trainwars.com/): free maps, spray painting and colours; one-time **Full Game**
+purchase bundles exclusive maps, metal finishes, extra tools and 150 blackbook save pages. Accounts
+enable cloud saves and community posting. The source page's structured Offer metadata lists **US$9.99**
+for Full Game; this is metadata, not a checkout-verified current charge. The page says some limited
+content may be sold separately. It is therefore not established that current sales are individual maps.
+
+Warsaw is offered as an unlock for sharing/copying a referral link. Signed-in players can vote on which
+train maps get built next. Photos, sharing, a blackbook and station replays support showing creations.
+These public features suggest a focused creative activity plus new places/tools and sharing, rather
+than a broad catalog. Their conversion or retention effect was not measured.
+
+The reported **1,000 SEK in one week** comes from Ludvig. Gross/net split, actual orders, source of
+traffic and period are unverified. No current TikTok account or clips were identified, so the marketing
+claim is not independently checked. No sign-in, purchase or gameplay test was attempted.
+
+Method: the web reader could not fetch the domain, while direct read-only HTTPS returned 200. Parsed
+public homepage text and Offer metadata; read the referenced public asset for price/social evidence,
+without inspecting private data or changing anything. No TikTok link was found in that inspected material.
+
+Implication: paid new locations within one satisfying creative activity deserve investigation. This
+does not validate Karts track demand, justify copying this game's assets, or change the approved lineup.
+
 ### What the cases say together
 
 | Pattern | Evidence |

@@ -13,8 +13,11 @@ This is a price test, not proven demand. Rights and fulfilment checks remain.
 
 Your friend's graffiti game reportedly sold 1,000 kr of maps in one week using simple TikTok clips.
 This is owner-supplied context, not independently checked revenue, profit or evidence of repeat sales.
-It is a useful lead: people may pay for new places to do an activity they already enjoy. Ask for the
-public game/TikTok link to study the actual offer without contacting the friend on Ludvig's behalf.
+It is a useful lead: people may pay for new places to do an activity they already enjoy. Ludvig supplied
+`trainwars.com` as the likely site. The public site matches the described simulator and currently offers
+a one-time Full Game bundle of maps, tools, finishes and save capacity. Public Offer metadata says
+US$9.99; checkout price and the reported sales are unverified. See the
+[added case study](ai-games-business-research-2026-10-30.md#310-trainwars-owner-supplied-comparable-checked-30-october).
 
 ## Ludvig's checklist, in order
 
@@ -35,7 +38,8 @@ public game/TikTok link to study the actual offer without contacting the friend 
 - [ ] Review a batch of six real gameplay clips and captions. Either post the approved batch yourself
   or authorize a specific account, batch and posting limit. Marketing work is currently drafts only.
 
-Optional: share the public link to the friend's game or clips. The plan does not depend on it.
+The likely game link has been supplied and checked. A TikTok link remains optional; setup does not
+depend on it. Do not contact the friend on Ludvig's behalf.
 
 These are the owner's decisions and account steps. Product setup, keys/configuration, fulfilment,
 recovery and checks are implementation work. If a key is needed, the agent requests it through private
