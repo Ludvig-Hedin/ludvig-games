@@ -78,10 +78,24 @@ Sources from independent research:
 
 ## Next ownership
 
-Coordinator owns finishing provider product saves, the separately scoped dummy-card checkout gate,
+Products are saved and their settings were read back successfully. Coordinator owns the separately scoped dummy-card checkout gate,
 actual receipts/licence validation and browser checks, then saving the stable source and proof. Ludvig
 has already submitted tax information and enabled Test mode. No repeat account action is requested.
 Production deployment and live charging remain outside this test run.
+
+At the last checkpoint, focused guard checks could not run: the shared scheduler was occupied and then
+reclaimable memory was 17%, below the fixed 20% threshold. The emergency guard repeatedly stopped the
+local test server. Ludvig was asked to close unused heavy apps while keeping Dia open. No threshold
+was lowered and no peer process was stopped. No root-owned server remains listening on port 4322.
+The draft tax-only checkout policy has sensitive review; its frame/origin/referrer finding was repaired
+in the policy/tests. It is not activated in the connector until guarded checks pass and wiring is restored.
+Payment/Stripe requests remain blocked. Actual test receipts, recovery, final VAT total and game unlock
+are unfinished. This is a resource blocker, not a passed end-to-end test.
+
+Source saved locally in commits `c761aa4` and `53292f3`. No push, hosted CI or deployment. The browser
+policy/source directory is a symlink into agent-dotfiles; source edits affect installed files, and
+existing connector processes keep their loaded modules until reconnect. Keep the last checked connector
+policy installed while the next stage is unverified. The disposable connector client was removed.
 
 The [1,000 kr/month plan](1000kr-month-plan.md) is prepared separately and makes no sales promise.
 No disposable dependency/build copy was created. Private login storage stays private and preserved.
