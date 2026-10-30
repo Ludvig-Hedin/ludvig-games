@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-31, local only
+
+- A real purchased test-bundle key unlocked all ten extras in the browser and restored them after
+  reload. The real-provider check also selected a paid room pack and rejected a wrong-store mapping.
+  No production activation or deployment.
+
 ## 2026-10-30, local only
 
 - Native test-license support alongside legacy codes, revalidated ownership and ordered drawing commands during async validation. No provider checkout pass or deployment yet.
