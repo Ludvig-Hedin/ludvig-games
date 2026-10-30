@@ -5,6 +5,35 @@ testing. This is authorization for the store setup/test work, not live charges o
 
 ## Current state, 21:20 UTC
 
+### Latest resumed checkpoint (supersedes earlier resource/guard status below)
+
+- Reconnected to Dia successfully. Four existing test products remain configured. No live changes.
+- Rebuilt the current assets successfully. The configured local commerce API returned ready=true with
+  all four exact provider checkout links. Ritkaos returned nativeReady=true with the real test catalog.
+  Both disposable servers were later stopped by the emergency memory guard; neither remains listening.
+- Actual browser proof: tax cart update returned 200 after preserving original request headers and
+  following the provider's Inertia 302 with one explicit GET to the exact same signed test cart.
+  Ten focused tax-gate tests passed, with independent sensitive review. No POST replay or foreign redirect.
+- Actual Stripe test-key Link lookup returned 200. Seven focused lookup tests passed after repairing
+  the review finding about authorization/account-routing headers. Other Stripe writes remain blocked.
+- The payment fields accepted the dummy card. Stripe Elements submit resolved without a field error,
+  and the checkout attempted POST /checkout/validate?cart=...&type=stripe. That route remains blocked.
+  No agent-completed payment, receipt or native key has been observed.
+- A fixed-dummy-data validation gate has independent review but its two focused tests could not run:
+  memory was 14–15%, then another heavy/push job owned the scheduler. It stays **inactive**. The exact
+  future wiring is saved as lemon-checkout-validation.wiring.patch in agent-dotfiles. Run its guarded
+  tests before applying that patch. Existing checked tax/lookup gates stay installed.
+- Test cart was SE with tax_status=non_taxable, tax=0 and tax_inclusive=false. This does not establish
+  production Swedish VAT handling or final live prices. That release check is still open.
+- Pigeon mobile preview verification is unfinished. The attempted exact Crown locator omitted its
+  Preview text; no product failure was established by that attempt.
+- Ludvig was offered the verified bundle TEST checkout as an optional manual route while resources are
+  blocked. Completion is not assumed. He needs his apps open; do not ask him to close them again.
+
+Next owner: coordinator runs the pending validation checks when admission allows, then finishes the
+actual checkout/receipt/native-key and in-game unlock journey. If Ludvig completes the optional test
+purchase, verify that order instead of assuming it succeeded. No production deployment is authorized.
+
 Local implementation exists and has passed focused checks, but it is not deployed and no actual test
 checkout has completed. All four test products are saved and their IDs are wired into the opt-in local test configuration. Purchases are not ready.
 
