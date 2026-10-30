@@ -5,7 +5,7 @@
   "scripts": {
     "build": "python3 build.py",
     "dev": "bun scripts/serve.ts",
-    "dev:commerce": "node commerce/server.mjs",
+    "dev:commerce": "node --env-file=commerce/.env.test.example commerce/server.mjs",
     "browser-test": "node scripts/browser-check.cjs"
   }
 }

@@ -3,22 +3,28 @@
 Owner resumed setup after completing W-8/W-9 certification and requested test-mode setup and purchase
 testing. This is authorization for the store setup/test work, not live charges or unrelated account changes.
 
-## Current state, 21:05 UTC
+## Current state, 21:20 UTC
 
 Local implementation exists and has passed focused checks, but it is not deployed and no actual test
-checkout has completed. The current provider test catalog is not configured yet. Purchases are not ready.
+checkout has completed. All four test products are saved and their IDs are wired into the opt-in local test configuration. Purchases are not ready.
 
 - Fresh site-scoped Dia login succeeded. The official Products page confirms store **504842** and
   **isTestMode: true** after Ludvig enabled Test mode himself. Personal tabs were not controlled.
 - Earlier Payout settings showed Tax information **Submitted**. No identifier or bank data is saved here.
-- A pending test product shell **1488379**, variant **2319068**, was opened for Ritkaos+. A save attempt
-  was blocked locally because the real product form includes a default variant and omits the test flag.
-  No successful published product save is claimed. These provisional IDs are not yet app configuration.
+- Four products were saved and freshly read back: published in test mode, hidden from storefront,
+  single payment, native keys, unlimited duration/activation, Video Game tax category. No live products.
+- Verified product/variant IDs: Ritkaos 1488379/2319068, Pigeon 1488395/2319091,
+  Karts 1488397/2319094, bundle 1488399/2319096. The opt-in environment example contains public IDs only.
 - Ludvig explicitly approved a narrow exception for this store's test products and dummy-card checkout.
   The product guard checks fresh official server proof of test mode and exact product/variant/price IDs.
-  Its form-payload adaptation has independent review, with guarded checks pending at this checkpoint.
+  Its form-payload adaptation passed independent review and seven guarded focused checks.
   Payment, live-mode changes, account, bank, tax and marketing writes remain blocked.
 - The general Products API is read/list only. No merchant API key was requested as a creation shortcut.
+- Bundle checkout displays Test mode, cart.test_mode is true and its Stripe key is a test key.
+  Public checkout's generic isTestMode prop is false and must not be used as its mode proof.
+  Tax-calculation POST is still blocked and Pay is disabled. No payment submitted.
+- Cart tax_inclusive is false. The displayed 99 SEK before tax calculation does not establish the final
+  Swedish customer total. Tax-inclusive pricing remains a release blocker.
 
 ## Prepared product settings
 
