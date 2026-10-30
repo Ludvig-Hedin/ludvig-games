@@ -7,15 +7,19 @@ Ludvig supplied Lemon Squeezy's account-approval email on 30 October. This resol
 approval wait recorded on 28 October. It does not prove a live product, working delivery or payout setup.
 No dashboard session, credentials, product configuration or payout details were inspected in this review.
 
-The first paid offer and its price still need Ludvig's confirmation. The implementation contains
+Owner clarification, 30 October: the paid launch must cover more games than Ritkaos. The earlier
+Ritkaos-only framing is superseded. Exact games, paid extras, bundles and prices are still unconfirmed;
+this clarification does not approve specific new cosmetics or restricting existing free content.
+
+The first paid offers and their prices still need Ludvig's confirmation. The implementation contains
 Ritkaos+ at 79 SEK and nine individual extras at 19–29 SEK. These are existing source values, not newly
 approved launch prices. The game stays free to play, with optional paid extras, under the 22 October
 owner decision. A concrete product question was raised in chat; dependent activation is pending.
 
 ## Checklist for Ludvig
 
-- [ ] Confirm the first product, included extras and final customer price. Choose whether individual
-  extras also go on sale. If this launch is for something other than Ritkaos, name that product first.
+- [ ] Confirm the launch products across multiple games, included extras and final customer prices.
+  Choose whether individual extras and a cross-game bundle go on sale.
 - [ ] In [Lemon Squeezy](https://app.lemonsqueezy.com), check that the approved Ludvig Games store
   offers Live mode and has no outstanding account tasks. Keep customer checkout unlinked until testing passes.
 - [ ] Check **Settings → Payout** and complete any bank/PayPal, identity or tax-form tasks shown there.
