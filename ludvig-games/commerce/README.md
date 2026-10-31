@@ -104,6 +104,11 @@ Official references checked 30 October 2026:
 - https://docs.lemonsqueezy.com/help/licensing/generating-license-keys
 - https://docs.lemonsqueezy.com/guides/developer-guide/testing-going-live
 
+The new connection-proof implementation uses the standard Ed25519 Web Crypto API, supported by
+the installed Node22 line and the Workers runtime. References checked 31 October 2026:
+- https://developers.cloudflare.com/workers/runtime-apis/web-crypto/
+- https://nodejs.org/download/release/latest-jod/docs/api/webcrypto.html
+
 ## Production preparation, 31 October
 
 `wrangler.live.jsonc` is a non-deployed candidate pinned to the approved Free account. Its empty
@@ -116,5 +121,37 @@ and emits it only in the shared store client. It does not change the existing le
 Both named service endpoints must return their matching mode; local same-origin previews support either.
 Do not deploy the hub before its corresponding service is configured and verified.
 
-See [support operations](../docs/payment-operations.md). Full-refund access removal remains an owner
-decision. Production writes and activation are not implied by local preparation.
+See [support operations](../docs/payment-operations.md). The owner approved disabling the refunded
+native key after a full refund, effective at the next validation. Production activation still requires
+all release acceptance gates to pass.
+
+## Connection-bound Ritkaos grants
+
+`grant.mjs` signs/verifies Ed25519 entitlement proofs, with a maximum 60-second lifetime. The proof
+contains only the fixed issuer/version/key ID, environment, store, Ritkaos entitlement, audience-instance
+UUID, connection-challenge UUID and issue/expiry timestamps. It contains no licence key, key hash,
+customer information or order ID. Public verification keys are pinned in trusted app configuration;
+they must never be obtained from a token or discovered room host. Private signing keys must never be
+staged into the desktop app.
+
+The Worker accepts `POST /api/licenses/grant` with exactly `{key,audience,challenge}` (512-byte maximum).
+It uses the same exact product resolver and shared provider quota as `/resolve`, then signs only if
+that verified result includes Ritkaos. The response is `{ok:true,environment,proof}`. Existing `/resolve`
+behavior is preserved. As with `/resolve`, callers must supply an allowed Origin, including a native
+desktop server caller using the fixed public Games origin. Origin is not authentication; possession
+and validation of the native key establish the purchase.
+
+Set the operator-only `LS_GRANT_PRIVATE_JWK` secret and public `LS_GRANT_KEY_ID` in the Worker. The
+catalogue reports `grantReady` only after actual signing-key import and pair consistency checks succeed.
+Missing signing configuration disables grants while leaving ordinary licence resolution independent.
+No production key or secret was generated or configured by this source change. Besides existing
+edge/provider bounds, a signer permits at most 60 signatures/minute and four concurrent signatures.
+
+`tests/grant.test.mjs` covers connection/environment/key separation, expiry, malformed/tampered proofs,
+claim minimization and request/signature bounds using in-memory ephemeral test keys only. The parent
+coordinator owns running those focused checks and the subsequent cross-Mac acceptance test.
+
+Ed25519 sign/verify/JWK import support was checked against the official
+[Workers Web Crypto documentation](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/)
+and [Node Web Crypto documentation](https://nodejs.org/api/webcrypto.html). Actual runtime checks
+remain the coordinator's task; documentation support is not a test result.

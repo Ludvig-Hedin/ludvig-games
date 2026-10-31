@@ -1,5 +1,7 @@
 # 2026-10-31: live-mode preparation, not deployed
 
+- Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs
+  so cross-Mac rooms do not receive reusable licence keys. New verification and release remain held.
 - Owner authorized release once ready. Prepared local paid-flow policy updates and an owner test
   guide; withdrawal-function proof, hosting access and first-launch device scope still block release.
 - Created four hidden live drafts in the approved store and verified 59/39/39/99 SEK pricing,

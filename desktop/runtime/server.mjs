@@ -9,19 +9,23 @@ import http from "node:http";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { Miniflare } from "miniflare";
 import { ALL, HUB } from "./games.mjs";
 import { ROUTER_SOURCE } from "./router.mjs";
 import { applyMigrations } from "./migrations.mjs";
 import { serveStatic, workerRoutes } from "./static.mjs";
 import { sharedPath } from "./share.mjs";
+import { loadDesktopCommerce } from "./commerce.mjs";
+import { bridgeRitkaos, maySubmitCredentials } from "./ritkaos-bridge.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const bundleDir = process.env.LUDVIG_BUNDLE || path.join(here, "..", "bundle");
 const dataDir = process.env.LUDVIG_DATA || path.join(os.homedir(), "Library", "Application Support", "Ludvig Games", "data");
 const bind = process.env.LUDVIG_BIND || "0.0.0.0";
 const RITKAOS_INTERNAL_PORT = 47901 + Number(process.env.LUDVIG_PORT_OFFSET || 0);
+let ritkaosTransport;
+const loadRitkaosTransport = () => ritkaosTransport ||= import(pathToFileURL(path.join(bundleDir, "ritkaos", "app", "lib", "websocket.mjs")).href);
 const INJECT = fs.readFileSync(path.join(here, "inject.js"), "utf8");
 
 const log = (...args) => console.log("[runtime]", ...args);
@@ -205,7 +209,7 @@ function desktopScript(entries, entry) {
 }
 
 /** One proxy per game: the network-facing port that forwards to Miniflare or to the Ritkaos server. */
-function startProxy(entry, target, entries) {
+function startProxy(entry, target, entries, commerce) {
   const headersFor = (req) => {
     const headers = { ...req.headers, "accept-encoding": "identity" };
     const ip = clientIp(req);
@@ -233,7 +237,16 @@ function startProxy(entry, target, entries) {
   // hydration fail (React error 418); in the app, app/preload-content.cjs adds the script to them instead.
   const injectHtml = entry.id === "hub" || target.kind === "node" ? inject : (html) => html;
 
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
+    if (entry.id === "ritkaos" && new URL(req.url, "http://local").pathname === "/api/store"
+        && !maySubmitCredentials(req, entry.port, false)) {
+      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+      res.end(JSON.stringify({ ready: false, nativeReady: false, environment: "", checkout: "", products: [] })); return;
+    }
+    if (entry.id === "hub") {
+      try { if (await commerce.handle(req, res, entry.port)) return; }
+      catch { res.writeHead(503, { "Cache-Control": "no-store" }); res.end(); return; }
+    }
     if (req.url === "/__ludvig/devices") {
       // Only the app on this Mac may ask who is connected: a loopback connection, a loopback Host (so a web page
       // cannot reach it through DNS rebinding) and the per-launch token the app passed to this process.
@@ -266,6 +279,10 @@ function startProxy(entry, target, entries) {
     if (remote) forward(req, res, remote, local);
     else local(null);
   });
+  if (entry.id === "hub") {
+    server.requestTimeout = 10000;
+    server.headersTimeout = 10000;
+  }
 
   // This Mac's own Worker or Ritkaos server. `body` is the request body when it was already read (a request that
   // could not reach the room Mac), otherwise the request is streamed.
@@ -344,10 +361,19 @@ function startProxy(entry, target, entries) {
     });
   }
 
-  server.on("upgrade", (req, socket, head) => {
+  server.on("upgrade", async (req, socket, head) => {
     let pathname = "/";
     try { pathname = new URL(req.url, "http://local").pathname; } catch {}
     const remote = roomHost && !req.headers[FORWARDED] && sharedPath(entry, target.kind, pathname) ? roomHost : null;
+    if (remote && entry.id === "ritkaos" && pathname === "/ws") {
+      try {
+        const { upgrade, Peer } = await loadRitkaosTransport();
+        bridgeRitkaos({ req, socket, head, remoteHost: remote.host, remotePort: remotePort(remote, entry),
+          headers: forwardHeaders(req), port: entry.port, upgrade, Peer, commerce,
+          onUnavailable: () => roomHostFailed(remote) });
+      } catch { socket.destroy(); }
+      return;
+    }
     const local = () => {
       const headers = headersFor(req);
       delete headers["accept-encoding"];
@@ -391,11 +417,12 @@ function startProxy(entry, target, entries) {
   });
 }
 
-function startRitkaos(cfg) {
+function startRitkaos(cfg, commerce) {
   const main = path.join(bundleDir, "ritkaos", cfg.main);
   const child = spawn(process.execPath, [main], {
     cwd: path.dirname(main),
-    env: { ...process.env, PORT: String(RITKAOS_INTERNAL_PORT), ELECTRON_RUN_AS_NODE: "1" },
+    env: { ...process.env, ...commerce.environment, PORT: String(RITKAOS_INTERNAL_PORT),
+      LS_GRANT_PRIVATE_JWK: undefined, RITKAOS_BIND: "127.0.0.1", ELECTRON_RUN_AS_NODE: "1" },
     stdio: ["ignore", "ignore", "inherit"],
   });
   child.on("exit", (code) => log("ritkaos exited", code));
@@ -405,6 +432,7 @@ function startRitkaos(cfg) {
 }
 
 export async function start() {
+  const commerce = await loadDesktopCommerce(bundleDir);
   const entries = ALL.map((e) => ({ ...e, cfg: readConfig(e.id) })).filter((e) => e.cfg);
   const workers = entries.filter((e) => e.cfg.kind === "worker");
   fs.mkdirSync(dataDir, { recursive: true });
@@ -452,11 +480,11 @@ export async function start() {
       };
     }
     else {
-      children.push(startRitkaos(e.cfg));
+      children.push(startRitkaos(e.cfg, commerce));
       target = { kind: "node", port: RITKAOS_INTERNAL_PORT };
     }
     try {
-      servers.push(await startProxy(e, target, entries));
+      servers.push(await startProxy(e, target, entries, commerce));
     } catch (err) {
       log(`could not open port ${e.port} for ${e.id}:`, err.code || err.message);
     }

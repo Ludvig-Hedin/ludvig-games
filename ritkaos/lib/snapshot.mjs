@@ -6,7 +6,7 @@
  */
 const replacer = function (key, value) {
   if (key === 'peer' || key === 'limits' || key === 'nativeOwned' || key === 'nativeUntil') return undefined;
-  // Store only legacy grants. Native licences must be presented and checked again after hibernation.
+  // Store only legacy grants. Native licences and connection-bound operator proofs must be checked again.
   if (key === 'owned' && this.legacyOwned instanceof Set) return { $s: [...this.legacyOwned] };
   if (key === 'players' && value instanceof Map) return { $p: [...value.keys()] };
   if (value instanceof Map) return { $m: [...value.entries()] };

@@ -66,3 +66,10 @@ waiver or no-refund policy to get through this check.
 
 Coordinator owns the remaining journey inspection, implementation choice and release acceptance.
 The existing bundle success-path evidence is unaffected. No public policy files were changed.
+
+## Authorized follow-up, 31 October
+
+Ludvig authorized the coordinator to ask support. The question was sent to the existing verified
+support address `hello@lemonsqueezy.com` in the store-approval thread, explicitly covering browser
+and Mac game extras. Gmail returned SENT (`1a19239a18117fcc`). A provider response and actual journey
+verification are still outstanding. This sent question is not proof that the withdrawal gate passed.

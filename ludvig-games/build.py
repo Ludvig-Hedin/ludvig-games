@@ -95,7 +95,7 @@ MAC_DOWNLOAD = "https://github.com/Ludvig-Hedin/ludvig-games/releases/latest/dow
 def masthead():
     return f'''<header class="masthead">
     <a class="wordmark" href="/">Ludvig Games</a>
-    <nav class="masthead-nav" aria-label="Site"><a class="nav-button" href="/me/">My records</a><button class="nav-button" type="button" data-together-open>Play together</button><a class="nav-button nav-button-primary" href="{MAC_DOWNLOAD}">Download for Mac</a></nav>
+    <nav class="masthead-nav" aria-label="Site"><a class="nav-button" href="/shop/" data-store-link>Shop</a><a class="nav-button" href="/me/">My records</a><button class="nav-button" type="button" data-together-open>Play together</button><a class="nav-button nav-button-primary" href="{MAC_DOWNLOAD}">Download for Mac</a></nav>
   </header>
   <dialog class="together" id="together" aria-labelledby="together-title">
     <form method="dialog" class="together-close-row"><button class="together-close" aria-label="Close">
@@ -144,6 +144,45 @@ def footer(groups=()):
     return f'<footer class="footer"><div class="footer-bottom"><p>© 2026 Ludvig Hedin</p><nav class="footer-legal" aria-label="Policies">{legal}<a href="mailto:ludvig@ludvighedin.com">Contact</a></nav></div></footer>'
 
 
+def shop_page(games, groups):
+    """The shared pack catalogue. Checkout and ownership stay in the common store client."""
+    plan = json.loads((ROOT / "commerce" / "live-products.plan.json").read_text())
+    offers = {offer["id"]: offer for offer in plan["offers"]}
+    slugs = {"ritkaos": "ritkaos", "pigeon": "pigeon", "karts": "citrus-circuit-coastline"}
+    by_slug = {game["slug"]: game for game in games}
+    products = []
+    for offer_id, slug in slugs.items():
+        offer = offers[offer_id]
+        href = by_slug.get(slug, {}).get("external") or f"/{slug}/"
+        price = offer["priceOre"] // 100
+        products.append(f'''<article class="shop-product" aria-labelledby="shop-{offer_id}">
+      <img class="shop-image" src="/assets/previews/{slug}.webp" alt="{escape(by_slug.get(slug, {}).get('name', offer['name']))} gameplay" width="960" height="600" decoding="async">
+      <div class="shop-product-heading"><h2 id="shop-{offer_id}">{escape(offer['name'])}</h2><p class="shop-price">{price} kr</p></div>
+      <p class="shop-description">{escape(offer['description'])}</p>
+      <div class="shop-actions"><button class="button shop-buy" type="button" data-store-offer="{offer_id}" disabled>Buy pack</button><a class="shop-play" href="{escape(href)}">Play free</a></div>
+    </article>''')
+    bundle = offers["bundle"]
+    body = f'''<a class="skip" href="#content">Skip to shop</a>
+<div class="shell shop-shell">
+  {masthead()}
+  <main id="content" class="shop">
+    <div class="shop-intro"><div><h1 class="shop-title">Game extras</h1><p>Optional packs for your games. Everything already free stays free.</p></div><button class="link-button shop-restore" type="button" data-store-restore disabled>Restore a purchase</button></div>
+    <p class="shop-pricing">One payment. Prices include applicable tax. Use your receipt's licence key in the matching games.</p>
+    <div class="shop-products">{''.join(products)}</div>
+    <section class="shop-bundle" aria-labelledby="shop-bundle">
+      <div><h2 id="shop-bundle">All three packs</h2><p>{escape(bundle['description'])}</p></div>
+      <div class="shop-bundle-action"><p class="shop-price">{bundle['priceOre'] // 100} kr</p><button class="button shop-buy" type="button" data-store-offer="bundle" disabled>Buy bundle</button></div>
+    </section>
+    <p class="shop-status" role="status" aria-live="polite" data-shop-status>Buying is not available yet. Free play is unchanged.</p>
+    <p class="shop-help">An internet connection is needed to check purchases. <a href="/refunds/">14-day refunds</a> · <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener noreferrer">Find your receipt and code</a></p>
+    <noscript><p>Enable JavaScript to buy or restore a pack. You can still browse the packs and open the games.</p></noscript>
+  </main>
+  {footer(groups)}
+</div>'''
+    return document("Shop · Ludvig Games", "Optional Ritkaos+, Pigeon and Karts packs. Buy one pack or all three, or restore your purchase.",
+                    "/shop/", body, scripts=("/assets/store-client.js", "/assets/shop.js"))
+
+
 def policy_pages(output, groups):
     """Keep policy copy in source, so rebuilding cannot remove the public pages."""
     for slug, (title, description) in POLICIES.items():
@@ -152,7 +191,7 @@ def policy_pages(output, groups):
   <header class="policy-header"><a class="wordmark" href="/">Ludvig Games</a><a class="policy-back" href="/">All games</a></header>
   <main id="content" class="policy">
     <h1 class="page-title">{escape(title)}</h1>
-    <p class="policy-date">Last updated: 28 October 2026</p>
+    <p class="policy-date">Last updated: 31 October 2026</p>
     {content}
   </main>
   {footer(groups)}
@@ -593,7 +632,7 @@ def render(output):
         slug = game["slug"]
         if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or slug in slugs:
             raise ValueError(f"Invalid or duplicate slug: {slug}")
-        if slug in ("games", "assets", "me", "api", "mp", *POLICIES):
+        if slug in ("games", "assets", "me", "shop", "api", "mp", *POLICIES):
             raise ValueError(f"Slug collides with a site path: {slug}")
         slugs.add(slug)
         if not isinstance(game.get("hidden", False), bool):
@@ -635,7 +674,7 @@ def render(output):
     previews.mkdir(parents=True)
     base = api_base()
     for asset in ["site.css", "favicon.svg", "game-storage.js", "audio-resume.js",
-                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js"]:
+                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js", "shop.js"]:
         shutil.copy2(ROOT / "assets" / asset, assets / asset)
     (assets / "ludvig.js").write_text(ludvig_script(base))
     (assets / "store-client.js").write_text(store_script())
@@ -696,6 +735,8 @@ def render(output):
     (OUT / "404.html").write_text(document("Page not found · Ludvig Games", "Return to all games.", "/404", error))
     (OUT / "me").mkdir()
     (OUT / "me" / "index.html").write_text(records_page(groups))
+    (OUT / "shop").mkdir()
+    (OUT / "shop" / "index.html").write_text(shop_page(catalog, groups))
     policy_pages(OUT, groups)
     local = [g for g in games if not g["external"]]
     sources = {g["slug"]: lastmod(ROOT / "source-games" / g["slug"] / "index.html") for g in local}
@@ -703,6 +744,7 @@ def render(output):
     entries = [("/", newest)] + [(f"/{g['slug']}/", sources[g["slug"]]) for g in local]
     entries += [(page, sources.get(page.split("/")[1], newest)) for page in seo_pages]
     entries += [(f"/{slug}/", lastmod(ROOT / "policies" / f"{slug}.html")) for slug in POLICIES]
+    entries.append(("/shop/", lastmod(ROOT / "commerce" / "live-products.plan.json")))
     (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                                      + "".join(f"<url><loc>{ORIGIN}{p}</loc><lastmod>{d}</lastmod></url>" for p, d in entries) + "</urlset>\n")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /games/\nDisallow: /api/\nDisallow: /mp/\nSitemap: {ORIGIN}/sitemap.xml\n")

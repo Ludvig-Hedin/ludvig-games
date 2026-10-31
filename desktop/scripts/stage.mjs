@@ -8,6 +8,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { GAMES } from "../runtime/games.mjs";
+import { configurationFromEnv, normalizeConfiguration } from "../../ludvig-games/commerce/license.mjs";
+import { publicStoreEnvironment } from "../runtime/commerce.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
@@ -22,10 +24,12 @@ const wanted = (id) => (only.length ? only.includes(id) : !fs.existsSync(path.jo
 
 function run(cmd, args, cwd, env = {}) {
   console.log(`  $ ${cmd} ${args.join(" ")}`);
+  const childEnvironment = { ...process.env, NODE_OPTIONS: "--max-old-space-size=2048", CI: "1", ...env };
+  delete childEnvironment.LS_GRANT_PRIVATE_JWK;
   execFileSync(cmd, args, {
     cwd,
     stdio: "inherit",
-    env: { ...process.env, NODE_OPTIONS: "--max-old-space-size=2048", CI: "1", ...env },
+    env: childEnvironment,
   });
 }
 
@@ -132,7 +136,7 @@ function stageHub() {
   const work = path.join(stageDir, "hub");
   console.log("\n== hub");
   copySource(src, work);
-  run("python3", ["build.py"], work, { LUDVIG_API_BASE: "" });
+  run("python3", ["build.py"], work, { LUDVIG_API_BASE: "", LUDVIG_STORE_API: "" });
   const cfg = readJsonc(path.join(work, "wrangler.jsonc"));
   // The API Worker config holds the rate limiters the hub script requires.
   cfg.ratelimits = readJsonc(path.join(work, "wrangler.api.jsonc")).ratelimits;
@@ -140,6 +144,13 @@ function stageHub() {
   fs.rmSync(out, { recursive: true, force: true });
   copyDir(path.join(work, "worker"), path.join(out, "server"));
   copyDir(path.join(work, cfg.assets.directory), path.join(out, "client"));
+  const commerce = path.join(out, "commerce");
+  fs.mkdirSync(commerce, { recursive: true });
+  for (const file of ["license.mjs", "http.mjs", "grant.mjs"])
+    fs.copyFileSync(path.join(work, "commerce", file), path.join(commerce, file));
+  const storeEnvironment = publicStoreEnvironment(process.env);
+  const configuredStore = normalizeConfiguration(configurationFromEnv(storeEnvironment));
+  fs.writeFileSync(path.join(commerce, "config.json"), JSON.stringify(configuredStore ? storeEnvironment : {}) + "\n");
   const db = cfg.d1_databases[0];
   const migrations = [];
   for (const f of listSql(path.join(work, db.migrations_dir))) {
@@ -181,7 +192,8 @@ function stageRitkaos() {
   // store configuration the offline app stays free and makes no licence calls.
   const commerce = path.join(out, "ludvig-games", "commerce");
   fs.mkdirSync(commerce, { recursive: true });
-  fs.copyFileSync(path.join(gamesDir, "ludvig-games", "commerce", "license.mjs"), path.join(commerce, "license.mjs"));
+  for (const file of ["license.mjs", "grant.mjs"])
+    fs.copyFileSync(path.join(gamesDir, "ludvig-games", "commerce", file), path.join(commerce, file));
   writeConfig("ritkaos", { kind: "node", main: "app/server.mjs" });
 }
 

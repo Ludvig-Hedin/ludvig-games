@@ -30,7 +30,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .shell { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: max(24px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-right)); }
 .masthead { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; padding-block: 24px 64px; }
 .wordmark { font-size: 15px; font-weight: 500; letter-spacing: -.01em; color: var(--text); transition: color 160ms ease; }
-.masthead-nav { display: flex; align-items: center; gap: 8px; }
+.masthead-nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; min-width: 0; gap: 8px; }
 .nav-button { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 999px; color: var(--text); font-size: 13px; font-weight: 500; white-space: nowrap; transition: background-color 160ms ease, border-color 160ms ease; }
 .nav-button-primary { border-color: var(--text); background: var(--text); color: var(--canvas); }
 .intro { margin: 0 0 28px; font-size: 22px; font-weight: 500; line-height: 1.3; letter-spacing: -.015em; color: var(--text); max-width: 22ch; }
@@ -146,6 +146,45 @@ button.nav-button { background: transparent; cursor: pointer; font: inherit; fon
 .name-actions { display: flex; align-items: center; gap: 16px; }
 .name-error { margin: 0; color: #ff8a80; font-size: 12px; }
 .name-error:empty { display: none; }
+
+/* Shared shop: use the hub's game imagery and simple, unboxed product groups. */
+.shop { padding-bottom: 16px; }
+.shop-intro { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+.shop-title { margin: 0; font-size: 32px; font-weight: 500; line-height: 1.2; letter-spacing: -.025em; }
+.shop-intro p { margin: 12px 0 0; color: var(--muted); max-width: 52ch; }
+.shop-pricing { margin: 16px 0 40px; color: var(--muted); max-width: 68ch; }
+.shop-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 32px; }
+.shop-product { display: flex; flex-direction: column; min-width: 0; }
+.shop-image { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--surface); }
+.shop-product-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.shop-product h2, .shop-bundle h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.35; letter-spacing: -.015em; }
+.shop-price { margin: 0; flex-shrink: 0; font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shop-description { margin: 10px 0 22px; color: var(--muted); }
+.shop-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; margin-top: auto; }
+.shop .button { min-height: 44px; }
+.shop .button:disabled, .shop-restore:disabled { cursor: default; opacity: .5; }
+.shop-play { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--muted); }
+.shop-bundle { display: flex; justify-content: space-between; align-items: center; gap: 28px; margin-top: 48px; padding-block: 32px; border-block: 1px solid var(--line); }
+.shop-bundle p:not(.shop-price) { margin: 10px 0 0; max-width: 62ch; color: var(--muted); }
+.shop-bundle-action { display: flex; align-items: center; gap: 24px; flex-shrink: 0; }
+.shop-status { margin: 24px 0 0; color: var(--muted); }
+.shop-status[hidden] { display: none; }
+.shop-help { margin: 20px 0 0; color: var(--muted); max-width: 70ch; font-size: 13px; }
+.shop-help a { display: inline-block; padding-block: 8px; text-decoration: underline; text-underline-offset: 3px; }
+.shop-shell .masthead-nav { flex-wrap: wrap; justify-content: flex-end; }
+
+@media (max-width: 900px) {
+  .shop-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 24px; }
+  .shop-bundle { align-items: flex-start; }
+}
+@media (max-width: 620px) {
+  .shop-shell .masthead { align-items: flex-start; }
+  .shop-shell .masthead-nav { gap: 8px; }
+  .shop-intro, .shop-bundle { flex-direction: column; align-items: flex-start; }
+  .shop-products { grid-template-columns: minmax(0, 1fr); }
+  .shop-title { font-size: 28px; }
+  .shop-bundle-action { width: 100%; justify-content: space-between; }
+}
 
 @media (hover: hover) {
   .empty a:hover, .filter-select select:hover { color: var(--text); }

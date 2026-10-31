@@ -7,7 +7,33 @@
   window.__ludvigDesktop = true;
   const cfg = LUDVIG_DESKTOP;
   const host = location.hostname;
+  if (cfg.game === "ritkaos" && !["127.0.0.1", "localhost", "[::1]", "::1"].includes(host)) {
+    // A friend's LAN page may play with its host's extras, but never send saved bearer keys to that host.
+    const NativeWebSocket = window.WebSocket;
+    window.WebSocket = class GuestWebSocket extends NativeWebSocket {
+      send(value) {
+        if (typeof value !== "string") return;
+        let p;
+        try { p = JSON.parse(value); } catch { return; }
+        if (p.type === "hello" || p.type === "licenses") {
+          p.data = { ...(p.data || {}), codes: [] };
+          return super.send(JSON.stringify(p));
+        }
+        if (p.type === "redeem") {
+          queueMicrotask(() => this.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+            type: "ack", request: p.request, ok: false, error: "Restore purchases in your own Mac app or on the public game site.",
+          }) })));
+          return;
+        }
+        return super.send(value);
+      }
+    };
+  }
   const sites = new Map(cfg.sites.map((s) => [s.site, `${location.protocol}//${host}:${s.port}`]));
+  for (const site of cfg.sites) {
+    const slug = /^https:\/\/([a-z0-9-]+)\.ludvighedin\.com\/?$/.exec(site.site)?.[1];
+    if (slug) sites.set(`https://${slug}.ludvighedin.workers.dev`, `${location.protocol}//${host}:${site.port}`);
+  }
 
   const toLocal = (value) => {
     try {
@@ -38,7 +64,7 @@
   // open in the same window, so the "opens in a new tab" arrows go too.
   if (/\bElectron\//.test(navigator.userAgent)) {
     const style = document.createElement("style");
-    style.textContent = ".masthead-nav, .card-external { display: none !important; }";
+    style.textContent = ".masthead-nav > :not([data-store-link]), .card-external { display: none !important; }";
     document.documentElement.append(style);
   }
 

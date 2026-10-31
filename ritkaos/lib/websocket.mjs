@@ -1,11 +1,12 @@
 /** Small dependency-free RFC 6455 text transport. All game rules live elsewhere. */
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 const MAX = 128 * 1024;
 const decoder = new TextDecoder('utf-8', { fatal: true });
 export class Peer extends EventEmitter {
-  constructor(socket, head) {
+  constructor(socket, head = Buffer.alloc(0), { client = false } = {}) {
     super(); this.socket = socket; this.buffer = Buffer.alloc(0); this.fragments = [];
+    this.client = client === true;
     this.fragmentSize = 0; this.fragmenting = false; this.alive = true; this.closed = false;
     socket.setNoDelay(true);
     socket.on('data', b => this.read(b));
@@ -16,12 +17,17 @@ export class Peer extends EventEmitter {
   frame(op, data = Buffer.alloc(0)) {
     if (this.closed || this.socket.destroyed) return;
     if (this.socket.writableLength > 2 * 1024 * 1024) return this.close(1013);
-    const b = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const b = Buffer.from(data);
     let header;
     if (b.length < 126) header = Buffer.from([0x80 | op, b.length]);
     else if (b.length <= 65535) { header = Buffer.alloc(4); header[0] = 0x80 | op; header[1] = 126; header.writeUInt16BE(b.length, 2); }
     else { header = Buffer.alloc(10); header[0] = 0x80 | op; header[1] = 127; header.writeBigUInt64BE(BigInt(b.length), 2); }
-    this.socket.write(Buffer.concat([header, b]));
+    if (this.client) {
+      header[1] |= 128;
+      const mask = randomBytes(4);
+      for (let i = 0; i < b.length; i++) b[i] ^= mask[i % 4];
+      this.socket.write(Buffer.concat([header, mask, b]));
+    } else this.socket.write(Buffer.concat([header, b]));
   }
   send(data) { this.frame(1, JSON.stringify(data)); }
   close(code = 1000) {
@@ -37,7 +43,8 @@ export class Peer extends EventEmitter {
     if (this.buffer.length > MAX * 2) return this.close(1009);
     while (this.buffer.length >= 2 && !this.closed) {
       const a = this.buffer[0], b = this.buffer[1], fin = !!(a & 128), op = a & 15;
-      if ((a & 112) || !(b & 128)) return this.close(1002);
+      const masked = !!(b & 128);
+      if ((a & 112) || masked === this.client) return this.close(1002);
       let len = b & 127, offset = 2;
       if (len === 126) { if (this.buffer.length < 4) return; len = this.buffer.readUInt16BE(2); offset = 4; }
       else if (len === 127) {
@@ -47,10 +54,11 @@ export class Peer extends EventEmitter {
         len = Number(big); offset = 10;
       }
       if (len > MAX || (op >= 8 && (!fin || len > 125))) return this.close(1002);
-      if (this.buffer.length < offset + 4 + len) return;
-      const mask = this.buffer.subarray(offset, offset + 4), data = Buffer.from(this.buffer.subarray(offset + 4, offset + 4 + len));
-      this.buffer = this.buffer.subarray(offset + 4 + len);
-      for (let i = 0; i < len; i++) data[i] ^= mask[i % 4];
+      const maskBytes = masked ? 4 : 0;
+      if (this.buffer.length < offset + maskBytes + len) return;
+      const mask = this.buffer.subarray(offset, offset + maskBytes), data = Buffer.from(this.buffer.subarray(offset + maskBytes, offset + maskBytes + len));
+      this.buffer = this.buffer.subarray(offset + maskBytes + len);
+      if (masked) for (let i = 0; i < len; i++) data[i] ^= mask[i % 4];
       if (op === 8) { this.close(); return; }
       if (op === 9) { this.frame(10, data); continue; }
       if (op === 10) { this.alive = true; continue; }

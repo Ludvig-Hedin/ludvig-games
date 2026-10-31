@@ -118,3 +118,43 @@ wait for a final publishing decision; it does not bypass the open acceptance gat
 Publishing remains blocked by server access, the withdrawal/customer-flow evidence and device scope.
 Coordinator owns technical work and the guarded retry. Ludvig owns the three pending product/contact
 answers. No extra products, marketing messages, live self-purchase or paid service was started.
+
+## Owner decisions and support contact, 31 October
+
+- Ludvig approved a shared `/shop/` page plus purchases inside each game. It uses the same three packs
+  and bundle, with no additional products or price changes. Implementation is local until release gates pass.
+- Ludvig requires the same paid packs to work in the Mac app at first launch. Web-only release is not
+  an acceptable substitute. Desktop staging, runtime licence validation and a verified Mac build are now
+  part of acceptance; the existing web test proof alone does not cover that requirement.
+- Ludvig explicitly authorized contacting Lemon Squeezy support. A single question was sent from the
+  store owner's existing personal Gmail account to `hello@lemonsqueezy.com`, replying to the verified
+  account-approval thread. It asks for the one-time-order withdrawal function, durable acknowledgement,
+  checkout consent/receipt information and supplier/reseller responsibilities. Browser games and Mac
+  were both specified. Gmail returned SENT, message `1a19239a18117fcc`, thread `1a166102d71f4ddd`.
+  No licence key, card data, customer list or attachment was sent. A response is still pending.
+
+These answers settle all three previously pending product/contact questions. Coordinator owns the
+shop/Mac implementation, guarded verification and hosting access. Publishing remains conditional on
+readiness; no repeat owner authorization is needed for that same approved release.
+
+## Shop and Mac source checkpoint
+
+The shared `/shop/` page and Mac purchase source are built locally. A critical review finding in
+Ritkaos cross-Mac federation required a signed, connection-bound entitlement proof instead of
+forwarding reusable keys to the room host. That repair is implemented with fresh sensitive reviews;
+the staging-secret inheritance finding was also repaired. See `mac-purchases.md` for the boundary.
+
+New focused tests have **not run**. The existing 33 earlier checks remain valid only for their earlier
+scope. The new guarded attempts were repeatedly refused because another focused job held the lane,
+then because reclaimable RAM was 16–18% against the unchanged 20% minimum. The new shop build and
+actual Mac staging/package/browser/two-instance journey remain unchecked. No dev server or new
+dependency/build copy was created. The candidate app version is 0.4.3, not published.
+
+No open GitHub PRs were present for this repository, and Actions permissions confirmed disabled.
+No remote CI, push, hosting deployment, product publication or real payment occurred.
+Production grant signing keys/public pins still need provisioning on the approved Free account;
+account auth and the provider's withdrawal answer remain external release gates.
+
+The coordinator owns the remaining guarded checks and release work. All product/contact questions
+from the preceding checkpoint are answered. No new owner decision is needed merely to fix the
+credential boundary or run the already approved tests.

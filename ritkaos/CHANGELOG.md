@@ -1,5 +1,6 @@
 # 2026-10-31: live licence preparation, local only
 
+- Prepare connection-bound signed access for Mac shared rooms, so reusable purchase keys stay on the buyer's Mac. Public-key configuration and the hosted signer are still required. Source reviewed; the new tests have not run because guarded admission is blocked. Not deployed.
 - Bind native validation to an explicit test/live environment; keep saved native keys separate.
 - Supply the expected environment in the connection welcome so HTTP catalogue failures do not
   prevent purchase restoration. No live product configuration or deployment.

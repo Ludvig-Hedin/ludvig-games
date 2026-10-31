@@ -1,7 +1,8 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { getChoices, matches, almost, normalize } from './prompts.mjs';
 import { t, modifierText, lang as validLang } from './i18n.mjs';
 import { verifyCode, normalizeCode, normalizeLicense, validSecret, expand, owns, PAID_PACKS, PAID_MODES, BRUSHES } from './store.mjs';
+import { verifyGrant } from '../../ludvig-games/commerce/grant.mjs';
 const id = (n=8) => randomBytes(n).toString('hex');
 const clean = (v,n) => typeof v === 'string' ? v.replace(/[\x00-\x1f\x7f<>]/g,'').trim().slice(0,n) : '';
 // Errors carry a message id; handle() turns it into the player's language.
@@ -21,11 +22,28 @@ export const SPEED = { choose:8000, draw:30000, reveal:3500, fastMs:10000, bonus
 export const TEL = { write:45000, guess:35000, show:6000, points:5000 };
 const TEL_PHASES = ['twrite','tdraw','tguess'], PLAY_PHASES = ['choosing','drawing','reveal',...TEL_PHASES,'treveal'];
 const MODIFIERS = [{id:'tiny',duration:10000},{id:'mono',duration:10000},{id:'mirror',duration:8000},{id:'blind',duration:8000},{id:'shake',duration:7000}];
+const grantConfiguration = value => value && ['test','live'].includes(value.environment)
+  && /^[1-9][0-9]{0,15}$/.test(String(value.storeId ?? ''))
+  && value.publicKeys && typeof value.publicKeys==='object' && !Array.isArray(value.publicKeys)
+  && Object.keys(value.publicKeys).length>0 && Object.keys(value.publicKeys).length<=4
+  && Object.values(value.publicKeys).every(key=>key && typeof key==='object' && !Array.isArray(key)
+    && key.kty==='OKP' && key.crv==='Ed25519' && typeof key.x==='string' && !Object.hasOwn(key,'d'));
+
+/** Public verifier configuration only. Signing keys never belong in the game or desktop bundle. */
+export function grantVerificationFromEnv(env={},environment='') {
+  let publicKeys;try{publicKeys=JSON.parse(env.LS_GRANT_PUBLIC_KEYS||'null');}catch{return null;}
+  const value={publicKeys,storeId:String(env.LS_STORE_ID??''),environment};
+  return grantConfiguration(value)?value:null;
+}
 export class Game {
-  constructor({ now=()=>Date.now(), secret='', resolveLicense=null, licenseEnvironment='test' }={}) {
+  constructor({ now=()=>Date.now(), secret='', resolveLicense=null, licenseEnvironment='test', grantVerification=null }={}) {
     this.now=now; this.rooms=new Map(); this.sessions=new Map(); this.secret=validSecret(secret);
     this.licenseEnvironment=['test','live'].includes(licenseEnvironment)?licenseEnvironment:'';
     this.resolveLicense=this.licenseEnvironment&&typeof resolveLicense==='function'?resolveLicense:null;
+    this.grantVerification=grantConfiguration(grantVerification)&&grantVerification.environment===this.licenseEnvironment
+      ?structuredClone({...grantVerification,storeId:String(grantVerification.storeId)}):null;
+    this.grantAudience=randomUUID();
+    this.grantConnections=new WeakMap();this.grants=new WeakMap();this.grantVersions=new WeakMap();
     // Bearer keys stay in process memory only, never players or Durable Object snapshots.
     this.nativeCodes=new WeakMap(); this.unlockVersions=new WeakMap(); this.pendingCommands=new WeakMap();
   }
@@ -45,7 +63,8 @@ export class Game {
     const old=p.peer; p.peer=peer; p.connected=true; p.disconnectedAt=0; p.lastSeen=this.now(); p.network=network||null; p.lobbyKey='';
     if(validLang(lang)) p.lang=lang;
     if(old && old!==peer) { old.send({type:'replaced',data:{}}); old.close(); }
-    this.send(p,'welcome',{token:p.token,id:p.id,serverTime:this.now(),room:p.room,licenseEnvironment:this.licenseEnvironment});
+    const grantInfo=this.refreshGrantConnection(p,peer);
+    this.send(p,'welcome',{token:p.token,id:p.id,serverTime:this.now(),room:p.room,licenseEnvironment:this.licenseEnvironment,...grantInfo});
     const r=this.rooms.get(p.room);
     if(r) { if(!r.host || !r.players.get(r.host)?.connected) r.host=p.id; this.stateAll(r); this.sendBoard(p,r); this.sendChain(p,r); }
     else { p.room=null; this.sendRooms(p); }
@@ -54,6 +73,8 @@ export class Game {
   disconnect(p,peer) {
     if(p.peer!==peer) return;
     p.peer=null; p.connected=false; p.disconnectedAt=this.now(); p.lastSeen=this.now();
+    this.grants.delete(p);this.grantConnections.delete(p);this.grantVersions.set(p,(this.grantVersions.get(p)||0)+1);
+    p.owned=new Set([...p.legacyOwned,...p.nativeOwned]);
     const r=this.rooms.get(p.room); if(!r)return;
     if(r.host===p.id) r.host=this.online(r)[0]?.id || p.id;
     this.stateAll(r);
@@ -71,6 +92,7 @@ export class Game {
       const previous=this.pendingCommands.get(p);
       if(previous?.count>=64)error('slowDown');
       const execute=()=>{
+        this.expireGrant(p);
         // A begin/points/end sequence must keep its wire order while a provider
         // check is pending. The bounded per-player tail never enters snapshots.
         const refresh=['settings','start','stroke.begin'].includes(type)&&this.nativeCodes.get(p)?.length&&this.now()>=(p.nativeUntil||0);
@@ -94,6 +116,7 @@ export class Game {
     if(type==='join') return this.join(p,data);
     if(type==='quick') return this.quick(p,data);
     if(type==='redeem') return this.redeem(p,data);
+    if(type==='license-grant') return this.applyGrant(p,data);
     if(type==='licenses') { this.limit(p,'licenses',6,60000); return this.unlock(p,data.codes); }
     if(type==='leave') { this.leave(p); return {}; }
     const r=this.room(p); r.lastActive=this.now();
@@ -122,7 +145,7 @@ export class Game {
     const version=(this.unlockVersions.get(p)||0)+1; this.unlockVersions.set(p,version);
     const list=[...new Set((Array.isArray(codes)?codes:[]).slice(0,40).filter(x=>typeof x==='string'&&x.length<=80).map(x=>normalizeLicense(x)||normalizeCode(x)).filter(Boolean))].slice(0,20);
     if (!(p.legacyOwned instanceof Set)) p.legacyOwned=new Set(p.owned);
-    const before=[...p.owned].sort().join(','), native=new Set(), nativeKeys=list.filter(normalizeLicense);
+    const native=new Set(), nativeKeys=list.filter(normalizeLicense);
     for(const code of list.filter(x=>!normalizeLicense(x))){const products=await verifyCode(this.secret,code);if(products)for(const id of products)p.legacyOwned.add(id);}
     if(this.resolveLicense)for(const code of nativeKeys){
       try{const result=await this.resolveLicense(code);if(result?.ok===true&&result.environment===this.licenseEnvironment&&result.entitlements?.includes('ritkaos'))native.add('plus');}
@@ -130,10 +153,53 @@ export class Game {
     }
     if(this.unlockVersions.get(p)!==version)return expand(p.owned);
     this.nativeCodes.set(p,nativeKeys); p.nativeOwned=native; p.nativeUntil=this.now()+30000;
-    p.owned=new Set([...p.legacyOwned,...native]);
-    this.send(p,'owned',{products:expand(p.owned),ready:!!this.secret||!!this.resolveLicense});
+    return this.syncOwnership(p);
+  }
+  /** A new actual socket receives a new challenge, including a hibernated socket rebound by the host. */
+  refreshGrantConnection(p,peer) {
+    this.grants.delete(p);this.grantVersions.set(p,(this.grantVersions.get(p)||0)+1);
+    const binding={peer,challenge:randomUUID()};this.grantConnections.set(p,binding);
+    p.owned=new Set([...(p.legacyOwned||[]),...(p.nativeOwned||[])]);
+    return {licenseAudience:this.grantAudience,licenseChallenge:binding.challenge};
+  }
+  grantProducts(p) {
+    const grant=this.grants.get(p);
+    return grant&&grant.expiresAt>this.now()?['plus']:[];
+  }
+  syncOwnership(p) {
+    const before=[...p.owned].sort().join(',');
+    p.owned=new Set([...(p.legacyOwned||[]),...(p.nativeOwned||[]),...this.grantProducts(p)]);
+    const products=expand(p.owned);
+    this.send(p,'owned',{products,ready:!!this.secret||!!this.resolveLicense||!!this.grantVerification});
     const r=this.rooms.get(p.room);if(before!==[...p.owned].sort().join(',')&&r)this.stateAll(r);
-    return expand(p.owned);
+    return products;
+  }
+  expireGrant(p) {
+    const grant=this.grants.get(p);if(!grant||grant.expiresAt>this.now())return;
+    this.grants.delete(p);this.syncOwnership(p);
+    const binding=this.grantConnections.get(p);
+    this.send(p,'license-refresh',binding?{licenseAudience:this.grantAudience,licenseChallenge:binding.challenge}:{});
+  }
+  async applyGrant(p,data) {
+    this.limit(p,'license-grant',6,60000);
+    if(Object.keys(data).length!==1||!Object.hasOwn(data,'proof'))error('badCode');
+    const binding=this.grantConnections.get(p),version=(this.grantVersions.get(p)||0)+1;
+    this.grantVersions.set(p,version);
+    if(data.proof===null){this.grants.delete(p);return {products:this.syncOwnership(p),added:[]};}
+    if(!this.grantVerification||!binding||binding.peer!==p.peer||!p.connected)error('codesOff');
+    let verified;
+    try{verified=await verifyGrant(data.proof,{...this.grantVerification,audience:this.grantAudience,
+      challenge:binding.challenge,now:this.now});}
+    catch{
+      if(this.grantVersions.get(p)===version&&this.grantConnections.get(p)===binding){this.grants.delete(p);this.syncOwnership(p);}
+      error('badCode');
+    }
+    if(this.grantVersions.get(p)!==version||this.grantConnections.get(p)!==binding||p.peer!==binding.peer||!p.connected)error('badCode');
+    if(!verified?.entitlements?.includes('ritkaos')||!Number.isFinite(verified.expiresAt)||verified.expiresAt<=this.now()){
+      this.grants.delete(p);this.syncOwnership(p);error('badCode');
+    }
+    this.grants.set(p,{expiresAt:verified.expiresAt});
+    return {products:this.syncOwnership(p),added:['plus']};
   }
   async redeem(p,data) {
     this.limit(p,'redeem',6,60000);
@@ -159,7 +225,7 @@ export class Game {
     return {products:await this.unlock(p,[...(this.nativeCodes.get(p)||[]),code]),added:products};
   }
   /** Packs and modes follow the host: if the host owns one, everyone in the private room plays it. Open matches stay free. */
-  unlocked(r,id) { const host=r.players.get(r.host); return !r.public&&!!host&&owns(host.owned,id); }
+  unlocked(r,id) { const host=r.players.get(r.host);if(host)this.expireGrant(host);return !r.public&&!!host&&owns(host.owned,id); }
   isLocked(r,settings=r.settings) { return [settings.mode,settings.pack].some(id=>[...PAID_MODES,...PAID_PACKS].includes(id)&&!this.unlocked(r,id)); }
   setLang(p,data) {
     const l=validLang(data.lang); if(!l) error('invalid');

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Prepare the 0.4.3 shared shop and connection-bound signed purchase proofs for federated Ritkaos,
+  keeping reusable licence keys on the owning Mac. New checks and packaging remain pending.
+- Prepare same-key purchase restore for Pigeon, Karts and Ritkaos in the Mac app. A bounded local
+  purchase API validates native licences online; missing store configuration keeps free play available.
+- Keep the shared shop link in the Mac header and stage only public product configuration, never
+  merchant credentials. The Ritkaos child binds loopback behind the existing app proxy.
 - Include the shared native-license module when staging Ritkaos. Packaging source checked; no Mac build run for this change.
 
 ## 0.4.2 — 25 October 2026

@@ -4,7 +4,7 @@ import { networkInterfaces } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { upgrade } from './lib/websocket.mjs';
-import { Game } from './lib/game.mjs';
+import { Game, grantVerificationFromEnv } from './lib/game.mjs';
 import { networkKey } from './lib/network.mjs';
 import { t } from './lib/i18n.mjs';
 import { storeInfo, validSecret } from './lib/store.mjs';
@@ -13,7 +13,9 @@ const root=path.join(path.dirname(fileURLToPath(import.meta.url)),'public');
 const port=Number(process.env.PORT)||3000;
 const secret=process.env.RITKAOS_UNLOCK_SECRET||'';
 const licenses=createLicenseResolver(configurationFromEnv(process.env));
-const game=new Game({secret,licenseEnvironment:licenses.catalog().environment,resolveLicense:licenses.catalog().ready?key=>licenses.resolve(key):null});const peers=new Set();
+const game=new Game({secret,licenseEnvironment:licenses.catalog().environment,
+  grantVerification:grantVerificationFromEnv(process.env,licenses.catalog().environment),
+  resolveLicense:licenses.catalog().ready?key=>licenses.resolve(key):null});const peers=new Set();
 const staticFiles=new Map([['/','index.html'],['/index.html','index.html'],['/app.js','app.js'],['/theme.js','theme.js'],['/style.css','style.css'],['/favicon.svg','favicon.svg']]);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 // A proxy on this machine (for example a tunnel) may forward the visitor's address; only trust it from loopback.
@@ -70,7 +72,9 @@ const heartbeat=setInterval(()=>{for(const peer of peers)peer.ping();},20000);
 server.on('error',e=>{
   console.error(e.code==='EADDRINUSE'?`\nPort ${port} används redan. Spelet kanske redan körs? Öppna http://localhost:${port}\nEller: PORT=3001 npm start`:`Serverfel: ${e.message}`);process.exit(1);
 });
-server.listen(port,'0.0.0.0',()=>{
+const bind=process.env.RITKAOS_BIND||'0.0.0.0';
+if(!['0.0.0.0','127.0.0.1'].includes(bind))throw new Error('Invalid Ritkaos bind address.');
+server.listen(port,bind,()=>{
   console.log(`\n  ✎  R I T K A O S\n\n  Du:       http://localhost:${port}\n`);
   for(const addr of addresses())console.log(`  Samma wifi: ${addr}`);
   if(licenses.catalog().ready)console.log(licenses.catalog().environment==='test'?'\n  Ritkaos+: Lemon Squeezy-testkoder är aktiva. Inga riktiga betalningar.':'\n  Ritkaos+: Lemon Squeezy-koder är aktiva.');

@@ -5,7 +5,7 @@
  * Lobby saves its rooms to storage and may sleep; on wake it restores them and rebinds the live sockets.
  */
 import { DurableObject } from 'cloudflare:workers';
-import { Game } from '../lib/game.mjs';
+import { Game, grantVerificationFromEnv } from '../lib/game.mjs';
 import { networkKey, setSalt } from '../lib/network.mjs';
 import { t } from '../lib/i18n.mjs';
 import { storeInfo } from '../lib/store.mjs';
@@ -53,7 +53,9 @@ export class Lobby extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.licenses = createLicenseResolver(configurationFromEnv(env));
-    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET, licenseEnvironment: this.licenses.catalog().environment, resolveLicense: this.licenses.catalog().ready ? key => this.licenses.resolve(key) : null });
+    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET, licenseEnvironment: this.licenses.catalog().environment,
+      grantVerification: grantVerificationFromEnv(env, this.licenses.catalog().environment),
+      resolveLicense: this.licenses.catalog().ready ? key => this.licenses.resolve(key) : null });
     this.peers = new Map(); // WebSocket -> peer adapter used by Game.
     this.tickTimer = null; this.quietTimer = null; this.dirty = false; this.chunks = 0;
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
@@ -104,7 +106,7 @@ export class Lobby extends DurableObject {
     const p = this.game.sessions.get(token);
     if (p) {
       p.peer = peer; p.connected = true; p.disconnectedAt = 0; peer.session = p;
-      peer.send({ type: 'license-refresh', data: {} });
+      peer.send({ type: 'license-refresh', data: this.game.refreshGrantConnection(p, peer) });
       return;
     }
     peer.session = this.game.connect(peer, token, { network });
