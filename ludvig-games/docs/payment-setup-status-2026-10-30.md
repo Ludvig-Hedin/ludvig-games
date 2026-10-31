@@ -129,3 +129,18 @@ three decisions; renewed Free-account login is also required before its current 
 
 Static build after these changes passed: 62 catalogue entries, 52 full-screen games. No dev server or
 dependency copy was created in this continuation; no cleanup target remains.
+
+### Owner price decision, 31 October
+
+Ludvig explicitly confirmed 59/39/39/99 SEK as customer prices inclusive of applicable VAT.
+He reports his sole trader is VAT-exempt and is checking that status himself; this is not verified
+and must not be used to disable customer tax in the merchant-of-record checkout. Lemon Squeezy
+acts as the customer-facing seller and handles its sales tax/VAT. Its tax-inclusive setting is
+store-wide under General Settings. No setting was changed here.
+
+Sources checked: https://docs.lemonsqueezy.com/help/payments/sales-tax-vat and
+https://www.skatteverket.se/foretag/moms/momsregistrering/momsregistreringnararsomsattningenarhogst120000kronor.4.3152d9ac158968eb8fd1efe.html
+
+Still waiting for the owner decisions on live-store setup and refund access. Client/game checks
+remain blocked at 18% reclaimable RAM. No tests are being described as passed beyond the 17 backend
+checks. All prepared source is saved locally at b7277c6; no live release occurred.

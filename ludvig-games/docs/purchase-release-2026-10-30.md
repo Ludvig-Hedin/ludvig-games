@@ -81,8 +81,8 @@ The local live-mode candidate is prepared, with a fresh sensitive review and its
 17 focused backend/mode tests passed; the updated client/game tests remain blocked by RAM admission.
 The static build passed (62 entries, 52 full-screen games). No production settings or content changed.
 
-Three owner decisions are pending in chat: intended prices inclusive of VAT; permission to create
-live products and change the public support Reply-To; disable paid access after a full refund.
+Owner confirmed prices inclusive of applicable VAT. Two decisions remain pending in chat: permission
+to create live products/change the public support Reply-To, and disabling access after a full refund.
 Free-account authentication has expired and automatic refresh was rejected (HTTP403). A fresh
 owner-approved sign-in will be needed. Bank/identity/tax forms are not being requested again.
 
