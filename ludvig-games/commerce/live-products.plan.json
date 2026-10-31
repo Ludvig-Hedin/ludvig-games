@@ -1,0 +1,43 @@
+{
+  "storeId": 504842,
+  "environment": "live",
+  "currency": "SEK",
+  "taxInclusive": true,
+  "supportEmail": "ludvig@ludvighedin.com",
+  "publish": false,
+  "licenseKeys": true,
+  "licenseDuration": "unlimited",
+  "licenseActivations": "unlimited",
+  "payment": "one_time",
+  "taxCategory": "videogame",
+  "offers": [
+    {
+      "id": "ritkaos",
+      "name": "Ritkaos+",
+      "priceOre": 5900,
+      "description": "Five word packs, Blind draw, Speed round, Telephone, brushes and palettes.",
+      "entitlements": ["ritkaos"]
+    },
+    {
+      "id": "pigeon",
+      "name": "Pigeon style pack",
+      "priceOre": 3900,
+      "description": "Sun hat, Beanie, Crown and Top hat. Snow, Cinnamon, Midnight and Mint feather looks.",
+      "entitlements": ["pigeon"]
+    },
+    {
+      "id": "karts",
+      "name": "Karts style pack",
+      "priceOre": 3900,
+      "description": "Midnight, Sunshine, Ice blue and Cherry colours. Racing stripes and Checker panels.",
+      "entitlements": ["karts"]
+    },
+    {
+      "id": "bundle",
+      "name": "Ludvig Games extras bundle",
+      "priceOre": 9900,
+      "description": "Ritkaos+, the Pigeon style pack and the Karts style pack listed here. Future packs are separate.",
+      "entitlements": ["ritkaos", "pigeon", "karts"]
+    }
+  ]
+}

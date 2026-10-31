@@ -25,7 +25,8 @@ Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 ## What remains before real sales
 
 - [x] Prepare local live-mode support with separated IDs, storage and endpoint modes. Not deployed.
-- [ ] Finish guarded client/game checks and configure inspected live products.
+- [x] Finish guarded client/game checks. All 33 focused local checks passed.
+- [ ] Configure inspected live products. Owner has authorized preparation with sales closed.
   Copy the approved products to live mode and inspect their new IDs/URLs; never reuse the test IDs.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
@@ -78,11 +79,11 @@ production-publishing decision. No production or marketing authorization is infe
 ## Latest checkpoint, 31 October
 
 The local live-mode candidate is prepared, with a fresh sensitive review and its two findings repaired.
-17 focused backend/mode tests passed; the updated client/game tests remain blocked by RAM admission.
+33 focused backend, mode, client and game checks passed after RAM admission became available.
 The static build passed (62 entries, 52 full-screen games). No production settings or content changed.
 
-Owner confirmed prices inclusive of applicable VAT. Two decisions remain pending in chat: permission
-to create live products/change the public support Reply-To, and disabling access after a full refund.
+Owner confirmed prices inclusive of applicable VAT and authorized live products/public support setup
+with sales closed. The decision on disabling access after a full refund remains pending.
 Free-account authentication has expired and automatic refresh was rejected (HTTP403). A fresh
 owner-approved sign-in will be needed. Bank/identity/tax forms are not being requested again.
 

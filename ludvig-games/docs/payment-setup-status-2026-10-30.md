@@ -144,3 +144,37 @@ https://www.skatteverket.se/foretag/moms/momsregistrering/momsregistreringnarars
 Still waiting for the owner decisions on live-store setup and refund access. Client/game checks
 remain blocked at 18% reclaimable RAM. No tests are being described as passed beyond the 17 backend
 checks. All prepared source is saved locally at b7277c6; no live release occurred.
+
+### Authorized live-store preparation, 31 October
+
+Ludvig explicitly approved preparing the live store and public support address. Publishing buy
+buttons and opening sales remain held. This supersedes the pending live-setup permission above.
+The exact approved setup is saved in `commerce/live-products.plan.json`; no live product IDs are
+claimed created. Refund access policy remains unanswered.
+
+The remaining 16 client/Ritkaos focused checks have now passed through the unchanged RAM guard,
+including environment-separated saved keys, wrong-mode endpoint rejection and welcome-mode recovery.
+Together with the earlier 17 backend checks this is 33 passing focused local checks.
+
+The site-scoped Dia login export succeeded without changing personal tabs. Opening the isolated
+agent page still redirects to `https://auth.lemonsqueezy.com/login`, including after exporting that
+auth origin. Ludvig has been asked to sign in in Dia and disable Test mode. Browser capacity errors
+were intermittent; no peer processes, browser limits or RAM thresholds were changed.
+
+A separate live-preparation product guard is prepared but deliberately not wired. Its four focused
+checks passed; fresh review and observed official live draft/currency/visibility fields are required
+before activation. Account settings and payments remain blocked. The temporary agent tab was closed.
+
+The fresh live-guard review identified a scope gap: any existing live draft could otherwise be
+renamed to an approved offer. The inactive guard now requires an explicit allowlist of at most
+four task product IDs, rejects unrelated IDs, and still cannot publish. Its four focused checks
+passed again after repair. The IDs must come from actual task drafts after login, not guesses.
+
+No live products or support/tax settings have been saved. Current next action is Ludvig's Dia login
+and switching off Test mode, requested in chat. Coordinator will inspect official draft fields before
+wiring the reviewed gate and performing those authorized saves.
+
+No dev server, dependency copy or live capability was created. The agent tab was closed. A machine
+hook rejected optional cleanup of four new diagnostic snapshot/log files, so those exact artifacts
+remain under `.playwright-mcp/` (11:42 and 11:43 UTC, 31 October) for the existing storage cleaner.
+No browser or credential storage was removed or changed by cleanup.
