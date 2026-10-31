@@ -158,3 +158,23 @@ account auth and the provider's withdrawal answer remain external release gates.
 The coordinator owns the remaining guarded checks and release work. All product/contact questions
 from the preceding checkpoint are answered. No new owner decision is needed merely to fix the
 credential boundary or run the already approved tests.
+
+## Continued work, 31 October
+
+Fresh local inspection found installed Mac app 0.2.0 and published GitHub v0.4.2. The candidate remains
+0.4.3. Corrected the Mac integration document and stale business-plan setup status.
+
+The generic build command was rejected as a broad gate. Prepared and independently reviewed a fixed
+`agent-heavy-run games-desktop install|stage|package` route, retaining the existing registered heavy
+resource rules and 20% floor. No full-suite flag or threshold override was used. Its actual install
+attempt was denied at 18% reclaimable RAM. No dependencies or new build output were created.
+
+Fresh Cloudflare connector account discovery still exposes only the old Paid account. A site-scoped,
+read-only Dia login export succeeded, but the isolated Cloudflare dashboard returned HTTP 403 with
+"Performing security verification". No attempt was made to bypass it; the task tab was closed.
+The guarded Free-account CLI check was again denied by memory admission. No provider response was
+present in the support thread at the latest read. Account access, tests, key provisioning, app
+packaging and the provider withdrawal gate remain open. No publication or charge took place.
+
+Coordinator remains the next owner. Actual guarded capacity and Free-account authentication are
+required to continue the remaining executable work; source completion is not a passed launch.

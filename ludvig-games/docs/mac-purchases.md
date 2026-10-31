@@ -24,8 +24,8 @@ Root owns serialized guarded checks and release acceptance. No command or server
 ## Staging contract
 
 Re-stage **both hub and Ritkaos** before preparing a purchase-capable app. `stageHub` copies the shared
-`license.mjs` and `http.mjs` into `bundle/hub/commerce/` and writes `config.json` with only these public
-environment fields: TEST_MODE, LS_STORE_ID, LS_TEST_PRODUCTS, LS_LIVE_PRODUCTS. It validates them with
+`license.mjs`, `http.mjs` and `grant.mjs` into `bundle/hub/commerce/` and writes `config.json` with only these public
+environment fields: TEST_MODE, LS_STORE_ID, LS_TEST_PRODUCTS, LS_LIVE_PRODUCTS, LS_GRANT_PUBLIC_KEYS. It validates them with
 the shared normalizer. Missing/invalid configuration stages `{}` and disables purchase validation.
 No merchant token or legacy unlock secret is written by this contract.
 
@@ -74,6 +74,7 @@ not test passes. The new focused checks, frame capture, real-key restore, restar
 shared-room journey, staging and actual Mac package remain unchecked because guarded admission is
 blocked by another focused job or less than 20% reclaimable RAM. No guard was bypassed.
 
-The prepared app version is 0.4.3. The installed/published 0.4.2 app is unchanged. The coordinator owns
+The prepared app version is 0.4.3. Fresh inspection found the installed app is 0.2.0, while the latest
+published GitHub release is v0.4.2 (25 October). Both are unchanged. The coordinator owns
 the remaining checks, trusted public/private signing-key provisioning, hosted grant endpoint and
 app release. The owner explicitly requires Mac support at first launch; web-only release stays held.

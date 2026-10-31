@@ -1,7 +1,9 @@
 # A plan for 1,000 kr a month
 
-30 October 2026. Paid checkout is not live. Store inspection is complete; saving setup and test-mode
-purchases are blocked by the installed read-only owner-browser policy. No end-to-end purchase test passed.
+Updated 31 October 2026. Paid checkout is not live. Four hidden live drafts and support/tax-inclusive
+settings are saved. The purchased test bundle, receipt and browser unlock were verified in the earlier
+test flow. New shared-shop and Mac source is saved locally, but its new checks and actual Mac journey
+are still blocked by guarded admission. Hosting access and the provider withdrawal answer remain open.
 This is a sales experiment, not an income promise. No posting, spending or scheduler is activated by this plan.
 
 ## What 1,000 kr means
@@ -12,7 +14,7 @@ Count a fair allocated share of existing agent subscriptions in costs. Track own
 subtract an agreed value for that time when judging whether this is worth doing, not just cash-positive.
 
 Approved one-time prices: Ritkaos+ **59 kr**, Pigeon pack **39 kr**, Karts pack **39 kr**, three-pack bundle **99 kr**.
-Existing free content stays free. Exact new pack contents still need the concrete owner review.
+Existing free content stays free. Exact pack contents are recorded in `../commerce/live-products.plan.json`.
 No subscription, tiny individual extras or promise of every future release.
 
 ## How many orders we need
@@ -98,6 +100,6 @@ simulator prototype with one free location and optional paid environments. No ne
 
 Sources: [fees](https://docs.lemonsqueezy.com/help/getting-started/fees), [payout threshold](https://docs.lemonsqueezy.com/help/getting-started/getting-paid),
 [Cloudflare metrics](https://developers.cloudflare.com/web-analytics/data-metrics/high-level-metrics/), [TrainWars](https://trainwars.com/).
-Next: coordinator resolves the browser permission boundary described in
-[payment setup status](payment-setup-status-2026-10-30.md). Implementer then owns setup/testing and pack/clip
-previews. Ludvig reviews the concrete clips and decides posting permission. No disposable data created here.
+Next: coordinator owns the remaining Mac checks, hosting access and release gates described in
+[purchase release](purchase-release-2026-10-30.md), followed by concrete clip previews.
+Ludvig reviews the clips and decides posting permission. No disposable data created here.
