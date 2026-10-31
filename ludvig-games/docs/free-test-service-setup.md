@@ -2,15 +2,30 @@
 
 Prepared locally, 31 October 2026. The narrow wrapper is wired and source-reviewed. The account-only
 check ran, but subscription reads returned HTTP403/code10000. No Worker was deployed or secret uploaded.
-Root owns remaining proof and execution. CLI authentication succeeds on the correct account.
+Root owns remaining execution. CLI authentication succeeds on the correct account.
 
-Latest access check: the authorized Dia cookie export identifies `ludvighedin15@gmail.com` and
+**Resolved account access:** after Ludvig signed into the existing .se identity, fresh authorized
+browser reads confirmed `email_verified: true`, the exact account is standard, and subscriptions
+are empty with `result_info: {page: 1, per_page: 25, next_page: false}`. No new API token or repeated
+email verification was needed. The six focused browser-auth tests passed.
+
+The fixed helper now prefers the current task-scoped read-only browser capability. Its hash-pinned
+`games-free-dashboard-proof.py` uses the normal `owner-browser-mcp` connection, with existing browser
+registration, leases and RAM limits. Cookies remain inside the browser. It fetches only the three
+fixed official user/account/subscription URLs with GET, redirects refused and bounded JSON responses.
+The helper requires the exact .se identity, positive verification, standard Free account, an empty
+subscription list and the observed terminal pagination marker. Capability changes/revocation/expiry
+are checked before each read and on return. Unknown or nonempty subscriptions fail closed. Fresh
+sensitive source review accepted this path; negative fixtures and actual guarded deployment remain
+root's execution work. Direct urllib proof was rejected by the provider and is not used for cookies.
+
+Earlier access check: the authorized Dia cookie export identified `ludvighedin15@gmail.com` and
 the official dashboard user response says `email_verified: true`. That user receives access errors
 for the separate Games Free account. The Free OAuth identity is `ludvighedin.se@gmail.com`;
 the owner already reported verifying it. Do not infer that either email needs verification from
 the other identity's permission error. The existing OAuth access token subsequently expired;
-guarded `whoami` refresh is waiting for scheduler capacity. A task-scoped existing-account login
-was requested, without a new token or another email-verification step.
+guarded `whoami` refresh subsequently succeeded. The task-scoped existing-account login is now
+confirmed, without a new token or another email-verification step.
 
 The browser read guard also blocked Cloudflare's ordinary security handshake. The narrow reviewed
 exception was corrected for the observed `h/g/fo` path and for fetch metadata absent from intercepted

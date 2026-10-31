@@ -4,8 +4,8 @@
 
 - Eight isolated source-app purchase and restart journeys passed for the shared shop and all three
   packs. Profiles were removed after verified process cleanup. Packaged-app checks remain pending.
-- Built a local test-only 0.4.3 DMG, zip and signed update. Added packaged-app restore checks and
-  signature verification; not yet run. No build was published.
+- Built a local test-only 0.4.3 DMG, zip and signed update. All eight packaged-app restore/restart
+  checks and bundle/update signature checks passed. No build was published.
 - Fix Ed25519 key import across runtime export labels. All 44 focused shop, proof, Mac resolver,
   federation and native-access checks passed. Actual app packaging and device checks remain pending.
 - Prepare the 0.4.3 shared shop and connection-bound signed purchase proofs for federated Ritkaos,

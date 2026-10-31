@@ -34,19 +34,25 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
 - [x] Test the actual source Mac app: eight shop/Pigeon/Karts/Ritkaos restore and fresh-process
   restart journeys passed. Paid styles persisted; isolated profiles were removed after process exit.
 - [x] Build a local 0.4.3 test-only DMG, zip and signed update file. None was published.
-- [ ] Re-stage the corrected shop image sizing, rebuild the test package and run the actual packaged
-  app checks, including bundle/update-signature validation. Root owns this; guarded capacity is required.
-- [ ] Run the focused Game/network/snapshot/share integration checks. Root owns this; guarded capacity is required.
+- [x] Re-stage the corrected shop image sizing and rebuild the local test package. All eight actual
+  packaged-app restore/restart journeys passed, including bundle and update-signature validation.
+  Root inspected the corrected shop image proportions. Report: `desktop/output/purchase-selftest/run-lYA9UP/summary.json`.
+- [x] Run the focused local Game/network/snapshot/share/update checks: 43 local Ritkaos checks and
+  five Mac share/update checks passed. The additional existing hosted-server test failed at fetch
+  because the old public Ritkaos host is unavailable. Repeat that hosted journey only after restoring hosting.
 - [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
   `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
-  with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
+  with a 10.08 USD payment. Current official [currency documentation](https://docs.lemonsqueezy.com/help/payments/currencies)
+  confirms that all payments are processed in USD after conversion from the displayed store currency.
+  That explains a plausible rounding path, not a verified reconstruction of this receipt. Live behavior
+  still needs checking. The test cart's zero tax is not proof
   of correct production VAT. Preserve the approved intended prices until a real product decision.
-- [ ] Check the Games Free account's current verification/plan and prepare only the required hosting.
-  Isolated CLI authentication now succeeds on the correct Free account. Account/subscription proof
-  receives HTTP403/code10000, and the API does not report email verification. The owner asked to use
-  existing access and declined further token creation. Do not ask again. Root owns the read-only
-  browser-auth repair, authoritative plan proof and reviewed test-service deployment.
+- [ ] Prepare only the required hosting on the verified Games Free account. Fresh authorized browser
+  GETs now confirm the .se user has `email_verified: true`, the exact account is standard, and its
+  subscription list is empty with `next_page: false`. CLI OAuth was refreshed successfully too.
+  Six focused browser-guard tests passed. A new fixed browser proof reader was independently
+  source-reviewed; guarded execution and the reviewed test-service deployment remain root's work.
   Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
 - [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
@@ -68,10 +74,10 @@ email service or fulfilment webhook in this implementation. Do not reopen that s
 - [x] Complete account-only bank/identity/tax setup, as reported and previously observed. Do not repeat it.
 - [x] Enable Test mode, complete the bundle test purchase and provide its key through private entry.
 - [x] Review the two local app previews. Ludvig said the screens look fine.
-- [ ] If needed, sign into the existing Games Free identity (ludvighedin.se@gmail.com) in Dia.
+- [x] Sign into the existing Games Free identity (ludvighedin.se@gmail.com) in Dia.
   The currently exported browser identity is ludvighedin15@gmail.com, whose email is verified, but
   that identity cannot read the Free account. Root requested only the correct login, no new token
-  or repeated email verification. Root owns all setup and checks after access is available.
+  or repeated email verification. Access is now confirmed; root owns all remaining setup and checks.
 - [x] Authorize production publishing once all release gates are ready. Ludvig explicitly did so
   on 31 October. Do not ask again for the same four-pack release. Readiness is still required.
 
