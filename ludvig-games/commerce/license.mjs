@@ -142,10 +142,13 @@ export function createLicenseResolver({ storeId, environment, products, opposite
     const timeout = setTimeout(() => controller.abort(), settings.timeoutMs);
     try {
       const response = await fetchImpl(PROVIDER_URL, {
-        method: 'POST', redirect: 'error', signal: controller.signal,
+        // Workers does not implement redirect:'error'. Manual never follows or
+        // forwards the bearer key; reject redirects explicitly below.
+        method: 'POST', redirect: 'manual', signal: controller.signal,
         headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ license_key: key }),
       });
+      if (response.status >= 300 && response.status < 400) throw new LicenseError('temporarily-unavailable');
       if (response.status === 429) throw new LicenseError('rate-limited', 429);
       if (response.status >= 500) throw new LicenseError('temporarily-unavailable');
       if (!response.ok) throw new LicenseError('invalid-license', 422);

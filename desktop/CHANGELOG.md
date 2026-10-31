@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use the Workers-compatible provider resolver, preserving redirect refusal. All eight final packaged
+  purchase/restart journeys and all nine two-runtime purchase/wire-isolation checks passed.
 - Eight isolated source-app purchase and restart journeys passed for the shared shop and all three
   packs. Profiles were removed after verified process cleanup. Packaged-app checks remain pending.
 - Built a local test-only 0.4.3 DMG, zip and signed update. All eight packaged-app restore/restart

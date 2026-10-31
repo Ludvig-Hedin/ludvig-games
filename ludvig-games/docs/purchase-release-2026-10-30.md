@@ -3,6 +3,34 @@
 Updated 31 October 2026, Stockholm. **The bundle's test purchase, receipt, licence and local game
 unlocks work. Paid production is not live.** The free public site is unchanged.
 
+## Current hosted proof, 31 October
+
+- Correct Games Free login is confirmed, including positive email verification and a complete empty
+  subscription page. No further Cloudflare token or owner verification step is needed.
+- The test commerce Worker and its test signing key are deployed on the approved Free account.
+  The real bundle key resolves all three entitlements through the hosted service. Its signed proof
+  verifies against the pinned public key and rejects a wrong challenge or live environment.
+- Actual Worker testing found `redirect: 'error'` is unsupported by Cloudflare. Manual mode now
+  rejects every redirect without forwarding the licence. Fresh sensitive review accepted the fix;
+  15 focused resolver/actual-SQLite-DO checks and the real hosted licence/grant journey passed.
+  Reference: [Cloudflare Request redirect modes](https://developers.cloudflare.com/workers/runtime-apis/request/).
+- Ritkaos is restored at `https://ritkaos.ludvighedin.workers.dev`, with test restoration enabled and
+  checkout deliberately hidden. The fixed deployment is `f7f6445d-81e4-4bdf-bb28-8736b03c8dc3`.
+  The actual hosted 3-player WebSocket match, drawing, reconnect and scoring test passed. The public
+  hub link is corrected in local source only; no static site or Mac release was published.
+- The Mac package has been rebuilt with that shared resolver fix. All eight final packaged-app
+  restore/restart journeys passed (`run-5l7rGn`), including bundle/update signature checks. All nine
+  two-runtime purchase/isolation checks passed (`federation-TzNn3q`): the real hosted proof restores
+  paid access across room hosts, wrong-connection replay fails, and reusable keys/auth headers never
+  cross the room-host wire. These are two runtimes on one Mac, not two physical Macs. Private data
+  was removed after verified process cleanup.
+- The actual hosted Ritkaos native purchase test also passed: real key restores all ten rows, a free
+  guest shares the paid host's Office/Blind settings, and an invalid key is refused.
+- Lemon Squeezy now redirects the agent to login. Root requested only an existing Dia login in test
+  mode for the remaining disabled-key operation. Cloudflare access is not the blocker.
+- The provider has not replied to the already sent withdrawal-function question. Root owns the
+  remaining delivery, refund/recovery, checkout/policy and conditional publication work.
+
 ## What is verified
 
 - Four hidden test products exist in approved store 504842: Ritkaos+ 59 SEK, Pigeon style pack 39 SEK,
@@ -34,12 +62,14 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
 - [x] Test the actual source Mac app: eight shop/Pigeon/Karts/Ritkaos restore and fresh-process
   restart journeys passed. Paid styles persisted; isolated profiles were removed after process exit.
 - [x] Build a local 0.4.3 test-only DMG, zip and signed update file. None was published.
-- [x] Re-stage the corrected shop image sizing and rebuild the local test package. All eight actual
-  packaged-app restore/restart journeys passed, including bundle and update-signature validation.
-  Root inspected the corrected shop image proportions. Report: `desktop/output/purchase-selftest/run-lYA9UP/summary.json`.
+- [x] Complete final packaged and federated checks after the shared resolver correction. All eight
+  packaged-app restore/restart journeys and all nine two-runtime purchase/isolation checks passed,
+  including bundle/update signature validation. Root inspected the corrected shop image proportions.
+  Reports: `desktop/output/purchase-selftest/run-5l7rGn/summary.json` and `federation-TzNn3q/summary.json`.
 - [x] Run the focused local Game/network/snapshot/share/update checks: 43 local Ritkaos checks and
   five Mac share/update checks passed. The additional existing hosted-server test failed at fetch
-  because the old public Ritkaos host is unavailable. Repeat that hosted journey only after restoring hosting.
+  because the old public Ritkaos host was unavailable. After restoration the actual hosted multiplayer
+  journey passed on the new Free host, followed by actual native-key restoration and guest sharing.
 - [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
   `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
@@ -48,11 +78,12 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   That explains a plausible rounding path, not a verified reconstruction of this receipt. Live behavior
   still needs checking. The test cart's zero tax is not proof
   of correct production VAT. Preserve the approved intended prices until a real product decision.
-- [ ] Prepare only the required hosting on the verified Games Free account. Fresh authorized browser
+- [x] Prepare only the required test hosting on the verified Games Free account. Fresh authorized browser
   GETs now confirm the .se user has `email_verified: true`, the exact account is standard, and its
   subscription list is empty with `next_page: false`. CLI OAuth was refreshed successfully too.
   Six focused browser-guard tests passed. A new fixed browser proof reader was independently
-  source-reviewed; guarded execution and the reviewed test-service deployment remain root's work.
+  source-reviewed; 15 proof fixtures passed. Guarded commerce/test-key and Ritkaos deployments, actual
+  hosted licence/grant validation and the hosted multiplayer check are now complete.
   Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
 - [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic

@@ -46,7 +46,7 @@ test('valid native licence uses fixed endpoint/form, exact allowlist and returns
   const resolver = createLicenseResolver({ ...configuration(), fetchImpl: async (url, options) => {
     assert.equal(url, 'https://api.lemonsqueezy.com/v1/licenses/validate');
     assert.equal(options.method, 'POST');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.body.get('license_key'), KEY);
     assert.equal(options.headers.Authorization, undefined);
     return response(providerBody());
@@ -107,6 +107,18 @@ test('provider outage, rate limit, wrong response type/JSON and oversized body r
     [async () => new Response('x'.repeat(17000), { headers: { 'Content-Type': 'application/json' } }), 'temporarily-unavailable'],
   ];
   for (const [fetchImpl, code] of cases) await rejected(createLicenseResolver({ ...configuration(), fetchImpl }).resolve(KEY), code);
+});
+
+test('provider redirects fail without forwarding the licence to their destination', async () => {
+  let calls = 0;
+  const resolver = createLicenseResolver({ ...configuration(), fetchImpl: async (url, options) => {
+    calls++;
+    assert.equal(url, 'https://api.lemonsqueezy.com/v1/licenses/validate');
+    assert.equal(options.redirect, 'manual');
+    return new Response('', { status: 307, headers: { Location: 'https://untrusted.example/collect' } });
+  } });
+  await rejected(resolver.resolve(KEY), 'temporarily-unavailable');
+  assert.equal(calls, 1);
 });
 
 test('timeout aborts provider operation', async () => {

@@ -1,5 +1,10 @@
-# 2026-10-31: live-mode preparation, not deployed
+# 2026-10-31: test hosting verified, live sales closed
 
+- Restore test hosting on the approved Workers Free account, with real hosted bundle/grant and
+  Ritkaos multiplayer checks passing. Checkout remains hidden. No public shop or Mac release published.
+- Fix provider validation on Workers using supported manual redirects; every redirect is rejected
+  without forwarding the licence. Add real SQLite DO/cache/global-budget and hosted delivery checks.
+- Correct the local Ritkaos catalogue destination to the verified Free server. Not yet published.
 - Eight actual source Mac-app purchase/restart journeys passed. Built a local test package; packaged
   checks and hosted delivery remain pending. Corrected shop preview image sizing before restaging.
 - Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
