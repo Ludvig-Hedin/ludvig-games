@@ -57,6 +57,18 @@ test("desktop licence endpoints reject LAN clients, rebinding hosts, cross-origi
   assert.equal(calls, 0);
 });
 
+test("desktop readiness accepts both Ed25519 export labels and rejects other algorithms", async () => {
+  const key = JSON.parse(fixturePublicKeys).fixture;
+  for (const alg of ["EdDSA", "Ed25519"]) {
+    const env = { ...environment(), LS_GRANT_PUBLIC_KEYS: JSON.stringify({ fixture: { ...key, alg } }) };
+    const store = await createDesktopCommerce({ moduleRoot, environment: env });
+    assert.equal((await request(store)).body.ready, true);
+  }
+  const env = { ...environment(), LS_GRANT_PUBLIC_KEYS: JSON.stringify({ fixture: { ...key, alg: "RS256" } }) };
+  const store = await createDesktopCommerce({ moduleRoot, environment: env });
+  assert.equal((await request(store)).body.ready, false);
+});
+
 test("missing configuration or staged modules stays closed without breaking unrelated free routes", async () => {
   for (const root of [moduleRoot, "/missing/staged/commerce"]) {
     const store = await createDesktopCommerce({ moduleRoot: root });

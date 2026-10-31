@@ -25,7 +25,7 @@ function publicKeys(text) {
     if (Object.entries(keys).some(([kid, key]) => !/^[a-zA-Z0-9_-]{1,64}$/.test(kid)
       || !key || key.kty !== "OKP" || key.crv !== "Ed25519" || !/^[a-zA-Z0-9_-]{43}$/.test(key.x || "")
       || Buffer.from(key.x, "base64url").toString("base64url") !== key.x
-      || (key.alg !== undefined && key.alg !== "EdDSA")
+      || (key.alg !== undefined && !["EdDSA", "Ed25519"].includes(key.alg))
       || Object.keys(key).some(name => !["kty", "crv", "x", "alg", "key_ops", "ext", "kid"].includes(name))
       || (key.key_ops !== undefined && (!Array.isArray(key.key_ops) || key.key_ops.some(op => op !== "verify"))))) return null;
     return keys;
@@ -58,8 +58,10 @@ export async function createDesktopCommerce({ moduleRoot, environment = {}, fetc
   let trustedGrantKeys = publicKeys(supplied.LS_GRANT_PUBLIC_KEYS);
   try {
     if (!verifyGrant || !trustedGrantKeys) trustedGrantKeys = null;
-    else for (const key of Object.values(trustedGrantKeys))
-      await crypto.subtle.importKey("jwk", key, { name: "Ed25519" }, false, ["verify"]);
+    else for (const key of Object.values(trustedGrantKeys)) {
+      const { alg, ...importable } = key;
+      await crypto.subtle.importKey("jwk", importable, { name: "Ed25519" }, false, ["verify"]);
+    }
   } catch { trustedGrantKeys = null; }
   const ready = resolver?.catalog().ready === true && !!trustedGrantKeys;
   const catalogue = () => {

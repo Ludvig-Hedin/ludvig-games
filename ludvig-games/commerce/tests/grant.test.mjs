@@ -46,6 +46,19 @@ test('proof cannot cross connection, audience, environment, store or trusted key
   await rejected(verifyGrant(token, { ...options(), publicKeys: { 'games-v1': await crypto.subtle.exportKey('jwk', other.publicKey) } }));
 });
 
+test('runtime JWK algorithm labels interoperate without admitting a different algorithm', async () => {
+  for (const alg of ['EdDSA', 'Ed25519', undefined]) {
+    const sign = signer({ privateJwk: { ...privateJwk, alg } });
+    assert.equal(await sign.ready(), true);
+    const token = await sign(input());
+    assert.deepEqual(await verifyGrant(token, { ...options(), publicKeys: { 'games-v1': { ...publicJwk, alg } } }),
+      { entitlements: ['ritkaos'], expiresAt: NOW + 60000 });
+  }
+  assert.throws(() => signer({ privateJwk: { ...privateJwk, alg: 'RS256' } }));
+  await rejected(verifyGrant(await signer()(input()), { ...options(),
+    publicKeys: { 'games-v1': { ...publicJwk, alg: 'RS256' } } }));
+});
+
 test('expiry is strict and only two seconds of future issue-clock skew are accepted', async () => {
   const token = await signer()(input());
   await rejected(verifyGrant(token, { ...options(), now: () => NOW + 60000 }));

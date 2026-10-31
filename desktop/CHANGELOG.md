@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix Ed25519 key import across runtime export labels. All 44 focused shop, proof, Mac resolver,
+  federation and native-access checks passed. Actual app packaging and device checks remain pending.
 - Prepare the 0.4.3 shared shop and connection-bound signed purchase proofs for federated Ritkaos,
   keeping reusable licence keys on the owning Mac. New checks and packaging remain pending.
 - Prepare same-key purchase restore for Pigeon, Karts and Ritkaos in the Mac app. A bounded local

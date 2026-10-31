@@ -28,12 +28,17 @@ function decode(value) {
 function jwkValid(value, privateKey) {
   try {
     return plain(value) && value.kty === 'OKP' && value.crv === 'Ed25519'
-      && (value.alg === undefined || value.alg === 'EdDSA') && decode(value.x).length === 32
+      && (value.alg === undefined || ['EdDSA', 'Ed25519'].includes(value.alg)) && decode(value.x).length === 32
       && (privateKey ? decode(value.d).length === 32 : !Object.hasOwn(value, 'd'));
   } catch { return false; }
 }
 function publicPart(value) {
   return { kty: 'OKP', crv: 'Ed25519', x: value.x };
+}
+// Runtimes export different alg labels. The validated curve fixes the actual algorithm.
+function importableKey(value) {
+  const { alg, ...key } = value;
+  return key;
 }
 
 /** Configuration is operator-only; the HTTP caller never supplies this key or its claims. */
@@ -43,7 +48,7 @@ export function createGrantSigner({ privateJwk, kid, environment, storeId, now =
   const store = String(storeId), keyData = structuredClone(privateJwk);
   let keyPromise, windowAt = now(), count = 0, inFlight = 0;
   const key = () => keyPromise ||= (async () => {
-    const signing = await crypto.subtle.importKey('jwk', keyData, { name: 'Ed25519' }, false, ['sign']);
+    const signing = await crypto.subtle.importKey('jwk', importableKey(keyData), { name: 'Ed25519' }, false, ['sign']);
     const verifying = await crypto.subtle.importKey('jwk', publicPart(keyData), { name: 'Ed25519' }, false, ['verify']);
     const probe = new TextEncoder().encode('Ludvig Games grant key readiness');
     const signature = await crypto.subtle.sign('Ed25519', signing, probe);
@@ -100,7 +105,7 @@ export async function verifyGrant(token, { publicKeys, environment, storeId, aud
         || payload.expiresAt <= payload.issuedAt
         || payload.expiresAt - payload.issuedAt > GRANT_LIMITS.lifetimeMs) throw invalid();
     if (!Object.hasOwn(publicKeys, payload.kid) || !jwkValid(publicKeys[payload.kid], false)) throw invalid();
-    const key = await crypto.subtle.importKey('jwk', publicKeys[payload.kid], { name: 'Ed25519' }, false, ['verify']);
+    const key = await crypto.subtle.importKey('jwk', importableKey(publicKeys[payload.kid]), { name: 'Ed25519' }, false, ['verify']);
     if (!await crypto.subtle.verify('Ed25519', key, signature, new TextEncoder().encode(parts[0]))) throw invalid();
     return { entitlements: ['ritkaos'], expiresAt: payload.expiresAt };
   } catch { throw invalid(); }

@@ -1,9 +1,11 @@
 # 2026-10-31: live-mode preparation, not deployed
 
+- Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
+  checks passed locally; actual app, hosted service and release gates remain open.
 - Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs
   so cross-Mac rooms do not receive reusable licence keys. New verification and release remain held.
 - Owner authorized release once ready. Prepared local paid-flow policy updates and an owner test
-  guide; withdrawal-function proof, hosting access and first-launch device scope still block release.
+  guide; withdrawal-function proof, hosting access and actual first-launch Mac checks still block release.
 - Created four hidden live drafts in the approved store and verified 59/39/39/99 SEK pricing,
   perpetual native keys, public support contact and tax-inclusive pricing. Sales remain closed.
 - Prepared explicit live/test product and saved-key separation, fail-closed live Worker configuration,

@@ -78,3 +78,21 @@ The prepared app version is 0.4.3. Fresh inspection found the installed app is 0
 published GitHub release is v0.4.2 (25 October). Both are unchanged. The coordinator owns
 the remaining checks, trusted public/private signing-key provisioning, hosted grant endpoint and
 app release. The owner explicitly requires Mac support at first launch; web-only release stays held.
+
+## Guarded verification resumed
+
+The next admitted run exposed a real compatibility failure: Node exports Ed25519 JWKs with an
+`Ed25519` algorithm label while the validator allowed only `EdDSA`. Both known labels are now
+validated, then removed before import with the algorithm explicitly fixed to Ed25519. Unknown
+algorithms, private verifier keys and wrong curves remain rejected. Added regression coverage.
+All 44 focused shop, signer, Game grant/native, desktop commerce and bridge tests passed locally.
+This is not packaged-app or hosted-endpoint proof.
+
+Desktop dependency installation succeeded through the fixed registered lane after fixing npm's
+rejection of the same config file used twice. Test-only grant signing material and a public-only
+test staging configuration were prepared outside Git in the owner's private config directory.
+No live signing key was generated. The test key has not been uploaded to a Worker.
+
+The first staging attempt was refused because another registered check owned the scheduler.
+`desktop/node_modules` is retained for the still-required staging/package checks in this main
+checkout; root owns its reuse and eventual cleanup. No new stage/bundle output exists yet.
