@@ -49,6 +49,7 @@ __pycache__/
 /desktop/bundle/
 /desktop/release/
 /desktop/.stage/
+/desktop/output/purchase-selftest/
 
 # Games hidden from the site (older editions, prototypes, parked games): not published here either.
 .unlock-secret

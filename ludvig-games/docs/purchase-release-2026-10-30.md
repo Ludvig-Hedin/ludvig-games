@@ -178,3 +178,23 @@ packaging and the provider withdrawal gate remain open. No publication or charge
 
 Coordinator remains the next owner. Actual guarded capacity and Free-account authentication are
 required to continue the remaining executable work; source completion is not a passed launch.
+
+## Retry admitted: focused checks passed
+
+The owner's next retry admitted execution. The first run found the Ed25519 algorithm-label mismatch;
+root repaired the shared signer/verifier and desktop readiness import, preserving strict curve and
+algorithm checks. All **44** focused shop, grant, native-access, desktop resolver and bridge checks
+then passed. Follow-up Game/network/snapshot/share checks have not run because another registered
+focused job holds the one-job lane. Do not reuse the earlier "new checks never ran" status for these 44.
+
+The fixed desktop install succeeded (334 existing locked dependencies). Test-only signing material
+and public staging configuration are private outside Git; no live signing key has been created or
+uploaded. Shared-shop/Mac staging attempts remain refused by scheduler exclusivity. The hidden actual
+product-app check is built and source-reviewed with process/profile cleanup repaired, but not run.
+See `mac-purchases.md` for the precise proof limits and retained main-checkout dependency hold.
+
+The guarded Free-account probe exposed macOS's fixed `/tmp` canonical-path issue in the helper.
+Root repaired that validation without weakening live registration or auth isolation. Subsequent
+probes are scheduler-blocked, so actual whoami/auth remains unresolved. A new mail-thread read failed
+at the connector transport; no fresh support response was established. No deployment, product
+publication, app release or charge occurred. Coordinator owns remaining execution and acceptance.

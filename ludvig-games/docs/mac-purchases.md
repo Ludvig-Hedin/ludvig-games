@@ -96,3 +96,12 @@ No live signing key was generated. The test key has not been uploaded to a Worke
 The first staging attempt was refused because another registered check owned the scheduler.
 `desktop/node_modules` is retained for the still-required staging/package checks in this main
 checkout; root owns its reuse and eventual cleanup. No new stage/bundle output exists yet.
+
+An actual product-app runner is prepared at `desktop/scripts/purchase-selftest.mjs` and admitted only
+through `agent-heavy-run games-desktop app-test`. It uses the existing hidden Electron SELFTEST hook,
+fixed loopback ports, isolated data and the previously provided test key from a fixed private file.
+It checks the shared shop's four matching dialogs, native restore and restart, Pigeon/Karts styles,
+and Ritkaos ownership. It does not make a payment or establish federation/offline/refund/update proof.
+Fresh safety review found process-tree and profile cleanup gaps; root repaired both. Only identified
+descendants may be stopped, their exit is awaited, and the isolated profile is removed afterwards.
+Source syntax checked; this app runner has not run because staging is still scheduler-blocked.
