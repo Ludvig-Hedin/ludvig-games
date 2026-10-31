@@ -27,7 +27,10 @@ fresh-device My Orders recovery. Current status: [payment setup evidence](paymen
    after day 14 for a real assessment rather than automatically refusing them.
 4. Read back the resulting refund status and amount. Save only a minimal private support record:
    order ID, request time, amount/currency, completion time and outcome. No licence key in repo/logs.
-5. Tell the buyer the refund was issued only after the provider confirms it. Lemon Squeezy documents
+5. After a full refund, disable the native licence linked to that exact order in the same store/mode.
+   Confirm the disabled status. Do not disable other orders or separately purchased keys. If disabling
+   fails, record it as unfinished support work and retry; the refund itself must not be delayed.
+6. Tell the buyer the refund was issued only after the provider confirms it. Lemon Squeezy documents
    that statement visibility can take up to ten days. Do not promise same-day bank credit.
 
 These dashboard actions are supported by [Refund Order](https://docs.lemonsqueezy.com/help/orders/refund-order).
@@ -55,10 +58,11 @@ also supports a `disabled` attribute through the authenticated merchant API. The
 API disabling is unavailable; that conflicts with the newer endpoint reference. This project needs
 no merchant credential for validation and adds no refund automation or new API secret here.
 
-**Refund-to-access policy is still a product decision:** recommend disabling the refunded native key
-after a full refund, but do not silently make that the promised customer behavior. Once decided,
-reflect it in public terms and the operating procedure. Do not assume that merely issuing a refund
-automatically disables a native licence. Partial refunds require their own entitlement decision.
+**Owner decision, 31 October 2026:** disable the refunded native key after a full refund. Paid access
+ends at the next purchase validation, which may not be immediate in an open game. Reflect this in
+the paid-release customer wording. Issuing the refund alone is not proof that the key was disabled.
+This is an operating procedure, not an implemented automatic refund handler. Partial refunds still
+require their own entitlement decision. No actual licence was disabled by this documentation change.
 
 Current implementation limits, established by source inspection:
 
@@ -115,6 +119,7 @@ See [Confirmation modal](https://docs.lemonsqueezy.com/help/checkout/customizing
 and [Receipt emails](https://docs.lemonsqueezy.com/help/checkout/customizing-receipt-emails).
 Never put the licence into a return URL, analytics event or public screenshot.
 
-Next: coordinator investigates the actual provider withdrawal/receipt flow, asks Ludvig about access
-after refunds, and prepares scoped policy/checkout changes. Live publishing and account writes remain
-outside this document's execution scope. No server, dependency folder or browser was created here.
+Next: coordinator investigates the actual provider withdrawal/receipt flow and prepares scoped
+policy/checkout changes including the approved full-refund access consequence. Live-store preparation
+is authorized separately in chat; publishing and opening sales remain held. No server, dependency
+folder or browser was created here.

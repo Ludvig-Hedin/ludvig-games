@@ -83,7 +83,8 @@ The local live-mode candidate is prepared, with a fresh sensitive review and its
 The static build passed (62 entries, 52 full-screen games). No production settings or content changed.
 
 Owner confirmed prices inclusive of applicable VAT and authorized live products/public support setup
-with sales closed. The decision on disabling access after a full refund remains pending.
+with sales closed. Owner also confirmed disabling the refunded key after a full refund, with access
+ending at the next validation. Actual provider disabling/refund verification remains unfinished.
 Free-account authentication has expired and automatic refresh was rejected (HTTP403). A fresh
 owner-approved sign-in will be needed. Bank/identity/tax forms are not being requested again.
 

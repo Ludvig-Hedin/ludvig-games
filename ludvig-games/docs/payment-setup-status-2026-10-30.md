@@ -150,7 +150,7 @@ checks. All prepared source is saved locally at b7277c6; no live release occurre
 Ludvig explicitly approved preparing the live store and public support address. Publishing buy
 buttons and opening sales remain held. This supersedes the pending live-setup permission above.
 The exact approved setup is saved in `commerce/live-products.plan.json`; no live product IDs are
-claimed created. Refund access policy remains unanswered.
+claimed created. The refund access question was subsequently answered below.
 
 The remaining 16 client/Ritkaos focused checks have now passed through the unchanged RAM guard,
 including environment-separated saved keys, wrong-mode endpoint rejection and welcome-mode recovery.
@@ -178,3 +178,12 @@ No dev server, dependency copy or live capability was created. The agent tab was
 hook rejected optional cleanup of four new diagnostic snapshot/log files, so those exact artifacts
 remain under `.playwright-mcp/` (11:42 and 11:43 UTC, 31 October) for the existing storage cleaner.
 No browser or credential storage was removed or changed by cleanup.
+
+### Full-refund access decision, 31 October
+
+Ludvig explicitly approved disabling paid access after a full refund, effective at the next purchase
+validation rather than necessarily immediately in an open game. The operating runbook now requires
+disabling and confirming the native key for that exact order, preserving independently purchased keys.
+No automatic refund handler or actual provider refund/disable action is claimed. Public customer
+wording will be updated with the paid release. The remaining owner handoff is Dia login/live mode;
+live products, support/tax settings and production publishing have not been executed.
