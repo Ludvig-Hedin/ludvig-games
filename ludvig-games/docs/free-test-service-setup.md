@@ -1,8 +1,29 @@
 # Free test purchase-service setup
 
-Prepared locally, 31 October 2026. The narrow wrapper is wired and source-reviewed. The account-only
-check ran, but subscription reads returned HTTP403/code10000. No Worker was deployed or secret uploaded.
-Root owns remaining execution. CLI authentication succeeds on the correct account.
+Updated 31 October 2026. The narrow wrapper is wired and source-reviewed. The exact test Worker and
+its signing key are now deployed on the verified Free account. After the Workers redirect-mode fix,
+the actual hosted bundle/licence/grant check passed, including wrong-challenge/environment rejection.
+All 15 resolver/real-SQLite-DO checks passed. CLI authentication succeeds on the correct account.
+Sales remain closed; this is test hosting, not live-product activation.
+
+## Closed live preparation, completed
+
+Root source-reviewed and ran the separate fixed `games-live-closed-store.py` through its hash-pinned
+`agent-heavy-run games-live-closed-store` scope. It generated a distinct live Ed25519 pair locally,
+deployed only the closed live Worker `ludvig-games-store`, and uploaded its signer only after matching
+source/config/sole-active-version receipt checks. Private material remains 0600 outside Git; no
+existing key was overwritten. The local full public candidate is unpublished.
+
+The live Worker always has `TEST_MODE=false`, `LS_LIVE_PRODUCTS={}`, rate namespace 4202 and disabled
+logs/previews. Final provisioned version: `ac81b324-908c-4e55-be3b-c601e6e11fdc`. Actual public reads
+confirmed `ready: false`, `grantReady: false`, every checkout link empty, and validation refused as
+`store-unavailable`. This proves the preparation remains closed; it does not prove live-customer
+payment, delivery or legal readiness. There is no activation command in this helper.
+
+Its only operations are `generate-material`, `check-account`, `deploy-closed`, `set-live-grant`.
+The full candidate mapping, product publication, public checkout and production app/site publication
+remain held for merchant/withdrawal/price checks. Root owns those steps. Do not bypass the closed scope
+by editing deployed variables or reusing a test key.
 
 **Resolved account access:** after Ludvig signed into the existing .se identity, fresh authorized
 browser reads confirmed `email_verified: true`, the exact account is standard, and subscriptions

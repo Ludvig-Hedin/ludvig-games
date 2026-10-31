@@ -66,12 +66,15 @@ earlier expired-auth/unknown-verification checkpoint. It is not deployment or ga
 The isolated Free auth directory and default Paid-account auth remain separate. No repeated owner
 token or email-verification step is requested. The older 24 October observations below are historical.
 
-### Ritkaos restoration candidate, 31 October
+### Ritkaos test restoration verified, 31 October
 
-Prepared locally, not executed: the fixed helper
+Prepared, independently reviewed and executed: the fixed helper
 `agent-dotfiles/home/.local/lib/agent-runtime/games-free-ritkaos.py` restores only Worker `ritkaos` on
 that exact Free account. Fresh sensitive source review accepted the candidate. Root wired the pinned
-wrapper case and owns every remaining check/deployment. No hosting deployment has run yet.
+wrapper case. The fixed test deployment `f7f6445d-81e4-4bdf-bb28-8736b03c8dc3` now serves Ritkaos on
+the Free account. Actual hosted multiplayer, drawing, reconnect, scoring and native test-key restore
+passed. A free guest received the paid host's room settings; an invalid native key was refused.
+The public hub/static site and Mac release remain unpublished. Root owns final release gates.
 No other held game, route, domain, database or account plan is changed by this candidate.
 
 Its proposed commands, from the exact Games root, are:
@@ -115,9 +118,10 @@ configuration/release, after all remaining purchase gates pass.
 Existing unrelated, live, secret or mismatched bindings stop this helper for coordinator inspection.
 An upload's exact reported version is returned, but source preparation does not prove an active
 deployment, a healthy endpoint, real multiplayer, hibernation/reconnect, native restoration or Mac
-federation. Root still needs guarded dry-run/deploy, `/health`, static/404 and empty-checkout checks,
-real room play/reconnect and the approved test-key/proof journeys before reporting restoration.
-This builder ran no API/browser/deploy, install, test or build. No disposable build data was created.
+federation. Root completed guarded deployment, `/health`, static/404, empty-checkout, actual hosted
+multiplayer/reconnect/native-key checks and the separate nine-check two-runtime purchase probe.
+The preparation builder ran no external actions. Root subsequently performed the guarded dry-run,
+deployment and actual hosted checks above. Temporary build data was removed by the helper.
 
 - Free account: `cffb5d1b12c3302ecc0745862fbf1f14` (signed in as ludvighedin.se@gmail.com). workers.dev subdomain: **ludvighedin**, so games live at `<game>.ludvighedin.workers.dev` and the API at `ludvig-games-api.ludvighedin.workers.dev`. R2 is not enabled.
 - All 10 D1 databases are created, their ids are in each `wrangler*.jsonc`, and every migration is applied remotely.

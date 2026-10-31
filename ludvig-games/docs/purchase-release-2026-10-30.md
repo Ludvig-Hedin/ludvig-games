@@ -26,6 +26,10 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   was removed after verified process cleanup.
 - The actual hosted Ritkaos native purchase test also passed: real key restores all ten rows, a free
   guest shares the paid host's Office/Blind settings, and an invalid key is refused.
+- Live preparation is also deployed, **closed**: `ludvig-games-store` uses a distinct live signing
+  pair, empty live products and rate namespace 4202. Fresh public checks confirm `ready: false`,
+  `grantReady: false`, no checkout links and `store-unavailable` for validation. No activation
+  operation exists in this preparation helper. No public shop or production Mac package was published.
 - Lemon Squeezy now redirects the agent to login. Root requested only an existing Dia login in test
   mode for the remaining disabled-key operation. Cloudflare access is not the blocker.
 - The provider has not replied to the already sent withdrawal-function question. Root owns the
@@ -72,6 +76,8 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   journey passed on the new Free host, followed by actual native-key restoration and guest sharing.
 - [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
   `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
+- [x] Prepare the live service and distinct live signing material without enabling any products.
+  The public candidate config remains private/local and unused by the published site or app.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Current official [currency documentation](https://docs.lemonsqueezy.com/help/payments/currencies)
   confirms that all payments are processed in USD after conversion from the displayed store currency.
