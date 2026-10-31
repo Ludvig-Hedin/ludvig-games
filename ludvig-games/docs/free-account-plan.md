@@ -59,13 +59,65 @@ No Workers Logs, TURN, R2, AI or paid third-party APIs.
 
 ## Progress, 24 Oct 2026
 
-Current auth checkpoint, 31 October: the private Free-account login expired and its refresh was
-rejected. A reviewed authentication-only lane is prepared for the coordinator, from the Games root:
-`agent-heavy-run games-free-auth whoami` or `agent-heavy-run games-free-auth login`.
-It pins the Free auth directory/account and never touches default Paid-account auth. Login prints
-the official consent URL without opening a personal browser. No deployment command exists in this
-lane. Scheduler/RAM admission currently blocks the read-only probe, so current email/plan verification
-remains unknown. The older 24 October observations below are historical, not a fresh account check.
+Current account checkpoint, 31 October: the coordinator has now confirmed the correct
+`ludvighedin.se@gmail.com` identity through fresh official dashboard reads: verified email, standard
+account `cffb5d1b12c3302ecc0745862fbf1f14` and a complete empty subscription page. This supersedes the
+earlier expired-auth/unknown-verification checkpoint. It is not deployment or gameplay proof.
+The isolated Free auth directory and default Paid-account auth remain separate. No repeated owner
+token or email-verification step is requested. The older 24 October observations below are historical.
+
+### Ritkaos restoration candidate, 31 October
+
+Prepared locally, not executed: the fixed helper
+`agent-dotfiles/home/.local/lib/agent-runtime/games-free-ritkaos.py` restores only Worker `ritkaos` on
+that exact Free account. Fresh sensitive source review accepted the candidate. Root wired the pinned
+wrapper case and owns every remaining check/deployment. No hosting deployment has run yet.
+No other held game, route, domain, database or account plan is changed by this candidate.
+
+Its proposed commands, from the exact Games root, are:
+
+```sh
+agent-heavy-run games-free-ritkaos check-account
+agent-heavy-run games-free-ritkaos dry-run-free
+agent-heavy-run games-free-ritkaos deploy-free
+agent-heavy-run games-free-ritkaos dry-run-test
+agent-heavy-run games-free-ritkaos deploy-test
+```
+
+Root added that exact allowlist, fixed cwd/helper hash and standard registered `client-build`
+resource admission. No generic command argument, full-suite flag or memory-threshold override was
+added. The helper imports the exact hash-pinned `games-free-store.py` bytes for the reviewed fresh
+account proof, isolated token access, environment and API reader. Its own operation validates the
+live `games-free-ritkaos` supervisor/child registration. If the core helper changes, root must review
+and repin this dependent helper before using it.
+
+Only hash-pinned `worker/index.mjs`, required game libraries, the two shared native/proof modules,
+and the eight public asset files enter a private temporary build tree. The Node server, tools, tests,
+dependencies, `.env`, private keys and other directories do not. The original Wrangler file is
+pinned as a reference; the generated config preserves its compatibility date, `nodejs_compat`, static
+asset-first routing, SQLite `Lobby` migration, per-IP namespace 2101 (30/minute), room namespace 2102
+(10/minute), disabled logs/previews and workers.dev-only address. Every deploy first makes a local
+dry-run bundle and enforces the existing stricter 3 MiB gzip release cap. The temporary tree is
+removed when the helper returns. No live mapping, legacy secret or signing private key is supplied.
+
+`deploy-free` omits all commerce settings. `deploy-test` accepts only the exact approved test map
+and public verifier pin from the existing private **public-only** app configuration. It can exercise
+native test restoration and connection-bound proof verification, but cannot validate a live key.
+
+**Checkout hold:** the current Ritkaos source has no visibility variable. A valid test map would
+otherwise advertise a public Buy button. The candidate therefore includes a fixed reviewed-entry
+adapter that delegates gameplay unchanged and clears only the `/api/store` response's `checkout`
+URL. `nativeReady` and test restoration remain intact. The unmodified client's existing `canBuy()`
+check then keeps Buy buttons absent. This adapter is part of the helper's source review; it is not
+an existing environment option or permission to open sales. Live launch needs a separate accepted
+configuration/release, after all remaining purchase gates pass.
+
+Existing unrelated, live, secret or mismatched bindings stop this helper for coordinator inspection.
+An upload's exact reported version is returned, but source preparation does not prove an active
+deployment, a healthy endpoint, real multiplayer, hibernation/reconnect, native restoration or Mac
+federation. Root still needs guarded dry-run/deploy, `/health`, static/404 and empty-checkout checks,
+real room play/reconnect and the approved test-key/proof journeys before reporting restoration.
+This builder ran no API/browser/deploy, install, test or build. No disposable build data was created.
 
 - Free account: `cffb5d1b12c3302ecc0745862fbf1f14` (signed in as ludvighedin.se@gmail.com). workers.dev subdomain: **ludvighedin**, so games live at `<game>.ludvighedin.workers.dev` and the API at `ludvig-games-api.ludvighedin.workers.dev`. R2 is not enabled.
 - All 10 D1 databases are created, their ids are in each `wrangler*.jsonc`, and every migration is applied remotely.

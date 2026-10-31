@@ -16,8 +16,9 @@ fixed official user/account/subscription URLs with GET, redirects refused and bo
 The helper requires the exact .se identity, positive verification, standard Free account, an empty
 subscription list and the observed terminal pagination marker. Capability changes/revocation/expiry
 are checked before each read and on return. Unknown or nonempty subscriptions fail closed. Fresh
-sensitive source review accepted this path; negative fixtures and actual guarded deployment remain
-root's execution work. Direct urllib proof was rejected by the provider and is not used for cookies.
+sensitive source review accepted this path; all 15 focused negative/positive proof fixtures passed.
+Actual guarded deployment remains root's execution work. Direct urllib proof was rejected by the
+provider and is not used for cookies.
 
 Earlier access check: the authorized Dia cookie export identified `ludvighedin15@gmail.com` and
 the official dashboard user response says `email_verified: true`. That user receives access errors
