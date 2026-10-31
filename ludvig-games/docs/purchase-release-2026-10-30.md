@@ -26,8 +26,8 @@ Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 - [x] Prepare local live-mode support with separated IDs, storage and endpoint modes. Not deployed.
 - [x] Finish guarded client/game checks. All 33 focused local checks passed.
-- [ ] Configure inspected live products. Owner has authorized preparation with sales closed.
-  Copy the approved products to live mode and inspect their new IDs/URLs; never reuse the test IDs.
+- [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
+  `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
   of correct production VAT. Preserve the approved intended prices until a real product decision.
@@ -40,8 +40,8 @@ Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 - [ ] Finish the existing purchase-confirmation/withdrawal work in
   [legal readiness](legal-readiness-2026-10-28.md), and update free-only public policy wording with the
   actual paid release. No fresh legal clearance is claimed by the technical test.
-- [ ] Set the public support/reply address to ludvig@ludvighedin.com. The test receipt currently replies
-  to the owner's personal Gmail address. Do not change bank, identity or tax forms for this.
+- [x] Set the public support address to ludvig@ludvighedin.com and enable tax-inclusive pricing.
+  Fresh official settings readback confirmed both. No new live receipt has been issued to verify Reply-To.
 - [ ] After the release gates and applicable authorization, deploy and verify the customer journey on
   the intended public origins. Do not expose customer Buy links before then.
 
@@ -85,6 +85,8 @@ The static build passed (62 entries, 52 full-screen games). No production settin
 Owner confirmed prices inclusive of applicable VAT and authorized live products/public support setup
 with sales closed. Owner also confirmed disabling the refunded key after a full refund, with access
 ending at the next validation. Actual provider disabling/refund verification remains unfinished.
+The four live drafts and support/tax-inclusive settings are now saved and verified in Lemon Squeezy.
+Live-store setup is complete; hosting, remaining customer-flow checks and publication remain separate.
 Free-account authentication has expired and automatic refresh was rejected (HTTP403). A fresh
 owner-approved sign-in will be needed. Bank/identity/tax forms are not being requested again.
 

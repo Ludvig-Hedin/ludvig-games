@@ -38,7 +38,7 @@ Use private ignored environment files, never source/HTML, for deployment setting
 The JSON above is the value of `LS_TEST_PRODUCTS`, not a credential or working fixture. Set `LS_STORE_ID`
 and `TEST_MODE=true` for test. Live requires explicit `TEST_MODE=false` and `LS_LIVE_PRODUCTS`, with every product declaring `testMode:false`. Verify each set in the matching provider catalogue. The License API has no
 documented `test_mode` response property: separation relies on exact separately verified product/variant
-IDs. A `testMode` config declaration alone is not external proof. Known test IDs cannot be reused in live. No inspected live product configuration exists yet.
+IDs. A `testMode` config declaration alone is not external proof. Known test IDs cannot be reused in live. Inspected live draft IDs are saved in `live-products.plan.json`; they are not enabled in deployment settings.
 Native provider key generation/receipt delivery and My Orders recovery must be tested in the provider.
 
 ## HTTP and local preview
@@ -96,7 +96,7 @@ The bundle success path is verified. Remaining release checks include single-pac
 failed/cancelled payments, fresh-device My Orders recovery, real disabled keys and refund operations.
 Provider validation is cached for 30 seconds; loaded style pages can retain in-memory ownership until
 the next restore/reload. Refunding is not assumed to disable a native key. These adapters do not process
-refunds or send mail. Live-mode code is prepared locally, but real product IDs, provider settings, guarded checks and deployment remain release gates.
+refunds or send mail. Live-mode code is prepared locally, but live drafts and support/tax settings are inspected, and the 33 focused local checks passed. Provider refund/recovery checks, hosting and deployment remain release gates.
 
 Official references checked 30 October 2026:
 - https://docs.lemonsqueezy.com/api/license-api

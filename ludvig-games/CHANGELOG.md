@@ -1,5 +1,7 @@
 # 2026-10-31: live-mode preparation, not deployed
 
+- Created four hidden live drafts in the approved store and verified 59/39/39/99 SEK pricing,
+  perpetual native keys, public support contact and tax-inclusive pricing. Sales remain closed.
 - Prepared explicit live/test product and saved-key separation, fail-closed live Worker configuration,
   and a separate purchase API origin in the static build. Real live products are still unconfigured.
 - Added refund/recovery operations. Owner decisions and account authentication remain release gates.

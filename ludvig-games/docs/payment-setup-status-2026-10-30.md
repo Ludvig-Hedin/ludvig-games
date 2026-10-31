@@ -1,7 +1,8 @@
 # Payment setup and test evidence
 
 Updated 31 October 2026, Stockholm. **The purchased test bundle unlocks all three local games.
-Production is unchanged and purchases are not live.** No live payment or hosting deployment occurred.
+The live store is prepared with four hidden drafts; purchases are not open.** No live payment or
+hosting deployment occurred. Support and tax-inclusive settings were saved in the provider on 31 October.
 
 ## Provider configuration
 
@@ -187,3 +188,46 @@ disabling and confirming the native key for that exact order, preserving indepen
 No automatic refund handler or actual provider refund/disable action is claimed. Public customer
 wording will be updated with the paid release. The remaining owner handoff is Dia login/live mode;
 live products, support/tax settings and production publishing have not been executed.
+
+### Live-store preparation completed, 31 October
+
+Ludvig signed in in Dia and disabled Test mode. Fresh official responses confirmed store 504842,
+currency SEK and live mode. The initially empty live catalogue now has these four **hidden drafts**:
+
+| Offer | Price including applicable VAT | Live product | Live variant |
+|---|---:|---:|---:|
+| Ritkaos+ | 59 SEK | 1489965 | 2321500 |
+| Pigeon style pack | 39 SEK | 1489970 | 2321508 |
+| Karts style pack | 39 SEK | 1489971 | 2321509 |
+| Bundle | 99 SEK | 1489972 | 2321510 |
+
+All four were saved via Save as draft and freshly read back as `status:draft`, `visible:false`,
+`test_mode:false`, one-time prices, Video Game tax category and native licence keys with unlimited
+duration/activations. Correct descriptions were read back. Product/variant IDs and checkout URLs are
+saved in `commerce/live-products.plan.json`. They are preparation data, not enabled deployment settings.
+The deployed-candidate config still has an empty live product mapping, and no buy button was deployed.
+
+General Settings were saved and freshly read back with `contact_email:ludvig@ludvighedin.com`,
+`tax_inclusive:true` and currency SEK. The write gate required every other submitted setting to match
+fresh official server values. No bank, identity, tax form, payment method or subscription setting was
+changed. No product was published, no real payment was made, and no mail was sent.
+
+The separate task-bound live preparation guard was adapted to observed pending/draft and `visible`
+fields. Five focused product-guard checks and two settings-guard checks passed. Fresh independent
+sensitive reviews accepted both the product/login wiring and settings gate. A fresh guarded connector
+loaded the reviewed code. It still blocked a mis-targeted Pigeon name before save; the UI selector was
+corrected, and final official readback confirms the proper name and description. No gate was weakened.
+
+The agent browser was closed and the temporary write capability revoked by a read-only site login
+refresh. Personal Dia tabs were not navigated or closed. The temporary controller `/tmp/games-live-connector.py` was removed after its exact child exited. No dev server or dependency
+copy was created. Existing test evidence and 33 passing local integration checks remain valid.
+
+Remaining release work: Free-account sign-in/verification and hosting, actual refund/key-disabling
+and withdrawal/receipt flow verification, paid-release policy wording, then explicit publication
+authorization and public-origin verification. Live-store setup itself needs no more owner action.
+
+A follow-up read-only Free-account dashboard login export was attempted but blocked because both
+browser slots were occupied by other tasks. No Games browser job remained in the runtime registry
+at cleanup, so no peer was stopped. Coordinator owns the retry; no request to close Ludvig's apps.
+The browser-guard implementation and explicit authorization note are saved in dotfiles at `2141723`.
+An unrelated peer change to UI guidance was preserved. Games has no generated dependency copy to clean.

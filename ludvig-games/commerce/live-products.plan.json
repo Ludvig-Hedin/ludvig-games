@@ -16,28 +16,72 @@
       "name": "Ritkaos+",
       "priceOre": 5900,
       "description": "Five word packs, Blind draw, Speed round, Telephone, brushes and palettes.",
-      "entitlements": ["ritkaos"]
+      "entitlements": [
+        "ritkaos"
+      ],
+      "provider": {
+        "productId": "1489965",
+        "variantId": "2321500",
+        "checkout": "https://ludviggames.lemonsqueezy.com/checkout/buy/00f08671-240a-445d-ba0d-5e17cdb6f194",
+        "testMode": false,
+        "status": "draft",
+        "visible": false
+      }
     },
     {
       "id": "pigeon",
       "name": "Pigeon style pack",
       "priceOre": 3900,
       "description": "Sun hat, Beanie, Crown and Top hat. Snow, Cinnamon, Midnight and Mint feather looks.",
-      "entitlements": ["pigeon"]
+      "entitlements": [
+        "pigeon"
+      ],
+      "provider": {
+        "productId": "1489970",
+        "variantId": "2321508",
+        "checkout": "https://ludviggames.lemonsqueezy.com/checkout/buy/dd0b7c58-6e5f-44e1-bdb4-32eb84fa62e8",
+        "testMode": false,
+        "status": "draft",
+        "visible": false
+      }
     },
     {
       "id": "karts",
       "name": "Karts style pack",
       "priceOre": 3900,
       "description": "Midnight, Sunshine, Ice blue and Cherry colours. Racing stripes and Checker panels.",
-      "entitlements": ["karts"]
+      "entitlements": [
+        "karts"
+      ],
+      "provider": {
+        "productId": "1489971",
+        "variantId": "2321509",
+        "checkout": "https://ludviggames.lemonsqueezy.com/checkout/buy/6218dc96-e5d8-42bb-8c60-08761d0ec589",
+        "testMode": false,
+        "status": "draft",
+        "visible": false
+      }
     },
     {
       "id": "bundle",
       "name": "Ludvig Games extras bundle",
       "priceOre": 9900,
       "description": "Ritkaos+, the Pigeon style pack and the Karts style pack listed here. Future packs are separate.",
-      "entitlements": ["ritkaos", "pigeon", "karts"]
+      "entitlements": [
+        "ritkaos",
+        "pigeon",
+        "karts"
+      ],
+      "provider": {
+        "productId": "1489972",
+        "variantId": "2321510",
+        "checkout": "https://ludviggames.lemonsqueezy.com/checkout/buy/c5401df4-809f-44f1-a023-41ada279b167",
+        "testMode": false,
+        "status": "draft",
+        "visible": false
+      }
     }
-  ]
+  ],
+  "verifiedAt": "2026-10-31",
+  "providerStatus": "draft"
 }
