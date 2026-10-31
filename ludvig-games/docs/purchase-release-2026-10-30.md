@@ -43,9 +43,10 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   The actual hosted negative probe passed: resolve and grant both return 422 `invalid-license`, with
   neither entitlements nor signed proof. Hosted Ritkaos refuses redemption and explicitly returns empty
   ownership. The test socket closed and the check process exited. This proves rejection at validation,
-  not instant removal from an already open app or execution of a monetary refund. Next: Ludvig enables
-  that same test licence; root reruns the existing hosted positive restoration checks. No regeneration,
-  repeated generic sign-in request or Cloudflare token is needed.
+  not instant removal from an already open app or execution of a monetary refund. Ludvig subsequently
+  requested purchase/refund acceptance. Reuse the already-paid test order 9905660 (receipt number
+  5048421) for the actual refund; leave its key disabled. Re-enabling is unnecessary for that test.
+  No regeneration, repeated generic sign-in request or Cloudflare token is needed.
 - The four actual hosted test carts show **59/39/39/99 SEK**, their matching Pay labels, Sweden selected
   and `tax_inclusive: true`. No card fields or payment submission were used. Their captured cart tax
   remains zero, and no automatic tax request was observed in that final check. This is displayed-price
@@ -70,7 +71,7 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
 This proves the **bundle success path in the test environment**. Separate single-pack purchases,
 failed/cancelled payments, monetary refunds and fresh-device My Orders recovery are not claimed as
 provider-tested. The actual disabled test key is now rejected by the hosted resolver/grant and Ritkaos;
-re-enabling and renewed positive restoration remain pending. Single-pack mapping has focused mock coverage.
+the same test key is deliberately disabled for the pending test-order refund. Single-pack mapping has focused mock coverage.
 Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 ## What remains before real sales
@@ -111,8 +112,9 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   hosted licence/grant validation and the hosted multiplayer check are now complete.
   Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
 - [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
-  The owner disabled the real test-bundle key and its hosted negative check passed. Owner re-enabling
-  that exact key and root's positive restoration recheck are next. No monetary refund was exercised.
+  The owner disabled the real test-bundle key and its hosted negative check passed. Reuse that paid
+  test order for the newly requested refund instead of requiring re-enabling solely to disable it again.
+  No monetary refund was exercised. Actual provider order/refund confirmation remains next.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
   access until revalidation/reload. Legacy RK codes have separate revocation limitations.
 - [ ] Finish the existing purchase-confirmation/withdrawal work in
