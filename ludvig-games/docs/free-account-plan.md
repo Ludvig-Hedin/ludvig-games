@@ -59,6 +59,14 @@ No Workers Logs, TURN, R2, AI or paid third-party APIs.
 
 ## Progress, 24 Oct 2026
 
+Current auth checkpoint, 31 October: the private Free-account login expired and its refresh was
+rejected. A reviewed authentication-only lane is prepared for the coordinator, from the Games root:
+`agent-heavy-run games-free-auth whoami` or `agent-heavy-run games-free-auth login`.
+It pins the Free auth directory/account and never touches default Paid-account auth. Login prints
+the official consent URL without opening a personal browser. No deployment command exists in this
+lane. Scheduler/RAM admission currently blocks the read-only probe, so current email/plan verification
+remains unknown. The older 24 October observations below are historical, not a fresh account check.
+
 - Free account: `cffb5d1b12c3302ecc0745862fbf1f14` (signed in as ludvighedin.se@gmail.com). workers.dev subdomain: **ludvighedin**, so games live at `<game>.ludvighedin.workers.dev` and the API at `ludvig-games-api.ludvighedin.workers.dev`. R2 is not enabled.
 - All 10 D1 databases are created, their ids are in each `wrangler*.jsonc`, and every migration is applied remotely.
 - Worker deploys are blocked until the owner verifies the account's email address (API error 10034).

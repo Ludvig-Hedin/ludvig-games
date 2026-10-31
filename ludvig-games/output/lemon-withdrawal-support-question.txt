@@ -1,0 +1,17 @@
+Subject: One-time game purchases: EU withdrawal function and acknowledgement
+
+Hi Lemon Squeezy support,
+
+We are preparing the Ludvig Games store (store 504842, ludviggames.lemonsqueezy.com) for launch. We sell single-payment digital game extras delivered by perpetual licence keys. We offer full refunds requested within 14 days, including after redemption.
+
+Before opening sales, could you confirm the withdrawal journey for EU consumers following the online withdrawal-function requirements effective 19 June 2026?
+
+1. Where can a buyer submit a statutory withdrawal for a one-time order? Please provide the exact button/page and whether it is available in test mode.
+2. Does the buyer receive an immediate durable acknowledgement identifying the order/item and the submission time?
+3. What withdrawal information/form and any digital-content consent are supplied in your checkout and order-confirmation email?
+4. As merchant of record, do you provide this function for these purchases, or is a supplier-hosted implementation required?
+
+We have not opened sales yet. A documented test journey or precise setup instructions would help us verify the flow.
+
+Regards,
+Ludvig Games

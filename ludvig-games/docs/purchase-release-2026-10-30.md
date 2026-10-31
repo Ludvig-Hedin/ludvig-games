@@ -55,7 +55,8 @@ email service or fulfilment webhook in this implementation. Do not reopen that s
 - [x] Enable Test mode, complete the bundle test purchase and provide its key through private entry.
 - [x] Review the two local app previews. Ludvig said the screens look fine.
 - [ ] Verify the Games Free account's email only if a fresh account check still shows that requirement.
-- [ ] Give explicit authorization for production publishing when the remaining release gates are ready.
+- [x] Authorize production publishing once all release gates are ready. Ludvig explicitly did so
+  on 31 October. Do not ask again for the same four-pack release. Readiness is still required.
 
 The implementing agent owns live-mode preparation, product mapping, final-price investigation, support
 settings, hosting preparation and verification. These are not extra dashboard homework for Ludvig.
@@ -93,3 +94,27 @@ owner-approved sign-in will be needed. Bank/identity/tax forms are not being req
 Refund/recovery steps are saved in [payment operations](payment-operations.md). Actual provider refund,
 key disabling and the online withdrawal/confirmation flow still need verification before launch.
 The coordinator owns those checks and scoped policy preparation once decisions/access are available.
+
+## Conditional release work, 31 October
+
+Owner requested completing the rest and publishing if ready. This supersedes the earlier request to
+wait for a final publishing decision; it does not bypass the open acceptance gates.
+
+- Prepared local Terms/Privacy/Refunds updates for the actual licence-validation and refund flow.
+  Fresh sensitive review found a misleading 30-second retention promise; corrected it to distinguish
+  cache validity from actual later deletion. No policy update was published.
+- Current primary-source withdrawal investigation could not establish the applicable one-time-order
+  online withdrawal/acknowledgement function. See `withdrawal-release-check.md`. A precise support
+  question is prepared in `output/lemon-withdrawal-support-question.txt`; permission to send is pending.
+- Prepared an isolated, guarded Free-account `login`/`whoami` lane. Fresh sensitive review and syntax/
+  hash checks passed. The actual whoami run was blocked by scheduler ownership, then 18% reclaimable
+  RAM against the unchanged 20% threshold. No Free-account authentication was changed.
+- Native browser capacity also blocked a fresh dashboard read. Do not use the Paid account instead.
+- Asked whether to add a shared shop page and whether first-launch purchases must include the Mac
+  app. These are unanswered product decisions, not permission to invent a new page or device promise.
+- Prepared `owner-purchase-test.md`: own tests use dummy cards only; a genuine customer sale later
+  proves revenue. A 39 SEK sale does not immediately reach the bank because of payout limits/timing.
+
+Publishing remains blocked by server access, the withdrawal/customer-flow evidence and device scope.
+Coordinator owns technical work and the guarded retry. Ludvig owns the three pending product/contact
+answers. No extra products, marketing messages, live self-purchase or paid service was started.
