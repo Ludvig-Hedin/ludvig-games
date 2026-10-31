@@ -10,8 +10,9 @@
 - All four hosted test checkouts display the approved 59/39/39/99 SEK totals with Sweden selected
   and tax-inclusive configuration. This does not establish live VAT calculation or settlement rounding.
 - The owner disabled the actual test-bundle licence. The hosted negative check passed: resolver and
-  grant refuse it, and Ritkaos reports no paid ownership. Reuse the existing paid test order for the
-  requested refund check, leaving its key disabled. No provider refund is yet confirmed.
+  grant refuse it, and Ritkaos reports no paid ownership. The owner then refunded that test order;
+  the matching provider refund email arrived and the hosted negative recheck passed. No real money
+  moved. Disabling remains a separate manual step; no automatic refund revocation is claimed.
 - Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
   checks passed locally; actual app, hosted service and release gates remain open.
 - Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs

@@ -38,14 +38,19 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   solve it. A separately enabled, exact-licence read-auth gate received fresh sensitive review and
   five focused policy checks passed. The actual official iframe request now passes the gate, bound
   to its current server-provided fields and signed frame. The provider nevertheless returns its own
-  auth-login destination, so merchant access itself remains unavailable. No actual licence was changed.
+  auth-login destination, so merchant access itself remains unavailable. The agent changed no licence.
   Ludvig then disabled only test licence 1726555 in his working session; his screenshot shows Disabled.
   The actual hosted negative probe passed: resolve and grant both return 422 `invalid-license`, with
   neither entitlements nor signed proof. Hosted Ritkaos refuses redemption and explicitly returns empty
   ownership. The test socket closed and the check process exited. This proves rejection at validation,
   not instant removal from an already open app or execution of a monetary refund. Ludvig subsequently
-  requested purchase/refund acceptance. Reuse the already-paid test order 9905660 (receipt number
-  5048421) for the actual refund; leave its key disabled. Re-enabling is unnecessary for that test.
+  requested purchase/refund acceptance. Ludvig refunded test order 9905660 (receipt number 5048421);
+  his screenshot shows Refunded and the expected bundle. The provider's `[Test Mode] Your order has
+  been refunded` email arrived at 2026-10-31 21:52:34 UTC, message `1a193f343c4822cb`, with the same
+  receipt reference and SEK99.05 total. The hosted negative probe then passed again: neither the
+  resolver/grant nor Ritkaos restores access. The key was disabled separately before this refund;
+  automatic refund-driven disabling is not implemented or proven. No real money moved in this test.
+  Leave the refunded test key disabled; do not reuse it as an expected-valid positive fixture.
   No regeneration, repeated generic sign-in request or Cloudflare token is needed.
 - The four actual hosted test carts show **59/39/39/99 SEK**, their matching Pay labels, Sweden selected
   and `tax_inclusive: true`. No card fields or payment submission were used. Their captured cart tax
@@ -60,8 +65,9 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   Karts style pack 39 SEK and the three-pack bundle 99 SEK. Single payments, native perpetual keys.
 - Ludvig completed the bundle purchase in provider test mode. Receipt order 5048421 arrived in the
   owner's inbox, explicitly marked Test Mode, and contains the native licence key.
-- The private key validates against the actual provider and exact test bundle product/variant. It has
-  no expiry. The service returns all three game entitlements and rejects a wrong-store configuration.
+- Before disabling/refunding, the private key validated against the actual provider and exact test
+  bundle product/variant. The service returned all three entitlements and rejected a wrong-store
+  configuration. The same private fixture now belongs to the refunded, disabled test order.
 - In the actual local browser: Pigeon applied Crown/Midnight; Karts applied Checker panels and started
   a race; Ritkaos showed all ten ownership rows and restored them after reload without another paste.
   All three purchase/style dialogs fit a 390px viewport without horizontal overflow.
@@ -69,9 +75,10 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   integration check passed. Test keys never entered source or output. No remote CI, push or deployment.
 
 This proves the **bundle success path in the test environment**. Separate single-pack purchases,
-failed/cancelled payments, monetary refunds and fresh-device My Orders recovery are not claimed as
-provider-tested. The actual disabled test key is now rejected by the hosted resolver/grant and Ritkaos;
-the same test key is deliberately disabled for the pending test-order refund. Single-pack mapping has focused mock coverage.
+failed/cancelled payments, real-money refunds and fresh-device My Orders recovery are not claimed as
+provider-tested. The simulated full test-order refund and its confirmation email are verified. The
+separately disabled key remains rejected by the hosted resolver/grant and Ritkaos. Single-pack mapping
+has focused mock coverage.
 Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 ## What remains before real sales
@@ -111,10 +118,9 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   source-reviewed; 15 proof fixtures passed. Guarded commerce/test-key and Ritkaos deployments, actual
   hosted licence/grant validation and the hosted multiplayer check are now complete.
   Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
-- [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
-  The owner disabled the real test-bundle key and its hosted negative check passed. Reuse that paid
-  test order for the newly requested refund instead of requiring re-enabling solely to disable it again.
-  No monetary refund was exercised. Actual provider order/refund confirmation remains next.
+- [x] Verify the manual full test-order refund, provider confirmation email and separately disabled key.
+  Ludvig performed both merchant operations; root verified the email reference and reran the actual
+  hosted negative test successfully after refund. This is simulated test money, not bank-return proof.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
   access until revalidation/reload. Legacy RK codes have separate revocation limitations.
 - [ ] Finish the existing purchase-confirmation/withdrawal work in

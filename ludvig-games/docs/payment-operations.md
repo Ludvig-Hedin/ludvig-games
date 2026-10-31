@@ -17,6 +17,13 @@ fresh-device My Orders recovery. Current status: [payment setup evidence](paymen
 
 ## Refund operating steps
 
+Actual test evidence, 31 October: Ludvig disabled test licence 1726555 and refunded order 9905660
+(receipt 5048421). His order screenshot shows Refunded. The provider refund email arrived at
+21:52:34 UTC, and the actual hosted disabled-key probe passed again afterwards. No real money moved.
+This verifies the manual test procedure; it does not establish automatic disabling on refund or
+instant revocation in an already open app. Keep that refunded key disabled. The private fixture is
+now suitable for rejection checks, not expected-valid restoration checks.
+
 1. Read the request received at the approved support address, `ludvig@ludvighedin.com`.
    Use the order reference or purchase email if available. Do not request card details or the full
    licence key. A missing order number is a lookup problem, not a reason to deny the refund.
