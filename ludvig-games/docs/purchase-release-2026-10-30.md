@@ -35,7 +35,13 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
 - Ludvig completed that Dia login and enabled Test mode. Fresh isolated reads identified the actual
   remaining sign-in block: the guarded connection refuses the provider's `auth.lemonsqueezy.com/check`
   SSO request from its official redirect-challenge iframe. Refreshing app/auth cookies alone does not
-  solve it. Root owns a narrowly scoped authentication repair, with sensitive review before use.
+  solve it. A separately enabled, exact-licence read-auth gate received fresh sensitive review and
+  five focused policy checks passed. The actual official iframe request now passes the gate, bound
+  to its current server-provided fields and signed frame. The provider nevertheless returns its own
+  auth-login destination, so merchant access itself remains unavailable. No actual licence was changed.
+  Root will use the prepared hosted negative probe after the owner temporarily disables only test
+  licence 1726555 in Dia, then arrange re-enabling that same test licence. A repeated generic sign-in
+  request or another Cloudflare token is not the next owner step.
 - The four actual hosted test carts show **59/39/39/99 SEK**, their matching Pay labels, Sweden selected
   and `tax_inclusive: true`. No card fields or payment submission were used. Their captured cart tax
   remains zero, and no automatic tax request was observed in that final check. This is displayed-price
