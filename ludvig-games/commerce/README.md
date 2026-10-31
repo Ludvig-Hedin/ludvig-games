@@ -76,7 +76,8 @@ failures. It has no alarms/timers keeping it alive, no new D1 database, KV, R2 o
 only accepted outbound reservations. Missing bindings/configuration fail closed. The provider documents
 60 requests/minute without clarifying scope, so there is headroom rather than an assumed per-user quota.
 
-`wrangler.test.jsonc` has no custom domain/account_id, logs or paid-plan flags. **Never deploy it on the
+`wrangler.test.jsonc` is pinned to Games Free account `cffb5d1b12c3302ecc0745862fbf1f14`, with no custom domain,
+logs or paid-plan flags. **Never deploy it on the
 old Paid account.** Only the already-approved games Free account may host this test Worker, using that
 account's isolated Wrangler login. Its single new Durable Object class requires independent review and
 owner-authorized deployment, and the current account email/plan must be checked first. No deployment

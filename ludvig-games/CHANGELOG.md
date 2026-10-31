@@ -1,5 +1,7 @@
 # 2026-10-31: live-mode preparation, not deployed
 
+- Eight actual source Mac-app purchase/restart journeys passed. Built a local test package; packaged
+  checks and hosted delivery remain pending. Corrected shop preview image sizing before restaging.
 - Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
   checks passed locally; actual app, hosted service and release gates remain open.
 - Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs

@@ -24,16 +24,30 @@ Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 ## What remains before real sales
 
+Before handing back, update this checklist from the latest evidence. For each open item, name its
+exact dependency and next actor; complete any independent ready work. Dated checkpoints below are historical.
+Owner clarification for this release: keep Games and the other project's work moving. Do not ask
+Ludvig to choose one or pause the peer's work. Queue guarded operations internally; existing limits remain enforced.
+
 - [x] Prepare local live-mode support with separated IDs, storage and endpoint modes. Not deployed.
-- [x] Finish guarded client/game checks. All 33 focused local checks passed.
+- [x] Finish guarded client/game checks. Earlier 33 checks and the new 44 focused checks passed within their stated scopes.
+- [x] Test the actual source Mac app: eight shop/Pigeon/Karts/Ritkaos restore and fresh-process
+  restart journeys passed. Paid styles persisted; isolated profiles were removed after process exit.
+- [x] Build a local 0.4.3 test-only DMG, zip and signed update file. None was published.
+- [ ] Re-stage the corrected shop image sizing, rebuild the test package and run the actual packaged
+  app checks, including bundle/update-signature validation. Root owns this; guarded capacity is required.
+- [ ] Run the focused Game/network/snapshot/share integration checks. Root owns this; guarded capacity is required.
 - [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
   `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
   of correct production VAT. Preserve the approved intended prices until a real product decision.
 - [ ] Check the Games Free account's current verification/plan and prepare only the required hosting.
-  Keep the Paid-account backend hold and all unrelated paused services. Direct deployment needs the
-  owner's explicit release authorization. The current Cloudflare plugin only sees the old account.
+  Isolated CLI authentication now succeeds on the correct Free account. Account/subscription proof
+  receives HTTP403/code10000, and the API does not report email verification. The owner asked to use
+  existing access and declined further token creation. Do not ask again. Root owns the read-only
+  browser-auth repair, authoritative plan proof and reviewed test-service deployment.
+  Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
 - [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
   access until revalidation/reload. Legacy RK codes have separate revocation limitations.
@@ -54,7 +68,10 @@ email service or fulfilment webhook in this implementation. Do not reopen that s
 - [x] Complete account-only bank/identity/tax setup, as reported and previously observed. Do not repeat it.
 - [x] Enable Test mode, complete the bundle test purchase and provide its key through private entry.
 - [x] Review the two local app previews. Ludvig said the screens look fine.
-- [ ] Verify the Games Free account's email only if a fresh account check still shows that requirement.
+- [ ] If needed, sign into the existing Games Free identity (ludvighedin.se@gmail.com) in Dia.
+  The currently exported browser identity is ludvighedin15@gmail.com, whose email is verified, but
+  that identity cannot read the Free account. Root requested only the correct login, no new token
+  or repeated email verification. Root owns all setup and checks after access is available.
 - [x] Authorize production publishing once all release gates are ready. Ludvig explicitly did so
   on 31 October. Do not ask again for the same four-pack release. Readiness is still required.
 
@@ -74,8 +91,9 @@ All original free choices remain free; the bundle promises only these three name
 Business plans: [first 100 kr](first-100kr-plan.md), [1,000 kr per month](1000kr-month-plan.md).
 The test payment is not real revenue. These plans are demand experiments, not earnings promises.
 
-Next owner: the coordinator prepares the remaining live release work; Ludvig owns the pack review and
-production-publishing decision. No production or marketing authorization is inferred from test success.
+Next owner: the coordinator completes the remaining checks and conditional release work. Ludvig has
+already approved the packs, Mac inclusion, shared shop and publication once ready. The requested
+token request is withdrawn. Root owns the current work; marketing still needs separate approval.
 
 ## Latest checkpoint, 31 October
 

@@ -73,3 +73,13 @@ Ludvig authorized the coordinator to ask support. The question was sent to the e
 support address `hello@lemonsqueezy.com` in the store-approval thread, explicitly covering browser
 and Mac game extras. Gmail returned SENT (`1a19239a18117fcc`). A provider response and actual journey
 verification are still outstanding. This sent question is not proof that the withdrawal gate passed.
+
+## Read-only hosted checkout follow-up
+
+The existing bundle test link loaded the actual hosted checkout, explicitly labelled Test mode,
+with the expected bundle description and SEK99.00. Its initial billing-country field selected the
+United States. In this unfilled initial state the outer checkout document exposed no checkbox or
+withdrawal/waiver/consent wording, only the provider Terms and Help links. This is **not evidence of
+the completed Swedish/EU journey or that no conditional provider feature exists**. Payment fields
+were not filled; no checkout submission, purchase or setting change occurred. The task tab was closed.
+The most recent mail-thread read still returned the sent support question, not a provider reply.

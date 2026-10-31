@@ -1,5 +1,6 @@
 {
   "name": "ludvig-games-store-test",
+  "account_id": "cffb5d1b12c3302ecc0745862fbf1f14",
   "main": "worker.mjs",
   "compatibility_date": "2026-10-30",
   "workers_dev": true,

@@ -155,7 +155,7 @@ button.nav-button { background: transparent; cursor: pointer; font: inherit; fon
 .shop-pricing { margin: 16px 0 40px; color: var(--muted); max-width: 68ch; }
 .shop-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 32px; }
 .shop-product { display: flex; flex-direction: column; min-width: 0; }
-.shop-image { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--surface); }
+.shop-image { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--surface); }
 .shop-product-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 20px; }
 .shop-product h2, .shop-bundle h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.35; letter-spacing: -.015em; }
 .shop-price { margin: 0; flex-shrink: 0; font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }

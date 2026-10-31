@@ -5,9 +5,12 @@ import path from 'node:path';
 import net from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { spawn, execFileSync } from 'node:child_process';
+import { createHash, verify } from 'node:crypto';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const electron = path.join(root, 'node_modules/electron/dist/Electron.app/Contents/MacOS/Electron');
+const packaged = process.argv.length === 3 && process.argv[2] === '--packaged';
+const electron = path.join(root, packaged ? 'release/mac-arm64/Ludvig Games.app/Contents/MacOS/Ludvig Games'
+  : 'node_modules/electron/dist/Electron.app/Contents/MacOS/Electron');
 const output = path.join(root, 'output/purchase-selftest');
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fail = message => { throw new Error(message); };
@@ -262,8 +265,26 @@ async function runApp({ game, phase, key, run }) {
 }
 
 try {
-  if (process.argv.length !== 2 || !process.env.AGENT_JOB_TOKEN || !process.env.AGENT_RUNTIME_DIR) fail('Use the registered app-test lane');
+  if ((process.argv.length !== 2 && !packaged) || !process.env.AGENT_JOB_TOKEN || !process.env.AGENT_RUNTIME_DIR) fail('Use the registered app-test lane');
   regular(root, true); regular(electron);
+  if (packaged) {
+    const bundle = path.join(root, 'release/mac-arm64/Ludvig Games.app');
+    execFileSync('/usr/bin/codesign', ['--verify', '--deep', '--strict', bundle], { stdio: 'ignore', timeout: 30000 });
+    const publicFile = path.join(bundle, 'Contents/Resources/app/app/update-key.pem');
+    regular(publicFile);
+    const publicKey = fs.readFileSync(publicFile);
+    if (!publicKey.equals(fs.readFileSync(path.join(root, 'app/update-key.pem')))) fail('Unexpected packaged update key');
+    const zip = path.join(root, 'release/Ludvig-Games-mac-arm64.zip');
+    const signatureFile = `${zip}.sig`;
+    regular(zip);
+    if (regular(signatureFile).size > 2048) fail('Invalid update signature file');
+    const signed = JSON.parse(fs.readFileSync(signatureFile, 'utf8'));
+    const hasher = createHash('sha256');
+    for await (const block of fs.createReadStream(zip)) hasher.update(block);
+    const hash = hasher.digest();
+    if (signed.sha256 !== hash.toString('hex') || typeof signed.signature !== 'string'
+        || !verify(null, hash, publicKey, Buffer.from(signed.signature, 'base64'))) fail('Packaged update signature is invalid');
+  }
   const keyFile = process.env.LS_TEST_LICENSE_FILE;
   if (!keyFile || !path.isAbsolute(keyFile)) fail('A private test-key file is required');
   const keyInfo = regular(keyFile);
@@ -285,11 +306,11 @@ try {
     }
     if (!results.at(-1)?.ok) break;
   }
-  const summary = { ok: results.length === 8 && results.every(item => item.ok), results,
+  const summary = { ok: results.length === 8 && results.every(item => item.ok), packaged, results,
     unchecked: ['federated-room grant endpoint and two-Mac journey', 'offline free play', 'refund/revocation', 'packaged update installation'],
     limits: 'UI ownership, selected styles and fresh-process restoration; screenshots require separate visual inspection.' };
   fs.writeFileSync(path.join(run, 'summary.json'), JSON.stringify(summary, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
-  console.log(JSON.stringify({ ok: summary.ok, results, report: path.join(run, 'summary.json') }));
+  console.log(JSON.stringify({ ok: summary.ok, packaged, results, report: path.join(run, 'summary.json') }));
   if (!summary.ok) process.exitCode = 1;
 } catch {
   console.error('Mac purchase self-test stopped. Check the private fixture, staged test configuration and registered app-test lane.');
