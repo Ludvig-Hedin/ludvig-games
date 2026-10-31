@@ -9,8 +9,8 @@
   checks passed. The local test package is signed; no app release was published.
 - All four hosted test checkouts display the approved 59/39/39/99 SEK totals with Sweden selected
   and tax-inclusive configuration. This does not establish live VAT calculation or settlement rounding.
-- Prepare an opt-in disabled-test-licence probe. Actual disabling and negative hosted acceptance
-  remain blocked by the merchant sign-in handshake; no licence was changed.
+- The owner disabled the actual test-bundle licence. The hosted negative check passed: resolver and
+  grant refuse it, and Ritkaos reports no paid ownership. Re-enabling and positive restoration are next.
 - Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
   checks passed locally; actual app, hosted service and release gates remain open.
 - Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs

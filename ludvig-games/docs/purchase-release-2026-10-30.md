@@ -39,9 +39,13 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   five focused policy checks passed. The actual official iframe request now passes the gate, bound
   to its current server-provided fields and signed frame. The provider nevertheless returns its own
   auth-login destination, so merchant access itself remains unavailable. No actual licence was changed.
-  Root will use the prepared hosted negative probe after the owner temporarily disables only test
-  licence 1726555 in Dia, then arrange re-enabling that same test licence. A repeated generic sign-in
-  request or another Cloudflare token is not the next owner step.
+  Ludvig then disabled only test licence 1726555 in his working session; his screenshot shows Disabled.
+  The actual hosted negative probe passed: resolve and grant both return 422 `invalid-license`, with
+  neither entitlements nor signed proof. Hosted Ritkaos refuses redemption and explicitly returns empty
+  ownership. The test socket closed and the check process exited. This proves rejection at validation,
+  not instant removal from an already open app or execution of a monetary refund. Next: Ludvig enables
+  that same test licence; root reruns the existing hosted positive restoration checks. No regeneration,
+  repeated generic sign-in request or Cloudflare token is needed.
 - The four actual hosted test carts show **59/39/39/99 SEK**, their matching Pay labels, Sweden selected
   and `tax_inclusive: true`. No card fields or payment submission were used. Their captured cart tax
   remains zero, and no automatic tax request was observed in that final check. This is displayed-price
@@ -64,8 +68,9 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   integration check passed. Test keys never entered source or output. No remote CI, push or deployment.
 
 This proves the **bundle success path in the test environment**. Separate single-pack purchases,
-failed/cancelled payments, real disabled-key/refund operations and fresh-device My Orders recovery
-are not claimed as provider-tested. Single-pack and invalid/disabled mapping have focused mock coverage.
+failed/cancelled payments, monetary refunds and fresh-device My Orders recovery are not claimed as
+provider-tested. The actual disabled test key is now rejected by the hosted resolver/grant and Ritkaos;
+re-enabling and renewed positive restoration remain pending. Single-pack mapping has focused mock coverage.
 Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 ## What remains before real sales
@@ -106,6 +111,8 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   hosted licence/grant validation and the hosted multiplayer check are now complete.
   Keep the Paid-account backend hold and all unrelated paused services. Conditional release is authorized.
 - [ ] Finish refund/support operations, including disabling a native key and checking its next validation.
+  The owner disabled the real test-bundle key and its hosted negative check passed. Owner re-enabling
+  that exact key and root's positive restoration recheck are next. No monetary refund was exercised.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
   access until revalidation/reload. Legacy RK codes have separate revocation limitations.
 - [ ] Finish the existing purchase-confirmation/withdrawal work in
