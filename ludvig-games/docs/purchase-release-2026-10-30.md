@@ -32,6 +32,14 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   operation exists in this preparation helper. No public shop or production Mac package was published.
 - Lemon Squeezy now redirects the agent to login. Root requested only an existing Dia login in test
   mode for the remaining disabled-key operation. Cloudflare access is not the blocker.
+- Ludvig completed that Dia login and enabled Test mode. Fresh isolated reads identified the actual
+  remaining sign-in block: the guarded connection refuses the provider's `auth.lemonsqueezy.com/check`
+  SSO request from its official redirect-challenge iframe. Refreshing app/auth cookies alone does not
+  solve it. Root owns a narrowly scoped authentication repair, with sensitive review before use.
+- The four actual hosted test carts show **59/39/39/99 SEK**, their matching Pay labels, Sweden selected
+  and `tax_inclusive: true`. No card fields or payment submission were used. Their captured cart tax
+  remains zero, and no automatic tax request was observed in that final check. This is displayed-price
+  evidence, not proof of Swedish live VAT or the earlier receipt's currency-conversion rounding.
 - The provider has not replied to the already sent withdrawal-function question. Root owns the
   remaining delivery, refund/recovery, checkout/policy and conditional publication work.
 

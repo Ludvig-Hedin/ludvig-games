@@ -5,8 +5,12 @@
 - Fix provider validation on Workers using supported manual redirects; every redirect is rejected
   without forwarding the licence. Add real SQLite DO/cache/global-budget and hosted delivery checks.
 - Correct the local Ritkaos catalogue destination to the verified Free server. Not yet published.
-- Eight actual source Mac-app purchase/restart journeys passed. Built a local test package; packaged
-  checks and hosted delivery remain pending. Corrected shop preview image sizing before restaging.
+- Eight final packaged Mac-app purchase/restart journeys and nine two-runtime purchase/isolation
+  checks passed. The local test package is signed; no app release was published.
+- All four hosted test checkouts display the approved 59/39/39/99 SEK totals with Sweden selected
+  and tax-inclusive configuration. This does not establish live VAT calculation or settlement rounding.
+- Prepare an opt-in disabled-test-licence probe. Actual disabling and negative hosted acceptance
+  remain blocked by the merchant sign-in handshake; no licence was changed.
 - Fix runtime compatibility for Ed25519 purchase proofs. The 44 focused shop/Mac/proof/native
   checks passed locally; actual app, hosted service and release gates remain open.
 - Build the shared shop and Mac purchase source. Add short-lived, connection-bound Ritkaos proofs
