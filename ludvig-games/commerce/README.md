@@ -1,4 +1,4 @@
-# Test-only native licence service
+# Native licence service, local release preparation
 
 Local implementation, not deployed. The owner's bundle test purchase, emailed receipt/native key and
 all three local browser unlocks are verified. Ritkaos also restored ownership after reload.
@@ -7,13 +7,13 @@ The coordinator owns guarded checks, independent review, actual store configurat
 ## Integration contract
 
 `createLicenseResolver({storeId, environment, products, fetchImpl?, now?, takeBudget?})` from `license.mjs`
-returns `{catalog(), resolve(key)}`. Only environment `test` is accepted. `catalog().ready` stays false
-until all four offers have real positive store/product/variant IDs, explicit `testMode: true` and exact
-HTTPS `*.lemonsqueezy.com/buy/<UUID>` or `/checkout/buy/<UUID>` checkout URLs. No placeholder credentials, live mode or native key
+returns `{catalog(), resolve(key)}`. Environments `test` and `live` are accepted only with explicit matching configuration. `catalog().ready` stays false
+until all four offers have real positive store/product/variant IDs, an explicit matching `testMode` and exact
+HTTPS `*.lemonsqueezy.com/buy/<UUID>` or `/checkout/buy/<UUID>` checkout URLs. No placeholder credentials or native key
 in URLs. Missing settings do not unlock anything.
 
 `resolve(key)` accepts a native UUID key and returns only
-`{ok:true,environment:'test',entitlements:['ritkaos'|'pigeon'|'karts', ...]}`. Bundle returns all three.
+`{ok:true,environment:'test'|'live',entitlements:['ritkaos'|'pigeon'|'karts', ...]}`. Bundle returns all three.
 Failures throw `LicenseError` with safe `.code` and `.status`. No provider/customer/key data is echoed.
 Existing RK tokens are not parsed here and should retain their separate legacy verification path.
 
@@ -36,14 +36,14 @@ Use private ignored environment files, never source/HTML, for deployment setting
 ```
 
 The JSON above is the value of `LS_TEST_PRODUCTS`, not a credential or working fixture. Set `LS_STORE_ID`
-and `TEST_MODE=true`. Verify these IDs in the provider's **test** catalog. The License API has no
+and `TEST_MODE=true` for test. Live requires explicit `TEST_MODE=false` and `LS_LIVE_PRODUCTS`, with every product declaring `testMode:false`. Verify each set in the matching provider catalogue. The License API has no
 documented `test_mode` response property: separation relies on exact separately verified product/variant
-IDs. A `testMode` config declaration alone is not external proof. No live-ready configuration exists.
+IDs. A `testMode` config declaration alone is not external proof. Known test IDs cannot be reused in live. No inspected live product configuration exists yet.
 Native provider key generation/receipt delivery and My Orders recovery must be tested in the provider.
 
 ## HTTP and local preview
 
-- `GET /api/store` returns `{environment:'test',ready,products:[{id,name,price,currency:'SEK',checkout}],recoveryUrl}`.
+- `GET /api/store` returns `{environment:'test'|'live',ready,products:[{id,name,price,currency:'SEK',checkout}],recoveryUrl}`.
 - `POST /api/licenses/resolve` accepts **only** `{key}` JSON or `text/plain` JSON. No product claim is accepted.
 - Exact permitted origins: `https://games.ludvighedin.com`, `https://ritkaos.ludvighedin.workers.dev`.
   Local adapter also permits localhost/127.0.0.1 ports 4317, 4322, 3000 and 8793. Origin checks supplement
@@ -96,10 +96,25 @@ The bundle success path is verified. Remaining release checks include single-pac
 failed/cancelled payments, fresh-device My Orders recovery, real disabled keys and refund operations.
 Provider validation is cached for 30 seconds; loaded style pages can retain in-memory ownership until
 the next restore/reload. Refunding is not assumed to disable a native key. These adapters do not process
-refunds or send mail. Live mode is deliberately unsupported until separately prepared and authorized.
+refunds or send mail. Live-mode code is prepared locally, but real product IDs, provider settings, guarded checks and deployment remain release gates.
 
 Official references checked 30 October 2026:
 - https://docs.lemonsqueezy.com/api/license-api
 - https://docs.lemonsqueezy.com/api/license-api/validate-license-key
 - https://docs.lemonsqueezy.com/help/licensing/generating-license-keys
 - https://docs.lemonsqueezy.com/guides/developer-guide/testing-going-live
+
+## Production preparation, 31 October
+
+`wrangler.live.jsonc` is a non-deployed candidate pinned to the approved Free account. Its empty
+`LS_LIVE_PRODUCTS` deliberately keeps purchasing unavailable. Populate only freshly inspected live IDs.
+Test and live use separate Worker names, limiter namespaces and Durable Object names.
+
+The static hub can select the dedicated API at build time with
+`LUDVIG_STORE_API=https://ludvig-games-store.ludvighedin.workers.dev`. The builder validates this origin
+and emits it only in the shared store client. It does not change the existing leaderboard API.
+Both named service endpoints must return their matching mode; local same-origin previews support either.
+Do not deploy the hub before its corresponding service is configured and verified.
+
+See [support operations](../docs/payment-operations.md). Full-refund access removal remains an owner
+decision. Production writes and activation are not implied by local preparation.

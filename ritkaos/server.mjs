@@ -13,7 +13,7 @@ const root=path.join(path.dirname(fileURLToPath(import.meta.url)),'public');
 const port=Number(process.env.PORT)||3000;
 const secret=process.env.RITKAOS_UNLOCK_SECRET||'';
 const licenses=createLicenseResolver(configurationFromEnv(process.env));
-const game=new Game({secret,resolveLicense:licenses.catalog().ready?key=>licenses.resolve(key):null});const peers=new Set();
+const game=new Game({secret,licenseEnvironment:licenses.catalog().environment,resolveLicense:licenses.catalog().ready?key=>licenses.resolve(key):null});const peers=new Set();
 const staticFiles=new Map([['/','index.html'],['/index.html','index.html'],['/app.js','app.js'],['/theme.js','theme.js'],['/style.css','style.css'],['/favicon.svg','favicon.svg']]);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 // A proxy on this machine (for example a tunnel) may forward the visitor's address; only trust it from loopback.
@@ -73,7 +73,7 @@ server.on('error',e=>{
 server.listen(port,'0.0.0.0',()=>{
   console.log(`\n  ✎  R I T K A O S\n\n  Du:       http://localhost:${port}\n`);
   for(const addr of addresses())console.log(`  Samma wifi: ${addr}`);
-  if(licenses.catalog().ready)console.log('\n  Ritkaos+: Lemon Squeezy-testkoder är aktiva. Inga riktiga betalningar.');
+  if(licenses.catalog().ready)console.log(licenses.catalog().environment==='test'?'\n  Ritkaos+: Lemon Squeezy-testkoder är aktiva. Inga riktiga betalningar.':'\n  Ritkaos+: Lemon Squeezy-koder är aktiva.');
   else if(!validSecret(secret))console.log('\n  Ritkaos+: koder är avstängda (RITKAOS_UNLOCK_SECRET saknas). Allt gratis fungerar som vanligt.');
   console.log('\n  Skapa ett rum och klicka Bjud in.\n  Behåll detta fönster öppet medan ni spelar.\n  Olika nätverk: se SPELA-IKVALL.md eller kör npm run online.\n  Avsluta: Ctrl+C\n');
 });

@@ -1,4 +1,4 @@
-/** Test-only native Lemon Squeezy validation. No merchant secret or customer data is returned. */
+/** Native Lemon Squeezy validation with explicit test/live product separation. */
 export const OFFERS = Object.freeze([
   { id: 'ritkaos', name: 'Ritkaos+', price: 59, entitlements: ['ritkaos'] },
   { id: 'pigeon', name: 'Pigeon style pack', price: 39, entitlements: ['pigeon'] },
@@ -10,12 +10,20 @@ export const PROVIDER_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
 export const LIMITS = Object.freeze({ inputBytes: 256, responseBytes: 16384, timeoutMs: 5000, cacheMs: 30000, cacheEntries: 256, inFlight: 8, outboundPerMinute: 20 });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const positiveId = value => /^(?:[1-9][0-9]{0,15})$/.test(String(value ?? '')) ? String(value) : '';
+// Public IDs inspected in the provider's test catalogue, 30 October 2026.
+// Keep these excluded from live even when LS_TEST_PRODUCTS is not supplied there.
+const VERIFIED_TEST_IDS = {
+  products: new Set(['1488379', '1488395', '1488397', '1488399']),
+  variants: new Set(['2319068', '2319091', '2319094', '2319096']),
+  checkouts: new Set(['c42022e5-8d8b-47e9-a1bb-39bc7bcce5d8', '6779b0c4-816d-464c-9d56-0342d0d04311', '4eae2b75-0966-4424-8ea2-006dfadbe71d', '66dad681-02da-408d-8021-5247f823fe73']),
+};
+const isEnvironment = value => value === 'test' || value === 'live';
 
 export function normalizeLicense(value) {
   return typeof value === 'string' && value.length <= 80 && UUID.test(value.trim()) ? value.trim().toLowerCase() : '';
 }
 
-function checkoutUrl(value) {
+function checkoutUrl(value, environment) {
   try {
     if (typeof value !== 'string' || value.length > 2048) return '';
     const url = new URL(value);
@@ -24,35 +32,59 @@ function checkoutUrl(value) {
     if (!path || !UUID.test(path[1])) return '';
     if ([...url.searchParams.keys()].some(k => !['test', 'embed', 'media', 'logo'].includes(k))) return '';
     if (url.searchParams.has('test') && url.searchParams.get('test') !== '1') return '';
+    if (environment === 'live' && url.searchParams.has('test')) return '';
     if (['embed', 'media', 'logo'].some(k => url.searchParams.has(k) && !['0', '1'].includes(url.searchParams.get(k)))) return '';
     return url.href;
   } catch { return ''; }
 }
 
-/** Configuration must come from inspected test products. A declaration cannot prove provider mode. */
-export function normalizeConfiguration({ storeId, environment, products } = {}) {
-  if (environment !== 'test' || !positiveId(storeId) || !products || typeof products !== 'object' || Array.isArray(products)) return null;
+function normalizeProducts(products, environment) {
+  if (!products || typeof products !== 'object' || Array.isArray(products)) return null;
   if (Object.keys(products).length !== OFFERS.length) return null;
-  const pairs = new Set(), productIds = new Set(), checkoutPaths = new Set();
+  const variantIds = new Set(), productIds = new Set(), checkoutPaths = new Set();
   const normalized = {};
   for (const offer of OFFERS) {
     const product = products[offer.id];
     const productId = positiveId(product?.productId), variantId = positiveId(product?.variantId);
-    const checkout = checkoutUrl(product?.checkout);
-    if (!productId || !variantId || !checkout || product.testMode !== true || pairs.has(`${productId}:${variantId}`) || productIds.has(productId)) return null;
+    const checkout = checkoutUrl(product?.checkout, environment);
+    if (!productId || !variantId || !checkout || product.testMode !== (environment === 'test') || variantIds.has(variantId) || productIds.has(productId)) return null;
+    const checkoutId = new URL(checkout).pathname.split('/').at(-1).toLowerCase();
+    if (environment === 'live' && (VERIFIED_TEST_IDS.products.has(productId) || VERIFIED_TEST_IDS.variants.has(variantId) || VERIFIED_TEST_IDS.checkouts.has(checkoutId))) return null;
     const checkoutPath = new URL(checkout).origin + new URL(checkout).pathname;
     if (checkoutPaths.has(checkoutPath)) return null;
-    pairs.add(`${productId}:${variantId}`);
+    variantIds.add(variantId);
     productIds.add(productId); checkoutPaths.add(checkoutPath);
     normalized[offer.id] = { productId, variantId, checkout };
   }
-  return { storeId: positiveId(storeId), environment: 'test', products: normalized };
+  return normalized;
+}
+
+/** IDs must come from inspected provider products; a mode declaration is not external proof. */
+export function normalizeConfiguration({ storeId, environment, products, oppositeProducts } = {}) {
+  if (!isEnvironment(environment) || !positiveId(storeId)) return null;
+  const normalized = normalizeProducts(products, environment);
+  if (!normalized) return null;
+  if (oppositeProducts !== undefined) {
+    const opposite = normalizeProducts(oppositeProducts, environment === 'test' ? 'live' : 'test');
+    if (!opposite) return null;
+    const otherProducts = new Set(Object.values(opposite).map(item => item.productId));
+    const otherVariants = new Set(Object.values(opposite).map(item => item.variantId));
+    const otherCheckouts = new Set(Object.values(opposite).map(item => new URL(item.checkout).pathname.split('/').at(-1).toLowerCase()));
+    if (Object.values(normalized).some(item => otherProducts.has(item.productId) || otherVariants.has(item.variantId) || otherCheckouts.has(new URL(item.checkout).pathname.split('/').at(-1).toLowerCase()))) return null;
+  }
+  return { storeId: positiveId(storeId), environment, products: normalized };
 }
 
 export function configurationFromEnv(env = {}) {
-  let products;
-  try { products = JSON.parse(env.LS_TEST_PRODUCTS || 'null'); } catch { products = null; }
-  return { storeId: env.LS_STORE_ID, environment: env.TEST_MODE === 'true' ? 'test' : '', products };
+  const environment = env.TEST_MODE === 'true' ? 'test' : env.TEST_MODE === 'false' ? 'live' : '';
+  const current = environment === 'live' ? 'LS_LIVE_PRODUCTS' : 'LS_TEST_PRODUCTS';
+  const opposite = environment === 'live' ? 'LS_TEST_PRODUCTS' : 'LS_LIVE_PRODUCTS';
+  let products, oppositeProducts;
+  try { products = JSON.parse(env[current] || 'null'); } catch { products = null; }
+  if (env[opposite] !== undefined) {
+    try { oppositeProducts = JSON.parse(env[opposite]); } catch { oppositeProducts = null; }
+  }
+  return { storeId: env.LS_STORE_ID, environment, products, oppositeProducts };
 }
 
 export class LicenseError extends Error {
@@ -85,8 +117,8 @@ async function hashKey(key) {
   return [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-export function createLicenseResolver({ storeId, environment, products, fetchImpl = fetch, now = Date.now, takeBudget, limits = {} } = {}) {
-  const config = normalizeConfiguration({ storeId, environment, products });
+export function createLicenseResolver({ storeId, environment, products, oppositeProducts, fetchImpl = fetch, now = Date.now, takeBudget, limits = {} } = {}) {
+  const config = normalizeConfiguration({ storeId, environment, products, oppositeProducts });
   const settings = { ...LIMITS, ...limits };
   const cache = new Map(), inFlight = new Map();
   let windowStart = now(), spent = 0;
@@ -99,7 +131,7 @@ export function createLicenseResolver({ storeId, environment, products, fetchImp
 
   function catalog() {
     return {
-      environment: 'test', ready: !!config, recoveryUrl: RECOVERY_URL,
+      environment: isEnvironment(environment) ? environment : '', ready: !!config, recoveryUrl: RECOVERY_URL,
       products: OFFERS.map(({ id, name, price }) => ({ id, name, price, currency: 'SEK', checkout: config?.products[id].checkout || '' })),
     };
   }
@@ -128,7 +160,7 @@ export function createLicenseResolver({ storeId, environment, products, fetchImp
       if (positiveId(meta?.store_id) !== config.storeId) throw new LicenseError('invalid-license', 422);
       const offer = OFFERS.find(item => config.products[item.id].productId === positiveId(meta?.product_id) && config.products[item.id].variantId === positiveId(meta?.variant_id));
       if (!offer) throw new LicenseError('invalid-license', 422);
-      return { ok: true, entitlements: [...offer.entitlements], environment: 'test' };
+      return { ok: true, entitlements: [...offer.entitlements], environment: config.environment };
     } catch (error) {
       if (error instanceof LicenseError) throw error;
       throw new LicenseError('temporarily-unavailable');

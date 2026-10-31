@@ -17,8 +17,8 @@ activation, Video Game category. Existing free game content remains free.
 | Three-pack bundle | 99 SEK | 1488399 | 2319096 |
 
 `commerce/.env.test.example` contains these public identifiers and exact provider checkout URLs, no
-secret. Test/live copies have different IDs. The current implementation intentionally accepts only
-test configuration; live-mode support still needs preparation.
+secret. Test/live copies have different IDs. Local release preparation now supports explicitly separated test/live configurations. Real live IDs
+are still absent, so the live candidate stays unavailable. No live catalogue is claimed ready.
 
 Owner account approval and Tax information Submitted were observed earlier. Ludvig reported finishing
 bank/identity/tax setup and enabled Test mode. Do not ask him to repeat those completed steps.
@@ -83,7 +83,7 @@ and re-entering the real bundle key are verified.
 - Receipt Reply-To currently uses the owner's personal Gmail. Use public support address
   ludvig@ludvighedin.com for the paid launch.
 - Prepare live-mode support and inspect copied live products/new IDs, then hosting and policy updates.
-  Existing code is test-only. No public Buy link should point to a test checkout.
+  Live-mode changes are local and need final verification. No public Buy link should point to a test checkout.
 - Native keys support disabling, but refund does not imply automatic revocation. Document support and
   refund operations before release; loaded cosmetic pages can retain access until revalidation/reload.
 - Only Games Free account cffb5d1b12c3302ecc0745862fbf1f14 may host the required new services. The current
@@ -107,3 +107,25 @@ the two intended app-preview PNGs remain as review artifacts.
 Next owner: coordinator prepares the remaining live release work and investigates currency/VAT.
 Ludvig reviews the pack previews and owns the production-publishing decision. Account forms already
 completed are not extra homework. The technical bundle success path in test mode is now verified.
+
+## Further preparation, 31 October
+
+- Prepared local live/test backend and client separation, mode-specific saved native keys, explicit
+  live configuration and a separate purchase-service build origin. Known test IDs are rejected in live.
+- First 17 focused backend/mode checks passed. Client/Ritkaos checks were initially blocked at
+  15% then 18% reclaimable RAM against the unchanged 20% guard. Do not count those attempts as passes.
+- Fresh independent money-flow review found two regressions: a transient catalogue failure could
+  prevent Ritkaos purchase restoration, and a live service hostname could expose a test catalogue.
+  Both were repaired: the game welcome establishes licence mode, and both named endpoint modes are pinned.
+- Free-account read requests failed with expired auth (9109/10000). A standard OAuth refresh exchange
+  failed HTTP403. Existing auth files were preserved unchanged. Account verification/plan remains unknown.
+- Prepared refund, key-disabling and recovery runbook in `payment-operations.md`. No real refunds,
+  disabling, email, account edits or deployments were performed.
+- Owner questions pending in chat: tax-inclusive intended prices, permission for live-product/support
+  setup, and access removal after a full refund. Do not infer their answers.
+
+The coordinator retains implementation and verification ownership. Ludvig's next input is those
+three decisions; renewed Free-account login is also required before its current state can be checked.
+
+Static build after these changes passed: 62 catalogue entries, 52 full-screen games. No dev server or
+dependency copy was created in this continuation; no cleanup target remains.

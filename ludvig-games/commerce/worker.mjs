@@ -2,7 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { createLicenseResolver, configurationFromEnv, LicenseError, LIMITS } from './license.mjs';
 import { allowedOrigin, json, safeFailure, readLicenseRequest, preflight } from './http.mjs';
 
-/** Standalone test Worker on the existing games Free account. No static site/old API activation. */
+/** Standalone Worker on the existing games Free account. No static site/old API activation. */
 export default {
   async fetch(request, env) {
     const url = new URL(request.url), origin = request.headers.get('origin') || '';
@@ -20,14 +20,15 @@ export default {
     if (request.method === 'OPTIONS') return preflight(origin);
     if (request.method !== 'POST') return json({ ok: false, error: 'method-not-allowed' }, 405, origin);
     try {
-      if (!env.LICENSE_IP_LIMIT || !env.LICENSES || env.TEST_MODE !== 'true') throw new LicenseError('store-unavailable');
+      const config = configurationFromEnv(env);
+      if (!env.LICENSE_IP_LIMIT || !env.LICENSES || !createLicenseResolver(config).catalog().ready) throw new LicenseError('store-unavailable');
       const key = await readLicenseRequest(request);
       const ip = request.headers.get('CF-Connecting-IP');
       if (!ip) throw new LicenseError('rate-limited', 429);
       const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
       const limiterKey = [...new Uint8Array(hash)].map(x => x.toString(16).padStart(2, '0')).join('');
       if (!(await env.LICENSE_IP_LIMIT.limit({ key: limiterKey })).success) throw new LicenseError('rate-limited', 429);
-      const stub = env.LICENSES.get(env.LICENSES.idFromName('test-license-resolver'));
+      const stub = env.LICENSES.get(env.LICENSES.idFromName(`${config.environment}-license-resolver`));
       const internal = new Request('https://internal.invalid/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
       const result = await stub.fetch(internal);
       const body = await result.text();

@@ -73,10 +73,10 @@ export async function verifyCode(secret, code) {
 export function storeInfo({ secret, checkout, catalog } = {}) {
   // Legacy helper callers retain their shape; actual hosts always supply the inspected provider catalogue.
   if (!catalog) return { ready: !!validSecret(secret), checkout: validCheckout(checkout), products: PRODUCTS };
-  const nativeReady = catalog.environment === 'test' && catalog.ready === true;
+  const nativeReady = ['test','live'].includes(catalog.environment) && catalog.ready === true;
   const offer = catalog.products?.find(p => p.id === 'ritkaos');
   return {
-    ready: !!validSecret(secret) || nativeReady, nativeReady, environment: 'test',
+    ready: !!validSecret(secret) || nativeReady, nativeReady, environment: catalog.environment,
     checkout: nativeReady ? validCheckout(offer?.checkout) : '', products: PRODUCTS,
     recoveryUrl: 'https://app.lemonsqueezy.com/my-orders',
   };

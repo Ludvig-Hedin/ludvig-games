@@ -20,7 +20,7 @@ function providerBody(overrides = {}) {
 const response = body => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
 const rejected = (promise, code) => assert.rejects(promise, error => error instanceof LicenseError && error.code === code);
 
-test('configuration fails closed with placeholders, missing products, live mode or unsafe checkout', () => {
+test('configuration fails closed with placeholders, missing products, mode mismatch or unsafe checkout', () => {
   assert.equal(createLicenseResolver().catalog().ready, false);
   assert.equal(createLicenseResolver({ ...configuration(), environment: 'live' }).catalog().ready, false);
   assert.equal(normalizeConfiguration({ ...configuration(), storeId: 'STORE_ID' }), null);
@@ -36,7 +36,7 @@ test('configuration fails closed with placeholders, missing products, live mode 
   assert.equal(normalizeConfiguration(sameProduct), null);
   const sameCheckout = configuration(); sameCheckout.products.pigeon.checkout = sameCheckout.products.ritkaos.checkout;
   assert.equal(normalizeConfiguration(sameCheckout), null);
-  assert.equal(configurationFromEnv({ TEST_MODE: 'false' }).environment, '');
+  assert.equal(configurationFromEnv({ TEST_MODE: 'false' }).environment, 'live');
   const officialCheckout = configuration();
   officialCheckout.products.ritkaos.checkout = officialCheckout.products.ritkaos.checkout.replace('/buy/', '/checkout/buy/');
   assert.ok(normalizeConfiguration(officialCheckout));

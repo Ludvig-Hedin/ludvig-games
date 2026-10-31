@@ -316,6 +316,20 @@ def ludvig_script(base):
     return f"window.__LUDVIG_API={json.dumps(base)};\n{source}" if base else source
 
 
+def store_script():
+    """Pin the separately hosted purchase API without changing the hub API."""
+    base = os.environ.get("LUDVIG_STORE_API", "").strip().rstrip("/")
+    allowed = {
+        "https://ludvig-games-store.ludvighedin.workers.dev",
+        "https://ludvig-games-store-test.ludvighedin.workers.dev",
+        "http://127.0.0.1:4322", "http://localhost:4322",
+    }
+    if base and base not in allowed:
+        raise ValueError("LUDVIG_STORE_API must name the dedicated Games purchase service")
+    source = (ROOT / "assets" / "store-client.js").read_text()
+    return f"window.__LUDVIG_STORE_API={json.dumps(base)};\n{source}" if base else source
+
+
 def write_worker_boards(boards):
     """The API Worker has no static files, so it gets the board config bundled (worker/boards.gen.mjs)."""
     path = ROOT / "worker" / "boards.gen.mjs"
@@ -621,9 +635,10 @@ def render(output):
     previews.mkdir(parents=True)
     base = api_base()
     for asset in ["site.css", "favicon.svg", "game-storage.js", "audio-resume.js",
-                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js", "store-client.js"]:
+                  "score-bridge.js", "scores-ui.js", "hub.js", "together.js", "back-button.js"]:
         shutil.copy2(ROOT / "assets" / asset, assets / asset)
     (assets / "ludvig.js").write_text(ludvig_script(base))
+    (assets / "store-client.js").write_text(store_script())
     boards = load_boards(games)
     # Read by the hub pages (labels, formats, local records) and bundled into the API Worker (validation, ordering).
     (assets / "boards.json").write_text(json.dumps(boards, separators=(",", ":"), ensure_ascii=False))

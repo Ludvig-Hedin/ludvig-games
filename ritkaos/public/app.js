@@ -146,7 +146,11 @@ let lang=(()=>{const saved=store.get('ritkaos.lang','');if(saved==='sv'||saved==
 // Ritkaos+: codes stay in localStorage and go to the server in hello. Only the server decides what is unlocked.
 const PALETTES={base:colors,candy:['#3b2f4a','#ff6f91','#ff9671','#ffc75f','#f9f871','#c4fcef','#4ffbdf','#00c9a7','#845ec2','#d65db1','#b39cd0','#ffffff'],night:['#0b1026','#1f2a5a','#3a4f9a','#5f7fd6','#9ab8ff','#f2e9a0','#ffd166','#ef476f','#7b2cbf','#c77dff','#2ec4b6','#ffffff'],forest:['#1e2d24','#3a5a40','#588157','#a3b18a','#dad7cd','#7f5539','#b08968','#ddb892','#e9c46a','#f4a261','#bc4749','#ffffff']};
 const BRUSH_STYLES=['','marker','crayon','neon'],PAID_MODES=['blind','speed','telephone'],PAID_PACKS=['nineties','office','holidays','food','internet'];
-const codes={get:()=>{try{const l=JSON.parse(store.get('ritkaos.codes','[]'));return Array.isArray(l)?l.filter(c=>typeof c==='string').slice(-20):[];}catch{return [];}},add:c=>{const l=codes.get().filter(x=>x!==c);l.push(c);store.set('ritkaos.codes',JSON.stringify(l.slice(-20)));}};
+let licenseMode='';
+const nativeCode=c=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(c);
+const savedCodes=key=>{try{const l=JSON.parse(store.get(key,'[]'));return Array.isArray(l)?l.filter(c=>typeof c==='string').slice(-20):[];}catch{return [];}};
+const codeStorage=()=>licenseMode==='live'?'ritkaos.codes:live':'ritkaos.codes';
+const codes={get:()=>{const old=savedCodes('ritkaos.codes');return licenseMode==='test'?old:licenseMode==='live'?[...old.filter(c=>!nativeCode(c)),...savedCodes('ritkaos.codes:live')].slice(-20):old.filter(c=>!nativeCode(c));},add:c=>{const key=nativeCode(c)?codeStorage():'ritkaos.codes',l=savedCodes(key).filter(x=>x!==c);l.push(c);store.set(key,JSON.stringify(l.slice(-20)));}};
 let owned=new Set(),shop={ready:false,nativeReady:false,checkout:'',products:[]},storeOpen=false,storeFocus='',chainData=null;
 let brushStyle=store.get('ritkaos.brush',''),paletteId=store.get('ritkaos.palette','base');
 const has=id=>owned.has(id)||owned.has('plus'),isUnlocked=id=>!!state?.unlocked?.includes(id);
@@ -187,7 +191,7 @@ function connect(){
   let packet;try{packet=JSON.parse(e.data);}catch{return;}const d=packet.data||{};
   if(packet.type==='ack'){const request=requests.get(packet.request);if(request){clearTimeout(request.timeout);requests.delete(packet.request);packet.ok?request.resolve(d):request.reject(new Error(packet.error));}return;}
   switch(packet.type){
-   case 'welcome':{const wasDisconnected=retry>0;ready=true;retry=0;me=d.id;sessionStore.set(d.token);serverOffset=d.serverTime-Date.now();connectionUI(true);if(!d.room&&state){state=null;showScreen('home');toast(T('roomGone'));}if(wasDisconnected&&d.room)toast(T('back'));break;}
+   case 'welcome':{if(['test','live'].includes(d.licenseEnvironment)){licenseMode=d.licenseEnvironment;socket.send(JSON.stringify({type:'licenses',data:{codes:codes.get()}}));}const wasDisconnected=retry>0;ready=true;retry=0;me=d.id;sessionStore.set(d.token);serverOffset=d.serverTime-Date.now();connectionUI(true);if(!d.room&&state){state=null;showScreen('home');toast(T('roomGone'));}if(wasDisconnected&&d.room)toast(T('back'));break;}
    case 'state':applyState(d);break;case 'board':loadBoard(d);break;case 'ink':receiveInk(d);break;case 'chat':appendChat(d);break;case 'cursor':remoteCursor(d);break;case 'effect':effect(d);break;
    case 'rooms':if(screen==='home')renderRooms(d.rooms||[]);break;
    case 'owned':owned=new Set(d.products||[]);if(typeof d.ready==='boolean')shop.ready=d.ready;renderPalette();refreshStore();if(state&&screen==='lobby')renderLobby();break;
@@ -383,7 +387,7 @@ function saveDrawing(){const out=document.createElement('canvas');out.width=1500
 function modal(html){storeOpen=false;$('#modal-content').innerHTML=html;const d=$('#modal');if(!d.open)d.showModal();}
 function confirmAction(title,text,label,fn){modal(`<h2 class="modal-title">${esc(title)}</h2><p class="modal-text">${esc(text)}</p><div class="modal-buttons"><button class="button subtle" id="modal-cancel">${T('cancel')}</button><button class="button primary" id="modal-confirm">${esc(label)}</button></div>`);$('#modal-cancel').onclick=()=>$('#modal').close();$('#modal-confirm').onclick=()=>{$('#modal').close();act(fn);};}
 // Ritkaos+ sheet: prices, what you own, a code field, and Buy when a checkout link is configured.
-const productName=id=>T('products')[id]?.[0]||id,canBuy=()=>shop.nativeReady&&shop.environment==='test'&&!!shop.checkout;
+const productName=id=>T('products')[id]?.[0]||id,canBuy=()=>shop.nativeReady&&['test','live'].includes(shop.environment)&&!!shop.checkout;
 function buyUrl(id){return id==='plus'&&canBuy()?shop.checkout:'';}
 function storeRow(p){
  const mine=has(p.id),hostHas=!mine&&isUnlocked(p.id)&&!state?.you.host;
@@ -515,4 +519,4 @@ $('#lang').onclick=()=>{
  if(state){if(screen==='lobby')renderLobby();else if(screen==='results')renderResults(false);else if(screen==='game')renderGame();}
  send('lang',{lang});loadRooms();
 };
-translatePage();renderAvatars();renderPalette();updateSound();applyTheme();fetch('/api/connection').then(r=>r.json()).then(d=>lan=d.lan||[]).catch(()=>{});fetch('/api/store').then(r=>r.json()).then(d=>{shop={ready:!!d.ready,nativeReady:d.nativeReady===true,environment:d.environment,checkout:d.checkout||'',products:Array.isArray(d.products)?d.products:[]};refreshStore();}).catch(()=>{});loadRooms();let roomPolls=0;setInterval(()=>{if(!ready&&++roomPolls%5===0)loadRooms();},3000);connect();requestAnimationFrame(frame);
+translatePage();renderAvatars();renderPalette();updateSound();applyTheme();fetch('/api/connection').then(r=>r.json()).then(d=>lan=d.lan||[]).catch(()=>{});fetch('/api/store').then(r=>r.json()).then(d=>{licenseMode=['test','live'].includes(d.environment)?d.environment:'';if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'licenses',data:{codes:codes.get()}}));shop={ready:!!d.ready,nativeReady:d.nativeReady===true,environment:d.environment,checkout:d.checkout||'',products:Array.isArray(d.products)?d.products:[]};refreshStore();}).catch(()=>{});loadRooms();let roomPolls=0;setInterval(()=>{if(!ready&&++roomPolls%5===0)loadRooms();},3000);connect();requestAnimationFrame(frame);

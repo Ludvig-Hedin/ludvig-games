@@ -62,6 +62,6 @@ server.headersTimeout = 10000;
 const port = Number(process.env.PORT || 4322);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Invalid local port.');
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  server.listen(port, '127.0.0.1', () => console.log(`Test commerce preview: http://127.0.0.1:${port}; configured=${resolver.catalog().ready}`));
+  server.listen(port, '127.0.0.1', () => console.log(`Commerce preview: http://127.0.0.1:${port}; environment=${resolver.catalog().environment || 'unconfigured'}; configured=${resolver.catalog().ready}`));
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => server.close(() => process.exit()));
 }

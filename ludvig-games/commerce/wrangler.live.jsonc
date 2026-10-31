@@ -1,0 +1,14 @@
+{
+  // Release candidate only. Missing inspected live product IDs keep purchases unavailable.
+  "name": "ludvig-games-store",
+  "account_id": "cffb5d1b12c3302ecc0745862fbf1f14",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-30",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": { "TEST_MODE": "false", "LS_STORE_ID": "504842", "LS_LIVE_PRODUCTS": "{}" },
+  "durable_objects": { "bindings": [{ "name": "LICENSES", "class_name": "Licenses" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Licenses"] }],
+  "ratelimits": [{ "name": "LICENSE_IP_LIMIT", "namespace_id": "4202", "simple": { "limit": 6, "period": 60 } }]
+}

@@ -24,7 +24,8 @@ Detailed evidence: [payment setup status](payment-setup-status-2026-10-30.md).
 
 ## What remains before real sales
 
-- [ ] Prepare live-mode support. The present integration deliberately accepts test configuration only.
+- [x] Prepare local live-mode support with separated IDs, storage and endpoint modes. Not deployed.
+- [ ] Finish guarded client/game checks and configure inspected live products.
   Copy the approved products to live mode and inspect their new IDs/URLs; never reuse the test IDs.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Cause/live behavior is not established. The test cart's zero tax is not proof
@@ -51,7 +52,7 @@ email service or fulfilment webhook in this implementation. Do not reopen that s
 - [x] Approve lineup and 59/39/39/99 starting prices, with free content preserved and tiny SKUs omitted.
 - [x] Complete account-only bank/identity/tax setup, as reported and previously observed. Do not repeat it.
 - [x] Enable Test mode, complete the bundle test purchase and provide its key through private entry.
-- [ ] Review the two local app previews below before the paid launch.
+- [x] Review the two local app previews. Ludvig said the screens look fine.
 - [ ] Verify the Games Free account's email only if a fresh account check still shows that requirement.
 - [ ] Give explicit authorization for production publishing when the remaining release gates are ready.
 
@@ -73,3 +74,18 @@ The test payment is not real revenue. These plans are demand experiments, not ea
 
 Next owner: the coordinator prepares the remaining live release work; Ludvig owns the pack review and
 production-publishing decision. No production or marketing authorization is inferred from test success.
+
+## Latest checkpoint, 31 October
+
+The local live-mode candidate is prepared, with a fresh sensitive review and its two findings repaired.
+17 focused backend/mode tests passed; the updated client/game tests remain blocked by RAM admission.
+The static build passed (62 entries, 52 full-screen games). No production settings or content changed.
+
+Three owner decisions are pending in chat: intended prices inclusive of VAT; permission to create
+live products and change the public support Reply-To; disable paid access after a full refund.
+Free-account authentication has expired and automatic refresh was rejected (HTTP403). A fresh
+owner-approved sign-in will be needed. Bank/identity/tax forms are not being requested again.
+
+Refund/recovery steps are saved in [payment operations](payment-operations.md). Actual provider refund,
+key disabling and the online withdrawal/confirmation flow still need verification before launch.
+The coordinator owns those checks and scoped policy preparation once decisions/access are available.

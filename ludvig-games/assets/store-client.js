@@ -1,10 +1,11 @@
-/* Shared, test-only purchase and restore sheet. Free games work if this file or its API is unavailable. */
+/* Shared purchase and restore sheet. Free games work if this file or its API is unavailable. */
 (() => {
   'use strict';
   if (window.LudvigStore) return;
   const ENTITLEMENTS = ['ritkaos', 'pigeon', 'karts'];
-  const STORAGE = 'ludvig:licenses:test';
-  const ALLOWED_BASES = new Set([location.origin, 'http://127.0.0.1:4322', 'http://localhost:4322', 'https://ludvig-games-store-test.ludvighedin.workers.dev']);
+  const storageKey = () => `ludvig:licenses:${catalog?.environment || 'unconfigured'}`;
+  const configured = () => ['test', 'live'].includes(catalog?.environment) && catalog.ready === true;
+  const ALLOWED_BASES = new Set([location.origin, 'http://127.0.0.1:4322', 'http://localhost:4322', 'https://ludvig-games-store-test.ludvighedin.workers.dev', 'https://ludvig-games-store.ludvighedin.workers.dev']);
   const proposed = typeof window.__LUDVIG_STORE_API === 'string' ? window.__LUDVIG_STORE_API.replace(/\/$/, '') : location.origin;
   const base = ALLOWED_BASES.has(proposed) ? proposed : location.origin;
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,12 +18,12 @@
   let catalog = null, owned = new Set(), dialog, selected = 'pigeon', busy = false, focusBefore, revision = 0;
   const listeners = new Set();
   const readKeys = () => {
-    try { const data = JSON.parse(localStorage.getItem(STORAGE) || '[]'); return Array.isArray(data) ? [...new Set(data.filter(k => typeof k === 'string' && UUID.test(k)))].slice(-4) : []; }
+    try { const data = JSON.parse(localStorage.getItem(storageKey()) || '[]'); return Array.isArray(data) ? [...new Set(data.filter(k => typeof k === 'string' && UUID.test(k)))].slice(-4) : []; }
     catch { return []; }
   };
-  const saveKeys = keys => { try { localStorage.setItem(STORAGE, JSON.stringify(keys.slice(-4))); } catch { /* The receipt remains the recovery source. */ } };
+  const saveKeys = keys => { try { localStorage.setItem(storageKey(), JSON.stringify(keys.slice(-4))); } catch { /* The receipt remains the recovery source. */ } };
   const publish = () => {
-    const state = Object.freeze({ owned: [...owned], environment: 'test', ready: catalog?.ready === true });
+    const state = Object.freeze({ owned: [...owned], environment: catalog?.environment || '', ready: catalog?.ready === true });
     for (const fn of listeners) { try { fn(state); } catch { /* One game callback must not break restore. */ } }
     window.dispatchEvent(new CustomEvent('ludvig:store', { detail: state }));
   };
@@ -42,13 +43,13 @@
   }
   async function validate(key) {
     const data = await api('/api/licenses/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
-    if (data.ok !== true || data.environment !== 'test' || !Array.isArray(data.entitlements) || data.entitlements.some(id => !ENTITLEMENTS.includes(id))) throw { code: 'temporarily-unavailable' };
+    if (data.ok !== true || data.environment !== catalog?.environment || !Array.isArray(data.entitlements) || data.entitlements.some(id => !ENTITLEMENTS.includes(id))) throw { code: 'temporarily-unavailable' };
     return data.entitlements;
   }
   async function restore() {
     const version = ++revision, initial = readKeys(), checked = new Set(initial);
     const next = new Set(), keep = [];
-    if (catalog?.environment === 'test' && catalog.ready === true) {
+    if (configured()) {
       for (const key of initial) {
         try { for (const id of await validate(key)) next.add(id); keep.push(key); }
         catch (e) { if (e.status !== 422) keep.push(key); }
@@ -66,7 +67,7 @@
     : error.status === 429 ? 'Too many checks right now. Please try again in a minute.'
     : 'Could not check the code right now. It has not been removed from your saved codes.';
   function checkout(value) {
-    try { const u = new URL(value); return u.protocol === 'https:' && u.hostname.endsWith('.lemonsqueezy.com') && /^\/(?:checkout\/)?buy\/[0-9a-f-]{36}$/i.test(u.pathname) && !u.username && !u.password && !u.hash ? u.href : ''; }
+    try { const u = new URL(value); return u.protocol === 'https:' && !u.port && [...u.searchParams.keys()].every(k => ['test','embed','media','logo'].includes(k)) && (catalog?.environment !== 'live' || !u.searchParams.has('test')) && u.hostname.endsWith('.lemonsqueezy.com') && /^\/(?:checkout\/)?buy\/[0-9a-f-]{36}$/i.test(u.pathname) && !u.username && !u.password && !u.hash ? u.href : ''; }
     catch { return ''; }
   }
   function buildDialog() {
@@ -78,7 +79,7 @@
     dialog.setAttribute('aria-labelledby', 'lg-store-title');
     const close = node('button', '×', 'lg-close'); close.type = 'button'; close.setAttribute('aria-label', 'Close purchase options'); close.onclick = () => dialog.close();
     const title = node('h2', 'Game extras'); title.id = 'lg-store-title';
-    const mode = node('p', 'Test mode. No real payment.', 'lg-muted');
+    const mode = node('p', 'Test mode. No real payment.', 'lg-muted'); mode.dataset.mode = '';
     const label = node('label', 'Choose a pack'); label.htmlFor = 'lg-store-product';
     const select = node('select'); select.id = 'lg-store-product'; select.onchange = () => { selected = select.value; render(); };
     const details = node('p'); details.dataset.details = '';
@@ -94,7 +95,7 @@
       event.preventDefault(); if (busy) return;
       const value = key.value.trim().toLowerCase();
       if (!UUID.test(value)) { message('Paste the full license code from your receipt.'); return; }
-      if (catalog?.ready !== true || catalog.environment !== 'test') { message('Purchases are not configured yet. Please try again later.'); return; }
+      if (!configured()) { message('Purchases are not configured yet. Please try again later.'); return; }
       busy = true; apply.disabled = true; message('Checking your code…');
       try {
         const entitlements = await validate(value);
@@ -112,6 +113,7 @@
   }
   function render() {
     if (!dialog) return;
+    dialog.querySelector('[data-mode]').hidden = catalog?.environment !== 'test';
     const select = dialog.querySelector('select'), previous = select.value;
     select.replaceChildren();
     const offers = catalog?.products || [
@@ -122,9 +124,9 @@
     select.value = offers.some(p => p.id === selected) ? selected : previous || 'bundle';
     const offer = offers.find(p => p.id === select.value);
     dialog.querySelector('[data-details]').textContent = COPY[offer?.id] || '';
-    const buy = dialog.querySelector('.lg-buy'), url = catalog?.ready === true && catalog.environment === 'test' ? checkout(offer?.checkout) : '';
+    const buy = dialog.querySelector('.lg-buy'), url = configured() ? checkout(offer?.checkout) : '';
     buy.hidden = !url;
-    if (url) { buy.href = url; buy.textContent = `Test checkout · ${offer.price} kr`; }
+    if (url) { buy.href = url; buy.textContent = `${catalog.environment === 'test' ? 'Test checkout' : 'Buy'} · ${offer.price} kr`; }
     else buy.removeAttribute('href');
     const bought = offer?.id === 'bundle' ? ENTITLEMENTS.every(id => owned.has(id)) : owned.has(offer?.id);
     if (bought) { buy.hidden = true; dialog.querySelector('[data-availability]').textContent = 'You already have these extras on this device.'; }
@@ -132,12 +134,14 @@
   }
   window.LudvigStore = Object.freeze({
     owns: id => owned.has(id),
-    subscribe(fn) { if (typeof fn !== 'function') return () => {}; listeners.add(fn); fn({ owned: [...owned], environment: 'test', ready: catalog?.ready === true }); return () => listeners.delete(fn); },
+    subscribe(fn) { if (typeof fn !== 'function') return () => {}; listeners.add(fn); fn({ owned: [...owned], environment: catalog?.environment || '', ready: catalog?.ready === true }); return () => listeners.delete(fn); },
     open(id) { selected = ['bundle', ...ENTITLEMENTS].includes(id) ? id : 'bundle'; if (!dialog) buildDialog(); focusBefore = document.activeElement; render(); if (!dialog.open) dialog.showModal(); },
   });
-  window.addEventListener('storage', event => { if (event.key === STORAGE || event.key === null) { revision++; restore(); } });
+  window.addEventListener('storage', event => { if (event.key === storageKey() || event.key === null) { revision++; restore(); } });
   api('/api/store').then(data => {
-    if (data.environment !== 'test' || !Array.isArray(data.products)) return;
+    if (!['test', 'live'].includes(data.environment) || !Array.isArray(data.products)) return;
+    const expectedMode = base === 'https://ludvig-games-store-test.ludvighedin.workers.dev' ? 'test' : base === 'https://ludvig-games-store.ludvighedin.workers.dev' ? 'live' : '';
+    if (expectedMode && data.environment !== expectedMode) return;
     catalog = data; render(); return restore();
   }).catch(() => { owned = new Set(); publish(); });
 })();

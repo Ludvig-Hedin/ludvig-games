@@ -15,6 +15,14 @@ class Peer {
 const accepted = entitlements => ({ok:true,environment:'test',entitlements});
 const invalid = () => { const error=new Error('Provider data must not reach a player');error.code='invalid-license';throw error; };
 
+test('welcome establishes licence mode independently of the HTTP catalogue', () => {
+  for (const licenseEnvironment of ['test', 'live']) {
+    const peer = new Peer();
+    new Game({ licenseEnvironment }).connect(peer);
+    assert.equal(peer.messages.find(message => message.type === 'welcome').data.licenseEnvironment, licenseEnvironment);
+  }
+});
+
 test('drawing commands preserve wire order during a pending licence refresh',async()=>{
   let now=1000,finish,wait=false;
   const g=new Game({now:()=>now,resolveLicense:()=>wait?new Promise(resolve=>{finish=resolve;}):Promise.resolve(accepted(['ritkaos']))});
@@ -103,13 +111,22 @@ test('disabled key on deliberate redemption loses its prior native grant without
   assert.deepEqual([...p.owned],[]);
 });
 
-test('native shop exposes only the exact configured test checkout; generic legacy URL cannot activate it',()=>{
+test('native shop exposes only the exact configured checkout; generic legacy URL cannot activate it',()=>{
   const off=storeInfo({secret:SECRET,checkout:'https://pay.example/anything',catalog:{ready:false,environment:'test',products:[]}});
   assert.equal(off.nativeReady,false);assert.equal(off.checkout,'');assert.equal(off.ready,true);
   const checkout='https://ludviggames.lemonsqueezy.com/buy/'+OTHER;
   const on=storeInfo({catalog:{ready:true,environment:'test',products:[{id:'ritkaos',checkout}]}});
   assert.equal(on.nativeReady,true);assert.equal(on.checkout,checkout);
   const live=storeInfo({catalog:{ready:true,environment:'live',products:[{id:'ritkaos',checkout}]}});
-  assert.equal(live.nativeReady,false);assert.equal(live.checkout,'');
+  assert.equal(live.nativeReady,true);assert.equal(live.checkout,checkout);assert.equal(live.environment,'live');
   assert.equal(PRODUCTS.find(p=>p.id==='plus').price,59);
+});
+
+test('live game accepts live grants and rejects test grants on redemption and refresh',async()=>{
+  let environment='live';
+  const g=new Game({licenseEnvironment:'live',resolveLicense:async()=>({ok:true,environment,entitlements:['ritkaos']})});
+  const p=g.connect(new Peer());
+  await g.handle(p,'redeem',{code:KEY});assert.ok(p.owned.has('plus'));
+  environment='test';await g.unlock(p,[KEY]);assert.deepEqual([...p.owned],[]);
+  await assert.rejects(g.handle(p,'redeem',{code:KEY}));assert.deepEqual([...p.owned],[]);
 });

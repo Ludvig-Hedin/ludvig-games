@@ -25,7 +25,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url), { pathname } = url;
     if (pathname === '/health') return json({ ok: true, game: 'ritkaos' });
-    // Only inspected test-mode product mappings can expose checkout. Legacy codes need no checkout.
+    // Only inspected product mappings for the configured mode can expose checkout. Legacy codes need no checkout.
     if (pathname === '/api/store') return json(storeInfo({ secret: env.RITKAOS_UNLOCK_SECRET, catalog: createLicenseResolver(configurationFromEnv(env)).catalog() }));
     if (pathname === '/ws' || pathname === '/api/rooms') {
       // Everything that can be refused is refused here, before the Lobby wakes.
@@ -53,7 +53,7 @@ export class Lobby extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.licenses = createLicenseResolver(configurationFromEnv(env));
-    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET, resolveLicense: this.licenses.catalog().ready ? key => this.licenses.resolve(key) : null });
+    this.game = new Game({ secret: env.RITKAOS_UNLOCK_SECRET, licenseEnvironment: this.licenses.catalog().environment, resolveLicense: this.licenses.catalog().ready ? key => this.licenses.resolve(key) : null });
     this.peers = new Map(); // WebSocket -> peer adapter used by Game.
     this.tickTimer = null; this.quietTimer = null; this.dirty = false; this.chunks = 0;
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));

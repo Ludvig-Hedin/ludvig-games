@@ -1,3 +1,9 @@
+# 2026-10-31: live-mode preparation, not deployed
+
+- Prepared explicit live/test product and saved-key separation, fail-closed live Worker configuration,
+  and a separate purchase API origin in the static build. Real live products are still unconfigured.
+- Added refund/recovery operations. Owner decisions and account authentication remain release gates.
+
 # 2026-10-31: purchased test bundle verified, local only
 
 - The owner's test order produced an emailed native licence. The real key restored Pigeon and Karts

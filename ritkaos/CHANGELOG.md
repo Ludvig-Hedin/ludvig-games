@@ -1,3 +1,9 @@
+# 2026-10-31: live licence preparation, local only
+
+- Bind native validation to an explicit test/live environment; keep saved native keys separate.
+- Supply the expected environment in the connection welcome so HTTP catalogue failures do not
+  prevent purchase restoration. No live product configuration or deployment.
+
 # Changelog
 
 ## 2026-10-31, local only

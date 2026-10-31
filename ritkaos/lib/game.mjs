@@ -22,9 +22,10 @@ export const TEL = { write:45000, guess:35000, show:6000, points:5000 };
 const TEL_PHASES = ['twrite','tdraw','tguess'], PLAY_PHASES = ['choosing','drawing','reveal',...TEL_PHASES,'treveal'];
 const MODIFIERS = [{id:'tiny',duration:10000},{id:'mono',duration:10000},{id:'mirror',duration:8000},{id:'blind',duration:8000},{id:'shake',duration:7000}];
 export class Game {
-  constructor({ now=()=>Date.now(), secret='', resolveLicense=null }={}) {
+  constructor({ now=()=>Date.now(), secret='', resolveLicense=null, licenseEnvironment='test' }={}) {
     this.now=now; this.rooms=new Map(); this.sessions=new Map(); this.secret=validSecret(secret);
-    this.resolveLicense=typeof resolveLicense==='function'?resolveLicense:null;
+    this.licenseEnvironment=['test','live'].includes(licenseEnvironment)?licenseEnvironment:'';
+    this.resolveLicense=this.licenseEnvironment&&typeof resolveLicense==='function'?resolveLicense:null;
     // Bearer keys stay in process memory only, never players or Durable Object snapshots.
     this.nativeCodes=new WeakMap(); this.unlockVersions=new WeakMap(); this.pendingCommands=new WeakMap();
   }
@@ -44,7 +45,7 @@ export class Game {
     const old=p.peer; p.peer=peer; p.connected=true; p.disconnectedAt=0; p.lastSeen=this.now(); p.network=network||null; p.lobbyKey='';
     if(validLang(lang)) p.lang=lang;
     if(old && old!==peer) { old.send({type:'replaced',data:{}}); old.close(); }
-    this.send(p,'welcome',{token:p.token,id:p.id,serverTime:this.now(),room:p.room});
+    this.send(p,'welcome',{token:p.token,id:p.id,serverTime:this.now(),room:p.room,licenseEnvironment:this.licenseEnvironment});
     const r=this.rooms.get(p.room);
     if(r) { if(!r.host || !r.players.get(r.host)?.connected) r.host=p.id; this.stateAll(r); this.sendBoard(p,r); this.sendChain(p,r); }
     else { p.room=null; this.sendRooms(p); }
@@ -124,7 +125,7 @@ export class Game {
     const before=[...p.owned].sort().join(','), native=new Set(), nativeKeys=list.filter(normalizeLicense);
     for(const code of list.filter(x=>!normalizeLicense(x))){const products=await verifyCode(this.secret,code);if(products)for(const id of products)p.legacyOwned.add(id);}
     if(this.resolveLicense)for(const code of nativeKeys){
-      try{const result=await this.resolveLicense(code);if(result?.ok===true&&result.environment==='test'&&result.entitlements?.includes('ritkaos'))native.add('plus');}
+      try{const result=await this.resolveLicense(code);if(result?.ok===true&&result.environment===this.licenseEnvironment&&result.entitlements?.includes('ritkaos'))native.add('plus');}
       catch { /* Revalidation failures remove provider grants; free play and legacy grants remain. */ }
     }
     if(this.unlockVersions.get(p)!==version)return expand(p.owned);
@@ -145,7 +146,7 @@ export class Game {
         await this.unlock(p,(this.nativeCodes.get(p)||[]).filter(x=>x!==native));
         error(e?.code==='invalid-license'?'badCode':'codesOff');
       }
-      if(result?.ok!==true||result.environment!=='test'||!result.entitlements?.includes('ritkaos')){
+      if(result?.ok!==true||result.environment!==this.licenseEnvironment||!result.entitlements?.includes('ritkaos')){
         await this.unlock(p,(this.nativeCodes.get(p)||[]).filter(x=>x!==native));error('badCode');
       }
       const products=await this.unlock(p,[...(this.nativeCodes.get(p)||[]),native]);
