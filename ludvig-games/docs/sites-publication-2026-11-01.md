@@ -15,7 +15,12 @@ The rebuilt app passes deep/strict codesign verification. Its update ZIP verifie
 existing updater public key. `desktop/tests/sites-release.test.mjs` checks actual packaged game
 assets, the catalogue, the Chess stylesheet, closed purchases and the authentic ZIP signature.
 The actual packaged app launch passed in its invisible isolated test mode: Chess completed e2–e4,
-all six imported routes returned 200 and the local store remained closed. Public upload is next.
+all six imported routes returned 200 and the local store remained closed.
+
+Published as [Ludvig Games 0.4.3](https://github.com/Ludvig-Hedin/ludvig-games/releases/tag/v0.4.3),
+the latest public release, targeting `f4f46997c7a91adbef99708c50115fa37ab6d607`.
+The DMG, ZIP and ZIP signature are all uploaded. Hosted asset sizes and SHA-256 digests match
+the locally checked artifacts. The source was pushed with GitHub Actions still disabled.
 
 ## Web blocker
 

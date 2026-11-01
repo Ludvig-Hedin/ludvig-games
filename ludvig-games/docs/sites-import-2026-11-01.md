@@ -2,6 +2,9 @@
 
 Local implementation, not a publication or Mac installer release.
 
+Follow-up: the game-only Mac 0.4.3 release is now published. Web publication is blocked by the
+host's fixed route allowlist. See `sites-publication-2026-11-01.md` for current release evidence.
+
 The connected owner's Sites list returned 33 sites in one complete page. The matching record is
 `sites-inventory-2026-11-01.json`. It maps renamed games to their existing local names, so Hay, You,
 Salvo, Overrun, Overtime and the older imported games are not duplicated.
