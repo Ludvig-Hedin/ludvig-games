@@ -18,12 +18,20 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   acceptance: an actual customer withdrawal/submission/acknowledgement journey can establish the
   behavior. The prior merchant refund is not the same journey, and a refunded order cannot prove
   that an otherwise available withdrawal button is absent. See `withdrawal-release-check.md`.
-- A site-scoped Dia export failed to connect without changing personal tabs. The separate customer
-  session successfully requested and received a current Lemon Squeezy login email and followed it
-  to the provider's `/2fa-challenge`. The private 2FA request timed out without a code, so order-view,
-  final live pricing/VAT and customer withdrawal acceptance remain blocked on that authentication.
-  No fresh order, payment, refund, product change or account-setting change was made. The refunded
-  key remains disabled. The login-email request was the only authentication submission.
+- Customer and merchant authentication now work, including the refreshed read-only Dia export.
+  All four live drafts have verified delivery links, receipt instructions and confirmation buttons.
+  Their prices, perpetual keys and hidden draft status remain intact. No owner login/token step
+  is currently needed. The temporary old-licence read-auth capability was revoked after inspection.
+- The owner's fresh test order 5048422 is Paid. Its receipt and customer view verify the prepared
+  delivery note, links and never-expiring unused licence. The customer view has no visible withdrawal
+  control; the receipt's support link leads to general help. No declaration/acknowledgement journey
+  is established. Preserve this paid test order for acceptance; no further purchase is requested.
+- Its receipt again shows SEK99.05 against the SEK99.00 line item and USD10.08 payment. Final live
+  inclusive-tax/currency behavior remains unverified. Root owns that investigation and the remaining
+  withdrawal implementation/acceptance after the provider dependency is resolved.
+- Corrected stale privacy facts for the restored Ritkaos rooms and Mac purchase storage, with fresh
+  independent source review. Rebuilt web and Mac candidates and passed both actual artifact checks
+  plus direct privacy-content readback. Nothing was uploaded or published; all task tabs are closed.
 
 ## Current hosted proof, 31 October
 
@@ -110,7 +118,8 @@ exact dependency and next actor; complete any independent ready work. Dated chec
 Owner clarification for this release: keep Games and the other project's work moving. Do not ask
 Ludvig to choose one or pause the peer's work. Queue guarded operations internally; existing limits remain enforced.
 
-- [x] Prepare local live-mode support with separated IDs, storage and endpoint modes. Not deployed.
+- [x] Prepare separated live/test IDs, storage and endpoints. Closed live service is deployed;
+  its product map remains empty and its checkouts unavailable.
 - [x] Finish guarded client/game checks. Earlier 33 checks and the new 44 focused checks passed within their stated scopes.
 - [x] Test the actual source Mac app: eight shop/Pigeon/Karts/Ritkaos restore and fresh-process
   restart journeys passed. Paid styles persisted; isolated profiles were removed after process exit.
@@ -127,6 +136,9 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   journey passed on the new Free host, followed by actual native-key restoration and guest sharing.
 - [x] Create and inspect the four live products as hidden drafts, with their new IDs/URLs saved in
   `commerce/live-products.plan.json`. Sales remain closed and deployment mapping remains disabled.
+- [x] Complete and read back delivery links, receipt instructions and confirmation buttons for all
+  four hidden live drafts and the test bundle. The new actual test receipt/customer view confirms
+  those delivery instructions and links. Live receipt and public destination acceptance remain pending.
 - [x] Prepare the live service and distinct live signing material without enabling any products.
   The public candidate config remains private/local and unused by the published site or app.
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
@@ -147,9 +159,12 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   hosted negative test successfully after refund. This is simulated test money, not bank-return proof.
   Refund does not automatically imply key revocation. Existing browser tabs can keep in-memory cosmetic
   access until revalidation/reload. Legacy RK codes have separate revocation limitations.
-- [ ] Finish the existing purchase-confirmation/withdrawal work in
-  [legal readiness](legal-readiness-2026-10-28.md), and update free-only public policy wording with the
-  actual paid release. No fresh legal clearance is claimed by the technical test.
+- [x] Prepare paid-flow policy wording and correct stale online-room/Mac-storage privacy facts.
+  The corrections are built into local web/Mac candidates, not published.
+- [ ] Establish the customer withdrawal function and durable acknowledgement in
+  [legal readiness](legal-readiness-2026-10-28.md). The fresh Paid test-order view and general Help
+  Center do not establish that function. Support has not replied to the already-authorized question;
+  root owns the appropriate implementation/acceptance when that dependency is resolved.
 - [x] Set the public support address to ludvig@ludvighedin.com and enable tax-inclusive pricing.
   Fresh official settings readback confirmed both. No new live receipt has been issued to verify Reply-To.
 - [ ] After the release gates and applicable authorization, deploy and verify the customer journey on
