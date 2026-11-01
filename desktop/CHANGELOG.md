@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.3 — 1 November 2026
+
+- Add the missing Chess, Table Tennis and Mind Games entries and six imported games: Pace, Breach,
+  Yeet Club, Last Call, Last Cart and Penthouse Panic.
+- Keep moved Chess pieces visible on focused squares. Fix daily challenge dates across midnight
+  in Yeet Club, Last Call, Last Cart and Penthouse Panic.
+- Package as a free game release with purchases closed. Actual packaged launch, game routes,
+  Chess movement, deep/strict app signature and update ZIP signature passed.
+
 ## Unreleased
 
 - Add Chess, Table Tennis and Mind Games to the local catalogue, and import Pace, Breach, Yeet Club,
