@@ -26,9 +26,10 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   delivery note, links and never-expiring unused licence. The customer view has no visible withdrawal
   control; the receipt's support link leads to general help. No declaration/acknowledgement journey
   is established. Preserve this paid test order for acceptance; no further purchase is requested.
-- Its receipt again shows SEK99.05 against the SEK99.00 line item and USD10.08 payment. Final live
-  inclusive-tax/currency behavior remains unverified. Root owns that investigation and the remaining
-  withdrawal implementation/acceptance after the provider dependency is resolved.
+- Its receipt shows SEK99.05 against the SEK99.00 line item and USD10.08 payment. Fresh official
+  order data now reconstructs that exact conversion/rounding (see below). The owner's exact-final-SEK
+  expectation needs a concrete decision about the provider's USD debit and customer information.
+  Live VAT behavior still needs acceptance. Root owns implementation after those dependencies clear.
 - Corrected stale privacy facts for the restored Ritkaos rooms and Mac purchase storage, with fresh
   independent source review. Rebuilt web and Mac candidates and passed both actual artifact checks
   plus direct privacy-content readback. Nothing was uploaded or published; all task tabs are closed.
@@ -144,9 +145,11 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
 - [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Current official [currency documentation](https://docs.lemonsqueezy.com/help/payments/currencies)
   confirms that all payments are processed in USD after conversion from the displayed store currency.
-  That explains a plausible rounding path, not a verified reconstruction of this receipt. Live behavior
-  still needs checking. The test cart's zero tax is not proof
-  of correct production VAT. Preserve the approved intended prices until a real product decision.
+  Fresh official order data reconstructs the exact rounding: rate 0.10176874 USD/SEK converts 99 SEK
+  to 1008 USD cents; converting those back produces 9905 öre. The owner must decide whether to retain
+  the approved displayed SEK prices with clear USD-debit information, because an exact SEK card debit
+  cannot be promised through this provider. No price/currency/copy change made pending that decision.
+  The test order is Swedish but non_taxable with zero tax; that is not proof of correct live VAT.
 - [x] Prepare only the required test hosting on the verified Games Free account. Fresh authorized browser
   GETs now confirm the .se user has `email_verified: true`, the exact account is standard, and its
   subscription list is empty with `next_page: false`. CLI OAuth was refreshed successfully too.
@@ -399,3 +402,23 @@ candidate and shared main `desktop/node_modules` are retained for final acceptan
 Root owns retry and removing the archived test release after production acceptance. Provider
 withdrawal/acknowledgement proof, live checkout inclusive-tax/rounding proof and conditional
 publication remain open. Root owns the next implementation/release step after that dependency clears.
+
+## Exact currency reconstruction
+
+Fresh read-only official customer-order data for test order 5048422 reports country SE, tax_country SE,
+tax_status non_taxable, tax_inclusive true, tax 0, currency SEK, currency_rate 0.10176874, total 9905,
+subtotal_usd 1008 and total_usd 1008. Arithmetic using that actual stored rate reproduces both displayed
+amounts. The five öre are explained by USD-cent rounding, not an added tax amount in this test order.
+No real card was used, so a bank's final SEK conversion is not tested.
+
+Official [Currencies](https://docs.lemonsqueezy.com/help/payments/currencies) explicitly says all
+transactions are processed in USD at real-time mid-market rates, even when another currency is
+displayed. [Tax-inclusive pricing](https://docs.lemonsqueezy.com/help/payments/sales-tax-vat) keeps
+applicable tax inside the set product price, but does not change that USD processing. The current
+[Test mode](https://docs.lemonsqueezy.com/help/getting-started/test-mode) page does not establish
+production Swedish VAT from the zero-tax test record. No live price or tax setting was changed.
+
+Owner decision requested: retain 59/39/39/99 SEK inclusive of applicable VAT with clear information
+that the card is charged in USD, or require an exact SEK debit (which needs a different payment
+approach). Do not silently change product currency, prices or existing customer copy. The withdrawal
+function remains a separate provider dependency. No further owner login or purchase is requested.
