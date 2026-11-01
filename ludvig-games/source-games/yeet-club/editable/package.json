@@ -1,0 +1,11 @@
+{
+  "name": "yeet-club",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A fast, beautiful Three.js downhill shopping-cart game with local split-screen.",
+  "scripts": {
+    "start": "node serve.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

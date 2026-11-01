@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="/assets/game-storage.js" data-game="pace"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8f4">
+  <meta name="description" content="Find your typing rhythm. Short English typing games, personal levels, daily streaks, and practice built around your mistakes.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pace">
+  <title>Pace — Find your typing flow</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to practice</a>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 5 7 6 7 12a7 7 0 0 1-14 0c0-3 2-6 4-7 0 3 1 4 2 4 2-2 2-5 1-9Z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5ZM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-muted" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5Zm6 4 5 6m0-6-5 6"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 15h10"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m14 2-10 12h7l-1 8 10-12h-7l1-8Z"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 2-2.5 2-2.5 4m0 3h.01"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/></symbol>
+  </defs></svg>
+  <div id="app">
+    <header class="header">
+      <a href="#practice" class="brand" aria-label="Pace home" data-nav="practice"><span class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></span>pace<span class="brand-period">.</span></a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-nav="practice" aria-current="page">Practice</button>
+        <button class="nav-item" data-nav="levels">Levels</button>
+        <button class="nav-item" data-nav="progress">Progress</button>
+      </nav>
+      <div class="header-right">
+        <span class="streak-count" title="Practice on consecutive days"><svg class="icon"><use href="#i-flame"/></svg><span id="header-streak">0</span><span class="streak-word">day streak</span></span>
+        <button class="profile-level" id="profile-level" data-nav="progress" aria-label="Your level and progress"><span id="header-level">1</span></button>
+        <button class="icon-button" id="settings-button" aria-label="Settings"><svg class="icon"><use href="#i-settings"/></svg></button>
+      </div>
+    </header>
+    <div id="storage-warning" class="storage-warning" role="status" hidden>Progress cannot be saved in this browser. You can still play and export your progress in Settings.</div>
+    <main id="main">
+      <section id="page-practice" class="page">
+        <div class="page-intro">
+          <div><p class="eyebrow">A LITTLE PRACTICE. A LOT OF PROGRESS.</p><h1>Find your flow<span>.</span></h1><p class="intro-subtitle">Build speed. Lose the typos.</p></div>
+          <div class="daily-goal"><div class="daily-goal-label"><span>Today’s practice</span><strong id="daily-goal-number">0 / 3</strong></div><div class="goal-slots" id="goal-slots"><i></i><i></i><i></i></div><p id="daily-goal-caption">Three short rounds. That’s your goal.</p></div>
+        </div>
+        <div class="practice-layout">
+          <div class="practice-main">
+            <div class="mode-bar" aria-label="Practice mode"><div class="mode-options" role="group" aria-label="Training mode"><button class="mode-button selected" data-mode="sprint" aria-pressed="true"><svg class="icon"><use href="#i-bolt"/></svg>Speed run</button><button class="mode-button" data-mode="accuracy" aria-pressed="false"><svg class="icon"><use href="#i-target"/></svg>Accuracy</button><button class="mode-button" data-mode="weakness" aria-pressed="false"><svg class="icon"><use href="#i-restart"/></svg>Fix mistakes</button></div><span class="language-label">ENGLISH <span>EN</span></span></div>
+            <article id="trainer" class="trainer is-ready" aria-label="Typing practice">
+              <div class="trainer-controls" id="trainer-controls">
+                <div class="difficulty-options" role="group" aria-label="Difficulty"><button data-difficulty="easy" class="selected" aria-pressed="true">Easy</button><button data-difficulty="medium" aria-pressed="false">Medium</button><button data-difficulty="hard" aria-pressed="false">Hard</button></div>
+                <div class="session-label" id="session-label" hidden></div>
+                <div class="duration-control" id="duration-control"><label for="duration">Round</label><select id="duration" aria-label="Round duration"><option value="30">30 sec</option><option value="60" selected>60 sec</option><option value="120">120 sec</option></select></div>
+                <span id="untimed-label" class="muted" hidden>No time limit</span>
+                <button id="free-practice" class="text-button" hidden>Free practice <svg class="icon"><use href="#i-close"/></svg></button>
+              </div>
+              <div id="round-content">
+                <div class="live-stats"><div class="timer-stat"><strong id="live-time">60<span>s</span></strong><span id="timer-label">remaining</span></div><div class="live-secondary"><div><strong id="live-wpm">0</strong><span>WPM</span></div><div><strong id="live-accuracy">—</strong><span>accuracy</span></div><div class="combo-stat"><strong id="live-combo">0<span>×</span></strong><span>combo</span></div></div></div>
+                <div class="race-track" aria-hidden="true"><div class="track-line"></div><div id="track-fill" class="track-fill"></div><span id="track-runner" class="track-runner"><svg class="icon"><use href="#i-bolt"/></svg></span><span class="finish-marker"></span></div>
+                <div class="typing-area" id="typing-area">
+                  <div class="passage-window" id="passage-window"><div id="passage" class="passage" aria-hidden="true"></div><span id="typing-caret" class="typing-caret" aria-hidden="true"></span></div>
+                  <label class="sr-only" for="typing-input">Type the English passage. Use Backspace to correct mistakes.</label>
+                  <textarea id="typing-input" class="typing-input" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" enterkeyhint="done" aria-describedby="accessible-passage typing-instructions" disabled></textarea>
+                  <p id="accessible-passage" class="sr-only"></p>
+                  <div class="focus-cover" id="focus-cover" hidden><button id="focus-button" class="primary-button"><svg class="icon"><use href="#i-keyboard"/></svg>Continue typing</button><span>The clock is still running.</span></div>
+                  <div id="feedback-layer" class="feedback-layer" aria-hidden="true"></div>
+                </div>
+                <div class="round-action" id="round-action"><button id="start-button" class="primary-button">Start round <svg class="icon"><use href="#i-arrow"/></svg></button><span class="start-shortcut">or press <kbd>enter ↵</kbd></span></div>
+                <div class="typing-hint" id="typing-instructions">The clock starts with your first keystroke.</div>
+                <div class="active-message" id="active-message" role="status" aria-live="polite" hidden>Type the text above.</div>
+              </div>
+              <section id="round-result" class="round-result" aria-live="polite" hidden></section>
+              <div class="trainer-footer"><span id="round-description">Simple words. A steady rhythm.</span><div><button class="icon-button" id="sound-button" aria-label="Turn sound on" aria-pressed="false"><svg class="icon"><use href="#i-muted"/></svg></button><button class="icon-button" id="help-button" aria-label="How to play"><svg class="icon"><use href="#i-help"/></svg></button><button class="icon-button" id="restart-button" aria-label="Restart round"><svg class="icon"><use href="#i-restart"/></svg></button></div></div>
+            </article>
+            <div id="keyboard" class="keyboard" aria-hidden="true"></div>
+          </div>
+          <aside class="practice-aside">
+            <section class="daily-challenge"><div class="aside-label"><svg class="icon"><use href="#i-bolt"/></svg>DAILY CHALLENGE</div><h2 id="daily-title">A fresh challenge.</h2><p id="daily-description">One minute. A new passage every day.</p><div class="challenge-meta"><span>60 seconds</span><span>Medium</span></div><button id="daily-button" class="challenge-button">Take the challenge <svg class="icon"><use href="#i-arrow"/></svg></button><span id="daily-done" class="daily-done" hidden><svg class="icon"><use href="#i-check"/></svg>Completed today</span></section>
+            <section class="next-level"><div class="section-label">YOUR NEXT LEVEL</div><div class="next-level-heading"><span id="next-level-number">01</span><h3 id="next-level-title">Find your rhythm</h3></div><p id="next-level-target">12 WPM · 85% accuracy</p><button id="next-level-button" class="text-button">Start level <svg class="icon"><use href="#i-arrow"/></svg></button></section>
+            <div class="personal-best"><div><span class="section-label">PERSONAL BEST</span><div><strong id="practice-best">—</strong><span>WPM</span></div></div><svg class="best-spark" viewBox="0 0 56 56" fill="none" aria-hidden="true"><path d="M28 5v46M5 28h46M12 12l32 32M12 44l32-32" stroke="currentColor" stroke-width="2"/></svg></div>
+          </aside>
+        </div>
+        <div class="bottom-note"><span><span class="status-dot"></span>Small steps. Real progress.</span><span>English practice · Saved on this browser</span></div>
+      </section>
+      <section id="page-levels" class="page" hidden><div class="page-intro"><div><p class="eyebrow">ONE LEVEL AT A TIME</p><h1>Build your rhythm<span>.</span></h1><p class="intro-subtitle">Finish the passage. Meet both targets. Unlock the next level.</p></div><div class="level-count"><strong id="levels-completed">0</strong><span>/ 12 completed</span></div></div><div id="level-list" class="level-list"></div><p class="page-note">Every difficulty is always available in free practice. Levels give you a path to follow.</p></section>
+      <section id="page-progress" class="page" hidden><div class="page-intro"><div><p class="eyebrow">EVERY ROUND ADDS UP</p><h1>Your progress<span>.</span></h1><p class="intro-subtitle">Compare your pace. Watch your accuracy.</p></div><button id="export-button" class="secondary-button"><svg class="icon"><use href="#i-download"/></svg>Export progress</button></div><div id="progress-content"></div></section>
+    </main>
+    <footer class="app-footer"><a href="#practice" class="footer-brand" data-nav="practice">pace.</a><span>Find a little more flow, every day.</span><button id="footer-help" class="text-button">How it works <svg class="icon"><use href="#i-arrow"/></svg></button></footer>
+  </div>
+  <dialog id="settings-dialog" class="app-dialog"><form method="dialog" class="dialog-top"><h2>Make it yours.</h2><button class="icon-button" aria-label="Close settings"><svg class="icon"><use href="#i-close"/></svg></button></form><div class="dialog-content"><label class="setting-row"><span><strong>Sound effects</strong><small>A quiet click, a combo, a little celebration.</small></span><input type="checkbox" id="setting-sound" role="switch"></label><label class="setting-row"><span><strong>Motion & effects</strong><small>Key feedback and combo celebrations.</small></span><input type="checkbox" id="setting-motion" role="switch" checked></label><div class="settings-transfer"><h3>Your progress, with you.</h3><p>Progress stays in this browser. Export a backup and import it on another device.</p><div><button id="settings-export" class="secondary-button">Export progress</button><button id="import-button" class="secondary-button">Import progress</button></div><input id="import-file" type="file" accept="application/json,.json" hidden><p id="import-status" class="import-status" role="status"></p><div id="import-confirm" hidden><p>This will replace the progress saved in this browser.</p><button id="confirm-import" class="primary-button">Replace progress</button><button id="cancel-import" class="text-button">Cancel</button></div></div></div></dialog>
+  <dialog id="help-dialog" class="app-dialog"><form method="dialog" class="dialog-top"><h2>One key at a time.</h2><button class="icon-button" aria-label="Close instructions"><svg class="icon"><use href="#i-close"/></svg></button></form><div class="dialog-content help-content"><p>Type the passage exactly as shown. The clock starts with your first character. Use <kbd>backspace</kbd> to fix a typo.</p><dl><dt>Speed run</dt><dd>Type as much correct text as you can in 30, 60, or 120 seconds.</dd><dt>Accuracy</dt><dd>Finish a short passage without leaving errors. Take your time.</dd><dt>Fix mistakes</dt><dd>Practice the words you missed in previous rounds.</dd><dt>Combo & XP</dt><dd>Correct keystrokes build a combo. Typos break it. Finish a round to earn XP. Clean words earn extra points.</dd><dt>Daily streak</dt><dd>Complete a round each day. A round must include at least 10 keystrokes and 5 seconds of practice to count.</dd><dt>Your results</dt><dd>WPM counts five correct characters as one word. Accuracy includes all attempts, even errors you later correct. Laptop and touch-keyboard records are kept separate.</dd></dl><p class="help-note">On a phone, tap Start round to bring up the keyboard. Keyboard suggestions and autocorrect are requested off; your device may still show them. Practice with a physical keyboard for computer typing skills.</p></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+  <script src="engine.js"></script><script src="content.js"></script><script src="progress.js"></script><script src="app.js"></script>
+</body>
+</html>

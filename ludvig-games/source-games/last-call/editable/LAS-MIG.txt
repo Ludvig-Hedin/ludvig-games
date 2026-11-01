@@ -1,0 +1,41 @@
+LAST CALL — Airport Chaos
+=========================
+
+STARTA DIREKT
+1. Packa upp ZIP-filen.
+2. Dubbelklicka på PLAY.html.
+3. Öppna filen i Chrome, Safari, Firefox eller Edge.
+
+Du behöver inte installera något. All grafik, spelkod, musik och typsnitt finns i filen.
+Webbläsaren måste stödja WebGL 2 och ha grafikacceleration aktiverad.
+
+SPELET
+Plocka väskor genom att köra över dem. Lasten rymmer åtta.
+Följ pilen till din gröna gate. Kör in i zonen för att leverera och få poäng.
+Du har 90 sekunder. Full last ger bonus. Hårda krascher slår av väskor.
+
+KONTROLLER
+Spelare 1: WASD kör, Shift sladdar, mellanslag boostar, R återställer vagnen.
+Spelare 2: piltangenter kör, Enter sladdar, punkt (.) boostar, Backspace återställer.
+Escape pausar.
+Släpp sladdknappen efter en bra sladd för att få turbo.
+
+KOMPISAR
+Couch duel: två personer på samma dator, delad skärm.
+Challenge a friend: kopiera en utmaningskod efter rundan.
+Kompisen öppnar sitt eget spel och väljer "Got a challenge code?" på menyn.
+Koden fungerar även mellan två nedladdade kopior. Det är en poängutmaning,
+inte samtidig multiplayer över internet.
+
+OM DIREKTÖPPNING INTE FUNGERAR
+Med Node.js installerat: öppna en terminal i denna mapp och kör
+    node scripts/serve.mjs
+Öppna sedan http://localhost:4173
+
+KÄLLKOD
+dist/game/ innehåller spelkoden. dist/ kan publiceras på valfri statisk webbserver.
+README.md innehåller alla detaljer och nuvarande begränsningar.
+
+VERIFIERING
+12 tester av spelregler och fysik passerar. Testmiljön saknade WebGL,
+så den faktiska 3D-renderingen kunde inte kontrolleras visuellt där.

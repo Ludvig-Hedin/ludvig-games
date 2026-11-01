@@ -1,0 +1,13 @@
+{
+  "name": "pace-typing-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An English typing practice game with levels, daily streaks, and targeted mistake drills.",
+  "scripts": {
+    "test": "node tests/engine.test.mjs && node tests/progress.test.mjs",
+    "package:download": "python3 scripts/package-download.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

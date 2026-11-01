@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="/assets/game-storage.js" data-game="last-call"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4efe5">
+  <meta name="description" content="One cart. Too much luggage. Ninety seconds. Drift, stack and deliver in LAST CALL — a 3D airport arcade game for solo runs and couch duels.">
+  <title>LAST CALL — Airport Chaos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f6764b'/%3E%3Cpath d='M16 17v30h16v-7H24V17zm22 0v30h14v-7h-6V17z' fill='%232b342e'/%3E%3C/svg%3E">
+  <link rel="preload" href="./fonts/barlow-black-italic.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="./fonts/dm-regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+  <div id="game-view" aria-label="3D airport game"></div>
+  <div id="cinema-vignette" aria-hidden="true"></div>
+  <div id="speed-lines" aria-hidden="true"></div>
+  <div id="loading" class="loading-screen"><div class="loading-logo">LAST CALL<span>®</span></div><div class="loading-track"><i></i></div><p>Preparing your very questionable transport.</p></div>
+
+  <header id="masthead" class="masthead">
+    <a href="./" class="brand" aria-label="LAST CALL home"><span class="brand-symbol">↗</span><span>LAST CALL<sup>®</sup></span></a>
+    <div class="terminal-label"><span class="status-dot"></span> TERMINAL 04 <span class="terminal-separator">/</span> NOW BOARDING</div>
+    <div class="top-actions"><button id="sound-btn" class="icon-button" aria-label="Mute sound" title="Sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 3c2 2 2 6 0 8m3-11c4 4 4 10 0 14"/></svg></button><button id="settings-btn" class="icon-button" aria-label="Open settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6m8 4v6"/></svg></button></div>
+  </header>
+
+  <main id="menu" class="menu-screen">
+    <div class="menu-copy">
+      <div class="eyebrow"><span class="tiny-plane">✈</span> BAGGAGE. BAD DECISIONS.</div>
+      <h1>LAST<br>CALL<span class="title-dot">.</span></h1>
+      <p class="intro">Your gate is closing.<br>Make a beautiful mess.</p>
+      <div class="mode-picker" role="group" aria-label="Game mode">
+        <button class="mode-button selected" data-mode="solo" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg>Solo run</button>
+        <button class="mode-button" data-mode="duel" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="7" r="3"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m2 4a6 6 0 0 1 4 6"/></svg>Couch duel</button>
+        <button class="mode-button" data-mode="daily" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6Z"/></svg>Daily flight</button>
+      </div>
+      <button id="play-btn" class="primary-button play-button"><span>Let's roll</span><span class="button-arrow">↗</span></button>
+      <div class="run-detail"><span id="mode-detail">90 SECONDS · YOU VS. THE CLOCK</span><button id="how-btn">How to play <span>?</span></button></div>
+      <button id="challenge-enter" class="challenge-enter">Got a challenge code? <span>↗</span></button>
+    </div>
+    <aside class="hero-caption"><div class="caption-marker">01 / THE TERMINAL</div><p>ONE CART.<br>ZERO CHILL.</p><div class="caption-rule"></div><span>DRIFT · STACK · DELIVER</span></aside>
+    <div class="menu-bottom">
+      <div class="record-block"><span class="mini-label">PERSONAL BEST</span><strong id="menu-best">0000</strong><span class="record-unit">PTS</span></div>
+      <div class="paint-selector"><span class="mini-label">YOUR RIDE</span><div id="paint-swatches" class="swatches" role="group" aria-label="Cart paint"></div><span id="paint-name">Tangerine</span></div>
+      <div class="menu-footer-mark">MISSED FLIGHTS.<br>GREAT STORIES.</div>
+    </div>
+    <div id="challenge-banner" class="challenge-banner hidden"></div>
+  </main>
+
+  <section id="hud" class="hud hidden" aria-label="Game status">
+    <div id="split-line" class="split-line hidden"></div>
+    <div class="round-clock"><span id="time-label">GATE CLOSES IN</span><strong id="timer">1:30</strong><div class="timer-track"><i id="timer-progress"></i></div></div>
+    <button id="pause-btn" class="icon-button pause-button" aria-label="Pause game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button>
+    <div id="hud-players"></div>
+    <div id="countdown" class="countdown hidden" aria-live="polite">3</div>
+    <div id="event-banner" class="event-banner hidden" aria-live="polite"></div>
+    <div id="tutorial-hint" class="tutorial-hint"><span class="hint-number">01</span><span id="hint-copy">Drive through luggage to pick it up</span></div>
+    <div id="key-hints" class="key-hints"><span><kbd>W A S D</kbd> DRIVE</span><span><kbd>SHIFT</kbd> DRIFT</span><span><kbd>SPACE</kbd> BOOST</span><span><kbd>R</kbd> RECOVER</span></div>
+  </section>
+
+  <div id="touch-controls" class="touch-controls hidden">
+    <div id="joystick" class="joystick" aria-label="Steer joystick"><div id="joystick-knob"></div><span>DRIVE</span></div>
+    <div class="touch-actions"><button id="touch-drift" aria-label="Hold to drift">DRIFT</button><button id="touch-boost" aria-label="Hold to boost">↟<span>BOOST</span></button><button id="touch-recover" aria-label="Recover cart">↻</button></div>
+  </div>
+
+  <section id="pause-panel" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-heading">
+    <div class="dialog compact-dialog"><span class="eyebrow">TAKE A BREATHER</span><h2 id="pause-heading">ON HOLD.</h2><p>Your baggage is in surprisingly safe hands.</p><button id="resume-btn" class="primary-button">Keep rolling <span>↗</span></button><button id="restart-btn" class="secondary-button">Restart run</button><button id="quit-btn" class="text-button">Back to terminal</button><div class="pause-tip">ESC TO RESUME</div></div>
+  </section>
+
+  <section id="results" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="result-heading">
+    <div class="result-ticket">
+      <div class="ticket-top"><span><span class="tiny-plane">✈</span> LAST CALL AIRLINES</span><span id="result-flight">FLIGHT LC090</span></div>
+      <div class="ticket-content"><span id="result-eyebrow" class="eyebrow">GATE CLOSED. EGO OPEN.</span><h2 id="result-heading">NICE BAGGAGE.</h2><div id="result-score" class="result-score">2,400<span>PTS</span></div><div id="result-record" class="result-record">A new personal best</div><div id="result-duel" class="result-duel hidden"></div><div class="result-stats"><div><strong id="stat-delivered">0</strong><span>BAGS DELIVERED</span></div><div><strong id="stat-deliveries">0</strong><span>GATES MADE</span></div><div><strong id="stat-drift">0.0s</strong><span>LONGEST DRIFT</span></div></div><div id="unlock-note" class="unlock-note hidden"></div></div>
+      <div class="ticket-tear"><span></span></div>
+      <div class="ticket-bottom"><div class="result-actions"><button id="again-btn" class="primary-button">One more run <span>↗</span></button><button id="challenge-btn" class="secondary-button">Challenge a friend <span>↗</span></button></div><button id="result-home" class="text-button">Back to terminal</button><div class="barcode" aria-hidden="true"></div><div class="ticket-code">NO REFUNDS FOR EMOTIONAL BAGGAGE</div></div>
+    </div>
+  </section>
+
+  <section id="help" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="help-heading">
+    <div class="dialog help-dialog"><button class="close-dialog icon-button" data-close="help" aria-label="Close instructions">×</button><span class="eyebrow">A VERY SHORT SAFETY BRIEFING</span><h2 id="help-heading">LOAD. SEND. REPEAT.</h2><div class="how-steps"><div><span>01</span><h3>Stack it.</h3><p>Drive over bags. Carry up to eight. A full load pays extra.</p></div><div><span>02</span><h3>Send it.</h3><p>Follow your gate arrow. Drive into the glowing zone to deliver.</p></div><div><span>03</span><h3>Don't lose it.</h3><p>Drift to recharge boost. Big crashes scatter your bags.</p></div></div><div class="control-table"><div><span>PLAYER 1</span><p><kbd>W A S D</kbd> Drive</p><p><kbd>SHIFT</kbd> Drift <kbd>SPACE</kbd> Boost</p></div><div><span>PLAYER 2</span><p><kbd>↑ ← ↓ →</kbd> Drive</p><p><kbd>ENTER</kbd> Drift <kbd>.</kbd> Boost</p></div></div><p class="help-foot">Gamepads work too. Left stick to steer, right trigger to drive, A to drift, B to boost. On mobile, use the joystick.</p><button class="primary-button" data-close="help">Got it <span>↗</span></button></div>
+  </section>
+
+  <section id="settings" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
+    <div class="dialog settings-dialog"><button class="close-dialog icon-button" data-close="settings" aria-label="Close settings">×</button><span class="eyebrow">GROUND CONTROL</span><h2 id="settings-heading">YOUR FLIGHT.</h2><label class="setting-row"><span><strong>Sound</strong><small>Wheels, crashes and happy little bags.</small></span><input id="setting-sound" type="checkbox" checked><i class="switch"></i></label><label class="setting-row"><span><strong>Music</strong><small>A little rhythm for questionable driving.</small></span><input id="setting-music" type="checkbox" checked><i class="switch"></i></label><label class="setting-row"><span><strong>Camera shake</strong><small>Extra impact. Your call.</small></span><input id="setting-shake" type="checkbox" checked><i class="switch"></i></label><label class="setting-row"><span><strong>Graphics</strong><small>Balanced is kinder to your battery.</small></span><select id="setting-quality"><option value="high">High</option><option value="balanced">Balanced</option></select></label><button class="primary-button" data-close="settings">All set <span>↗</span></button></div>
+  </section>
+
+  <section id="challenge-dialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="challenge-heading">
+    <div class="dialog settings-dialog"><button class="close-dialog icon-button" data-close="challenge-dialog" aria-label="Close challenge">×</button><span class="eyebrow">SAME BAGS. BIGGER BRAGGING RIGHTS.</span><h2 id="challenge-heading">BEAT THEIR FLIGHT.</h2><p>Paste a friend's code. You'll get the same luggage layout and their score to beat. No account needed.</p><label class="challenge-label" for="challenge-code">CHALLENGE CODE</label><input id="challenge-code" class="challenge-input" type="text" placeholder="LC-XXXXXX-XXX" spellcheck="false" autocomplete="off" maxlength="40"><p id="challenge-error" class="challenge-error hidden" role="alert">That code doesn't look right. Try LC-XXXXXX-XXX.</p><button id="challenge-load" class="primary-button">Challenge accepted <span>↗</span></button></div>
+  </section>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <div id="error-panel" class="error-panel hidden"><span class="eyebrow">A SMALL DELAY</span><h2>We couldn't open the terminal.</h2><p id="error-copy">This game needs WebGL 2. Try a current Chrome, Safari, Firefox or Edge browser with hardware acceleration enabled.</p><button onclick="location.reload()" class="primary-button">Try again <span>↻</span></button></div>
+  <noscript><div class="error-panel">Turn on JavaScript to play LAST CALL.</div></noscript>
+  <script type="module" src="./game/main.js"></script>
+</body>
+</html>

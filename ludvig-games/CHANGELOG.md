@@ -1,5 +1,22 @@
+# 2026-11-01: missing Sites games imported locally
+
+- Add the six missing static Sites games: Pace, Breach, Yeet Club, Last Call, Last Cart and Penthouse
+  Panic. Keep assets, supplied licenses, editable sources and tests locally, with isolated saves.
+- Add the missing Chess, Table Tennis and Mind Games cards. All 13 separate Mac game servers now
+  have catalogue entries. Existing hidden games and the server/publication hold are preserved.
+- Fix daily challenge dates in Yeet Club, Last Call, Last Cart and Penthouse Panic across midnight.
+- Local verification: 98 game rule/lifecycle checks; six real-browser entry/play checks; three
+  browser midnight checks; Chess keyboard/click/capture/drag/promotion rendering, including an
+  original-CSS negative control. See `docs/sites-import-2026-11-01.md` for scope and limits.
+- Refresh the local Mac catalogue/game assets and Chess stylesheet. No installer, upload or deployment.
+
 # 2026-11-01: local live release candidates prepared, sales still closed
 
+- Owner approved Resend Free for withdrawal acknowledgements and the limited sending key.
+  Prepare the form links and matching privacy/retention information locally. Actual browser
+  Review/Confirm passes with mocked CAPTCHA and mail; no real delivery or hosted acceptance claimed.
+  Keep these links unpublished until the service is working. The existing Pigeon test checkout
+  still opens in Test mode at SEK39.00; no new payment was submitted.
 - Prepare a separate, default-off guest withdrawal form with Review/Confirm, server receipt time,
   idempotent email acknowledgement and operator copy. Eighteen focused checks pass, including the
   actual local Worker/SQLite/KV engine. Independent review found a missing recovery path; held

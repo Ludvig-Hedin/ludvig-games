@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="/assets/game-storage.js" data-game="breach"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101514"><meta name="description" content="BREACH. A tactical 3D arena shooter. Fight bots or host a private match with friends. Desktop and touch controls.">
+  <title>BREACH — Tactical FPS</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23101514'/%3E%3Cpath d='M10 8h14l7 7-7 5 7 5-7 7H10V8zm7 6v4h6l2-2-2-2h-6zm0 10v3h6l2-2-2-1h-6z' fill='%23d8f378'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=a6420330e1">
+</head>
+<body>
+  <canvas id="viewport" aria-label="3D combat arena"></canvas>
+  <div id="cinema-shade"></div>
+  <div id="loading"><div class="brand-mark">B<span>/</span></div><h1>BREACH</h1><div class="load-track"><i></i></div><p id="loading-status">Preparing the terminal</p></div>
+
+  <main id="menu" class="screen hidden">
+    <header class="menu-top"><a class="wordmark" href="#" aria-label="BREACH home">B<span>/</span></a><div class="build-tag"><i></i> BREAKWATER <span>01</span></div><button id="settings-open" class="icon-button" aria-label="Open settings">⚙</button></header>
+    <div class="menu-layout">
+      <section class="menu-main"><div class="eyebrow"><i></i> TACTICAL ARENA SHOOTER</div><h1>BREACH<span class="title-period">.</span></h1><p class="tagline">Close quarters. No second guesses.</p>
+        <div class="play-panel"><div class="panel-heading"><span>BOT MATCH</span><span class="muted">FREE FOR ALL</span></div>
+          <div class="option-row"><span class="label">Difficulty</span><div class="segmented" id="difficulty"><button data-value="easy" class="active" aria-pressed="true">Easy</button><button data-value="hard" aria-pressed="false">Hard</button></div></div>
+          <div class="option-row"><span class="label">Opponents</span><div class="segmented compact" id="bot-count"><button data-value="3">3</button><button data-value="5" class="active">5</button><button data-value="7">7</button></div></div>
+          <button id="play-solo" class="primary-button"><span>DEPLOY</span><span class="button-arrow">↗</span></button>
+          <button id="open-multiplayer" class="secondary-button"><span class="people-icon">♧</span> Play with friends <span>→</span></button>
+        </div>
+        <div class="menu-caption"><span>20 ELIMINATIONS</span><i></i><span>5 MINUTES</span><i></i><span>NO ACCOUNT</span></div>
+      </section>
+      <aside class="map-info"><div class="map-line"></div><div class="eyebrow">ACTIVE COMBAT ZONE</div><h2>BREAKWATER</h2><p>North Atlantic shipping terminal</p><div class="coordinates"><span>58° 21′ N</span><span>04° 52′ E</span></div><div class="map-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></aside>
+    </div>
+    <footer class="menu-footer"><span id="menu-controls">WASD MOVE <b>·</b> MOUSE AIM <b>·</b> CLICK FIRE</span><button id="help-open" class="text-button">Controls ↗</button></footer>
+  </main>
+
+  <section id="lobby" class="screen modal-screen hidden" aria-label="Multiplayer room">
+    <div class="dialog lobby-dialog"><button class="close-button" id="lobby-back" aria-label="Back to menu">×</button><div class="eyebrow">MULTIPLAYER</div><h2>Bring your squad.</h2><p class="dialog-intro">A private free-for-all. Up to 4 players, plus bots.</p>
+      <label class="field-label" for="player-name">CALLSIGN</label><input id="player-name" maxlength="16" placeholder="OPERATOR" autocomplete="off" spellcheck="false">
+      <div id="lobby-actions"><button id="host-room" class="primary-button">CREATE ROOM <span>↗</span></button><div class="divider"><span>or join a friend</span></div><div class="join-row"><input id="room-code" maxlength="6" placeholder="ROOM CODE" aria-label="Room code" autocomplete="off" spellcheck="false"><button id="join-room" class="small-primary">JOIN →</button></div></div>
+      <div id="room-details" class="hidden"><div class="room-code-box"><div><span class="field-label">ROOM CODE</span><strong id="room-code-display">------</strong></div><button id="copy-room" class="icon-button" aria-label="Copy invite link">↗</button></div><div id="room-roster"></div><button id="start-room" class="primary-button hidden">START MATCH <span>↗</span></button><p id="waiting-host" class="hidden muted">Waiting for the host to start…</p></div>
+      <p id="network-status" class="network-status" role="status">The host keeps the room open.</p>
+      <details class="network-help"><summary>Connection help</summary><p>Keep the host’s tab open. If a network blocks the connection, use the included LAN server from the download. Everyone needs access to this game page.</p></details>
+    </div>
+  </section>
+
+  <section id="hud" class="hidden" aria-label="Game information">
+    <div class="hud-top-left"><div class="hud-brand">B<span>/</span><span id="hud-mode">FREE FOR ALL</span></div><canvas id="minimap" width="180" height="150" aria-label="Radar"></canvas><span id="connection-badge"></span></div>
+    <div class="match-score"><div class="scores"><span id="your-score">00</span><span class="score-divider">/</span><span class="score-target">20</span></div><div class="match-clock"><span id="match-time">5:00</span><i></i><span id="leader-score">LEAD 0</span></div></div>
+    <button id="pause-button" class="hud-menu" aria-label="Pause game">Ⅱ</button>
+    <div id="killfeed" aria-live="polite"></div>
+    <div id="crosshair"><i></i><i></i><i></i><i></i><b></b></div><div id="hitmarker"></div>
+    <div id="elimination"><span id="elimination-label">ELIMINATION</span><strong id="elimination-name"></strong><small id="elimination-points">+100</small></div>
+    <div id="match-announcement"><span>FREE FOR ALL</span><strong>Weapons free.</strong><small>First to 20 eliminations</small></div>
+    <div id="damage-overlay"></div><div id="damage-direction"></div>
+    <div class="health-hud"><div class="health-label"><span>+ <strong id="health-value">100</strong></span><span id="stance-label">OPERATOR</span></div><div class="health-track"><i id="health-bar"></i></div></div>
+    <div class="ammo-hud"><div class="weapon-label"><span id="weapon-name">MK18</span><span id="weapon-type">5.56 × 45</span></div><div class="ammo-count"><strong id="ammo-count">30</strong><span>/ <b id="reserve-count">180</b></span></div><div id="reload-prompt">R &nbsp; RELOAD</div></div>
+    <div id="reload-indicator"><div></div><span>RELOADING</span></div>
+    <div id="respawn" class="hidden"><span id="killed-by">ELIMINATED</span><h2>Back in <b id="respawn-count">3</b></h2></div>
+    <div id="desktop-hint">SHIFT SPRINT <i>·</i> R RELOAD <i>·</i> 1 / 2 WEAPONS <i>·</i> TAB SCORE</div>
+    <div id="touch-controls"><div id="move-zone" aria-label="Movement joystick"><div id="move-base"><i id="move-stick"></i></div></div><div id="look-zone" aria-label="Drag to aim"></div><button id="touch-fire" aria-label="Hold to fire"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="13"/><path d="M24 5v10m0 18v10M5 24h10m18 0h10"/></svg></button><button id="touch-aim" aria-label="Toggle aim">⊙</button><button id="touch-reload" aria-label="Reload">↻</button><button id="touch-jump" aria-label="Jump">↑</button><button id="touch-swap" aria-label="Switch weapon">⇄</button><button id="touch-sprint" aria-label="Toggle sprint">»</button></div>
+  </section>
+
+  <section id="pause" class="screen modal-screen hidden" aria-label="Pause menu"><div class="dialog pause-dialog"><div class="eyebrow">BREACH / BREAKWATER</div><h2 id="pause-title">Take a breath.</h2><p id="pause-subtitle" class="dialog-intro">The fight can wait.</p><button id="resume" class="primary-button">RESUME <span>→</span></button><button id="pause-settings" class="secondary-button">Settings <span>↗</span></button><button id="quit" class="secondary-button">Leave match <span>×</span></button><div class="control-grid"><span>W A S D</span><p>Move</p><span>MOUSE</span><p>Aim · Click to fire</p><span>RIGHT CLICK</span><p>Aim down sights</p><span>SHIFT / C</span><p>Sprint / Crouch</p><span>SPACE / R</span><p>Jump / Reload</p><span>1 / 2 · TAB</span><p>Weapons · Scoreboard</p></div></div></section>
+
+  <section id="settings" class="screen modal-screen hidden" aria-label="Settings"><div class="dialog"><button id="settings-close" class="close-button" aria-label="Close settings">×</button><div class="eyebrow">PREFERENCES</div><h2>Make it yours.</h2><label class="settings-row"><span>Look sensitivity</span><input id="sensitivity" type="range" min="20" max="180" value="75"><output id="sensitivity-value">75</output></label><label class="settings-row"><span>Sound volume</span><input id="volume" type="range" min="0" max="100" value="70"><output id="volume-value">70</output></label><label class="settings-row"><span>Graphics</span><select id="graphics"><option value="auto">Auto</option><option value="high">High</option><option value="performance">Performance</option></select></label><label class="settings-row"><span>Field of view</span><input id="fov" type="range" min="65" max="100" value="80"><output id="fov-value">80</output></label><button id="fullscreen" class="secondary-button">Toggle fullscreen <span>⛶</span></button><p class="muted settings-note">Progress and settings stay on this device.</p></div></section>
+
+  <section id="scoreboard" class="screen modal-screen hidden" aria-label="Scoreboard"><div class="dialog score-dialog"><div class="eyebrow" id="score-eyebrow">FREE FOR ALL</div><h2 id="score-title">Scoreboard</h2><div class="score-table"><div class="score-row score-header"><span>OPERATOR</span><span>K</span><span>D</span><span>K/D</span></div><div id="score-rows"></div></div><div id="end-actions" class="hidden"><button id="play-again" class="primary-button">PLAY AGAIN <span>↗</span></button><button id="end-menu" class="secondary-button">Main menu <span>←</span></button></div></div></section>
+  <div id="toast" role="status"></div>
+  <noscript><div class="fatal-error">Enable JavaScript to play BREACH.</div></noscript>
+  <script src="vendor/peerjs.min.js"></script>
+  <script src="game.bundle.js?v=e0f3aa6dde"></script>
+</body>
+</html>

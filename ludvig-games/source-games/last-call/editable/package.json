@@ -1,0 +1,14 @@
+{
+  "name": "last-call-airport-chaos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A Three.js airport baggage-cart arcade game. Solo, local split-screen and daily challenges.",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/vendor.mjs && node scripts/standalone.mjs",
+    "test": "node tests/simulation.test.mjs"
+  },
+  "dependencies": {"three": "0.180.0"},
+  "devDependencies": {"esbuild": "0.25.10"}
+}

@@ -1,0 +1,233 @@
+[
+  {
+    "project_id": "appgprj_6ae28dcf54c48191b5f9456d8435f8fb",
+    "site_slug": "pace-typing-lab",
+    "title": "Pace — English typing practice",
+    "local_slug": "pace",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ade78c63e0081918d8508cf4517edb3",
+    "site_slug": "breach-fps-941ad5b5",
+    "title": "BREACH — Tactical FPS",
+    "local_slug": "breach",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ade77a88bc48191a575f9f5c6daf311",
+    "site_slug": "sayso-talk-ludvig",
+    "title": "Sayso — A little practice. Better conversations.",
+    "local_slug": null,
+    "status": "not a game"
+  },
+  {
+    "project_id": "appgprj_6ade768754f8819180f4fa06dd1fd55b",
+    "site_slug": "ludvig-design-lab",
+    "title": "Ludvig — Design & Code",
+    "local_slug": null,
+    "status": "not a game"
+  },
+  {
+    "project_id": "appgprj_6add4f7832a08191993a735c5a14880f",
+    "site_slug": "hemlage-stockholm-lh-251026",
+    "title": "Hemläge",
+    "local_slug": null,
+    "status": "not a game"
+  },
+  {
+    "project_id": "appgprj_6adb9437fd0881919578b10f5c1e02b7",
+    "site_slug": "yeet-club-ludvig",
+    "title": "YEET CLUB",
+    "local_slug": "yeet-club",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6adb93dd09f08191b17ef79495738594",
+    "site_slug": "last-call-airport-drift",
+    "title": "LAST CALL — Airport Chaos",
+    "local_slug": "last-call",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6adb93005e508191b99a503407ec91bc",
+    "site_slug": "last-cart-rooftop-rumble",
+    "title": "LAST CART — Rooftop Rumble",
+    "local_slug": "last-cart",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6adb92b403288191b4956e06cb26eef8",
+    "site_slug": "penthouse-panic-ludvig",
+    "title": "Penthouse Panic",
+    "local_slug": "penthouse-panic",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6adaa505fcb0819195700db8cd019954",
+    "site_slug": "horse-tinder-meadow-matches",
+    "title": "HorseTinder — Unbridled Romance",
+    "local_slug": "hay-you",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9f445f648191b1de51f08db5c7bb",
+    "site_slug": "hoop-rush-arcade",
+    "title": "Hoop Rush — Basketball Arcade",
+    "local_slug": "hoop-rush",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9f1aecec819187d42a2149658714",
+    "site_slug": "mind-games-arena-ludvig",
+    "title": "Mind Games — Rock Paper Scissors",
+    "local_slug": "mind-games",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9ed6cd588191becec36b29c995e0",
+    "site_slug": "little-links-golf-ludvig",
+    "title": "Little Links — Mini Golf Club",
+    "local_slug": "little-links",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9ed182048191a0f2f0f3c3ceaaa4",
+    "site_slug": "gravity-arena-connect-four",
+    "title": "Gravity Arena",
+    "local_slug": "gravity-arena",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9ea776608191bd41f018b6c2cd6c",
+    "site_slug": "rally-club-table-tennis",
+    "title": "Rally Club — 3D Table Tennis",
+    "local_slug": "table-tennis",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9e975ec48191b73ae31e46c13f28",
+    "site_slug": "color-clash-table",
+    "title": "Color Clash",
+    "local_slug": "color-clash",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9e63e53c81919654d33a2f53a841",
+    "site_slug": "air-hockey-ludvig-arcade",
+    "title": "AIR — Air Hockey",
+    "local_slug": "air-hockey",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9df9d4008191aab7bac0c8338ab2",
+    "site_slug": "velvet-eight-ball",
+    "title": "VELVET — 8 Ball Club",
+    "local_slug": "velvet-pool",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9de2bef48191a447ad1d1b749b51",
+    "site_slug": "ludo-club-ludvig",
+    "title": "Ludo Club",
+    "local_slug": "ludo",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9ddc3948819186671e4d5a562f00",
+    "site_slug": "ox-tic-tac-toe-ludvig",
+    "title": "O/X — Tic Tac Toe",
+    "local_slug": "ox",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9d9117f481918fbc8d3a97e6a405",
+    "site_slug": "battleship-atlantic-command-lh",
+    "title": "Battleship · Atlantic Command",
+    "local_slug": "salvo",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9d266d94819191c5a021ae4c97d0",
+    "site_slug": "chess-studio-ludvig",
+    "title": "CHESS — Play beautifully",
+    "local_slug": "chess",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9c024a108191a01c946a3acc14a2",
+    "site_slug": "trumped-meme-office",
+    "title": "TRUMPED — The Meme Office",
+    "local_slug": "trumped",
+    "status": "existing owner hold"
+  },
+  {
+    "project_id": "appgprj_6ada9b282470819185ab95a36db81244",
+    "site_slug": "hangd-party",
+    "title": "HÄNGD — Rädda ordet. Sabba för vännerna.",
+    "local_slug": "hangd",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9a6fa3788191ad4367eb86c9d01c",
+    "site_slug": "overrun-arena-ludvig",
+    "title": "OVRRN — Combat Arena",
+    "local_slug": "overrun",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ada9a0ea74081919db3ba361951c3ff",
+    "site_slug": "overtime-rocket-arena",
+    "title": "OVERTIME · Rocket Arena",
+    "local_slug": "overtime",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ac7d90d9eb4819191d778714ba72dec",
+    "site_slug": "vice-run-coastal-getaway",
+    "title": "VICE RUN",
+    "local_slug": "vice-run-coastal-getaway",
+    "status": "existing owner hold"
+  },
+  {
+    "project_id": "appgprj_6ac7d87fa3388191b5b28e84611a1262",
+    "site_slug": "cold-delivery-rush",
+    "title": "COLD!",
+    "local_slug": "cold-delivery-rush",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ac7d86470d481918a8c5af469021ea4",
+    "site_slug": "vice-run",
+    "title": "Vice Run — GTA-inspired 3D sandbox",
+    "local_slug": "vice-run",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ac7d399789c81919c646fa96843c81b",
+    "site_slug": "strandad-antarktis",
+    "title": "Strandad · Antarktis",
+    "local_slug": "strandad-antarktis",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ac7d324114c819191c786479ddfb48d",
+    "site_slug": "just-one-more-prompt",
+    "title": "Just One More Prompt",
+    "local_slug": "just-one-more-prompt",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6ac7cf9bf91c819187d7f595aa09d610",
+    "site_slug": "ashfall-84-wasteland",
+    "title": "ASHFALL '84",
+    "local_slug": "ashfall-84-wasteland",
+    "status": "included locally"
+  },
+  {
+    "project_id": "appgprj_6a907b2004c8819186d7bf6a0d98140d",
+    "site_slug": "mogge-sushi-stockholm",
+    "title": "Mogge Sushi",
+    "local_slug": null,
+    "status": "not a game"
+  }
+]

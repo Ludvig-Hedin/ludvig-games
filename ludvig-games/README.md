@@ -1,6 +1,8 @@
 # Ludvig Games
 
-A static collection of Ludvig's experimental browser games. Seventy-two public local games and editions. The owner keeps older editions and prototypes public (decision 2026-10-21); do not hide them without asking. Atlas is hidden from this hub; its independent site is untouched. Anything vs Anything is retained privately for a later protected AI launch.
+A static collection of Ludvig's experimental browser games. The local catalog contains 71 visible entries: 58 games served by the hub and 13 separate game sites. Existing hidden editions and paused games retain their current state. Atlas is hidden from this hub; its independent site is untouched. Anything vs Anything is retained privately for a later protected AI launch.
+
+The [1 November Sites inventory](docs/sites-import-2026-11-01.md) adds nine missing entries locally. These additions and repairs have not been published or shipped in a new Mac installer.
 
 Live: https://games.ludvighedin.com/. The custom domain is connected and responds over HTTPS.
 

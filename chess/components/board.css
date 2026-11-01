@@ -42,7 +42,8 @@
 .board-square.square-selected::before { background: var(--board-selection); box-shadow: inset 0 0 0 3px #e0bb4270; }
 .board-square.square-premove::before { background: #789dd15c; box-shadow: inset 0 0 0 2px #4c7daf70; }
 .board-square.square-check::before { background: radial-gradient(ellipse at center, #dc443ad9 0%, #cf454980 44%, #d74e4220 72%, transparent 80%); }
-.chess-board .board-square:focus-visible { z-index: 6; outline: 3px solid #315cbe; }
+/* Raise only the focus ring: raising the square also covers its piece. */
+.chess-board .board-square:focus-visible::after { content: ''; position: absolute; inset: 0; z-index: 6; outline: 3px solid #315cbe; outline-offset: -4px; pointer-events: none; }
 .board-rank, .board-file { position: absolute; z-index: 7; font-family: inherit; font-size: clamp(9px, 1.35vw, 12px); font-weight: 650; line-height: 1; pointer-events: none; opacity: .9; }
 .board-rank { top: 5px; left: 5px; }
 .board-file { bottom: 4px; right: 5px; }

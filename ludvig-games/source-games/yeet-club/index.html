@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<script src="/assets/game-storage.js" data-game="yeet-club"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#171e22">
+  <meta name="description" content="Full vagn. Noll plan. Kör kundvagn utför i YEET CLUB, ett 3D-arkadspel för dig och en kompis.">
+  <title>YEET CLUB — Full vagn. Noll plan.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff6338'/%3E%3Cpath d='M12 16h8l6 26h23l6-20H22M29 50h1m16 0h1' fill='none' stroke='%23fff9ef' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="game-canvas" aria-label="YEET CLUB 3D-spelvärld"></canvas>
+  <div class="screen-grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="YEET CLUB, startsida">
+      <svg viewBox="0 0 42 40" fill="none" aria-hidden="true"><path d="M3 7h6l5 21h20l5-16H11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 17v7m8-7v7m7-7-2 7M13 20h22" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="34" r="2.5" fill="currentColor"/><circle cx="31" cy="34" r="2.5" fill="currentColor"/></svg>
+      <span>YEET<span class="brand-second">CLUB</span></span>
+      <span class="brand-dot" aria-hidden="true"></span>
+    </a>
+    <div class="top-actions">
+      <button id="help-btn" class="text-button" type="button">Så kör du <span class="keycap">?</span></button>
+      <span class="action-separator" aria-hidden="true"></span>
+      <button id="sound-btn" class="icon-button" type="button" aria-label="Stäng av ljud" title="Ljud på / av" aria-pressed="true">
+        <svg class="sound-on" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 8c2 2 2 6 0 8m3-11c4 4 4 10 0 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="sound-off" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m17 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <button id="fullscreen-btn" class="icon-button" type="button" aria-label="Helskärm" title="Helskärm"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </header>
+
+  <main id="menu" class="menu" hidden>
+    <div class="menu-shade" aria-hidden="true"></div>
+    <section class="hero">
+      <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> DOWNHILL · FULL CHAOS</p>
+      <h1>FULL VAGN.<br><span>NOLL PLAN.</span></h1>
+      <p class="hero-description">En kundvagn. En alldeles för brant backe.<br>Ta hoppen. Håll lasten hel. Slå rekordet.</p>
+      <div class="play-actions">
+        <button id="solo-btn" class="button button-primary play-button" type="button"><span><span id="solo-btn-label">Kör solo</span><small>90 sekunder av dåliga beslut</small></span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="duo-btn" class="button button-secondary play-button" type="button"><span>Kör med en kompis <small>Delad skärm · Samma tangentbord</small></span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M3 7h5v10H3V7Zm13 0h5v10h-5V7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></button>
+      </div>
+      <button id="daily-btn" class="daily-button" type="button"><span class="daily-icon" aria-hidden="true">↗</span><span>Dagens utmaning</span><span class="daily-label">Samma bana. Ny chans varje dag.</span></button>
+      <button id="challenge-open" class="challenge-open" type="button">Har du en kod? <span aria-hidden="true">↗</span></button>
+      <div class="garage">
+        <div class="garage-heading"><span>DIN VAGN</span><span id="color-status">Originalet</span></div>
+        <div class="color-options" role="group" aria-label="Välj färg på din vagn">
+          <button class="color-choice is-selected" data-color="#ff6338" style="--swatch:#ff6338" type="button" aria-label="Orange vagn" aria-pressed="true"></button>
+          <button class="color-choice" data-color="#8fd5c8" style="--swatch:#8fd5c8" type="button" aria-label="Mintgrön vagn" aria-pressed="false"></button>
+          <button class="color-choice" data-color="#b1a4e9" style="--swatch:#b1a4e9" type="button" aria-label="Lila vagn" aria-pressed="false"></button>
+          <button class="color-choice" data-color="#f6c45b" style="--swatch:#f6c45b" type="button" aria-label="Gul vagn" aria-pressed="false"></button>
+        </div>
+      </div>
+    </section>
+    <aside class="record-block"><span class="small-label">DITT PERSONBÄSTA</span><strong id="best-score">0</strong><span class="record-unit">POÄNG ATT SLÅ</span></aside>
+    <div class="scene-caption" aria-hidden="true"><span class="caption-rule"></span><span>GROCERIES GOING PLACES.</span><b>↘</b></div>
+    <footer class="menu-footer">
+      <div class="control-hints"><span><kbd>A</kbd><kbd>D</kbd><i>Styr</i></span><span><kbd>SPACE</kbd><i>Hoppa / trick</i></span><span><kbd>SHIFT</kbd><i>Boost</i></span></div>
+      <span class="location-label"><span>01</span><i>/</i> COASTLINE</span>
+    </footer>
+  </main>
+
+  <section id="hud" class="hud" aria-label="Spelstatus" hidden>
+    <div class="player-hud" data-player="0">
+      <div class="hud-top"><div class="score-group"><span id="p0-label" class="hud-player-label">DIN RUNDA</span><strong id="p0-score" class="hud-score">0</strong><span id="p0-combo" class="combo-label"></span></div><div class="vital-group"><span id="p0-time" class="hud-time">1:30</span><span id="p0-health" class="hud-health" aria-label="Lastens skick">● ● ●</span></div></div>
+      <div id="event-0" class="game-event" aria-live="polite"></div>
+      <div class="hud-bottom"><div class="boost-group"><div class="boost-heading"><span>BOOST</span><kbd>SHIFT</kbd></div><div class="boost-track"><div id="p0-boost" class="boost-fill"></div></div></div><div class="speed-group"><strong id="p0-speed">0</strong><span>KM/H</span></div></div>
+    </div>
+    <div class="player-hud" data-player="1">
+      <div class="hud-top"><div class="score-group"><span id="p1-label" class="hud-player-label">SPELARE 2</span><strong id="p1-score" class="hud-score">0</strong><span id="p1-combo" class="combo-label"></span></div><div class="vital-group"><span id="p1-time" class="hud-time">1:30</span><span id="p1-health" class="hud-health" aria-label="Lastens skick">● ● ●</span></div></div>
+      <div id="event-1" class="game-event" aria-live="polite"></div>
+      <div class="hud-bottom"><div class="boost-group"><div class="boost-heading"><span>BOOST</span><kbd>R SHIFT</kbd></div><div class="boost-track"><div id="p1-boost" class="boost-fill"></div></div></div><div class="speed-group"><strong id="p1-speed">0</strong><span>KM/H</span></div></div>
+    </div>
+    <div id="split-divider" aria-hidden="true"></div>
+    <button id="pause-btn" class="icon-button pause-button" type="button" aria-label="Pausa spelet"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 6v12m8-12v12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>
+  </section>
+  <div id="countdown" class="countdown" aria-live="assertive" hidden></div>
+  <div id="progress-note" class="toast" role="status" hidden></div>
+
+  <div id="touch-controls" class="touch-controls" aria-label="Pekkontroller" hidden>
+    <div class="touch-steering"><button data-control="left" aria-label="Styr vänster" type="button">‹</button><button data-control="right" aria-label="Styr höger" type="button">›</button></div>
+    <div class="touch-actions"><button data-control="brake" class="touch-brake" aria-label="Bromsa" type="button">Broms</button><button data-control="jump" aria-label="Hoppa eller gör trick" type="button">Hopp</button><button data-control="boost" class="touch-boost" aria-label="Boost" type="button">↑<small>BOOST</small></button></div>
+  </div>
+
+  <section id="pause-screen" class="overlay-screen" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden><div class="pause-panel"><span class="eyebrow">TA ETT ANDETAG.</span><h2 id="pause-title">Paus i kaoset.</h2><p>Lasten ligger kvar. Typ.</p><button id="resume-btn" class="button button-primary" type="button">Fortsätt köra <span>↗</span></button><button id="restart-btn" class="button button-secondary" type="button">Börja om</button><button id="quit-btn" class="text-button" type="button">Till menyn</button></div></section>
+
+  <section id="results" class="overlay-screen results-screen" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+    <div class="result-panel">
+      <p id="result-eyebrow" class="eyebrow">KVITTOT PÅ KAOS</p>
+      <h2 id="result-title">Vilken runda.</h2>
+      <div class="result-number"><strong id="result-score">0</strong><span>POÄNG</span></div>
+      <p id="result-subtitle" class="result-subtitle">En till? Klart du ska.</p>
+      <div id="duo-results" class="duo-results"></div>
+      <div id="result-stats" class="result-stats"></div>
+      <div class="result-career"><span id="result-progress"></span><span id="unlock-note"></span></div>
+      <div class="result-actions"><button id="again-btn" class="button button-primary" type="button">En runda till <span>↗</span></button><button id="menu-btn" class="button button-secondary" type="button">Meny</button></div>
+      <button id="challenge-btn" class="challenge-button" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 8V5h11v11h-3M4 9h11v11H4V9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Kopiera utmaning</button>
+    </div>
+  </section>
+
+  <section id="help-panel" class="overlay-screen help-screen" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <div class="help-panel-inner"><button id="help-close" class="icon-button panel-close" type="button" aria-label="Stäng instruktioner">×</button><span class="eyebrow">LÄTT ATT BÖRJA. SVÅRT ATT SLUTA.</span><h2 id="help-title">Rulla. Flyg. Upprepa.</h2><p class="help-intro">Du har 90 sekunder och tre liv. Samla mynt, hitta ramperna och landa trick för fler poäng. Lådor och barriärer kostar liv. Koner kostar fart.</p>
+      <div class="help-controls"><div><strong>STYR</strong><span><kbd>A</kbd><kbd>D</kbd> eller <kbd>←</kbd><kbd>→</kbd></span></div><div><strong>HOPPA / TRICK</strong><span><kbd>SPACE</kbd><i>Tryck igen i luften</i></span></div><div><strong>BOOST</strong><span><kbd>SHIFT</kbd><i>Håll inne</i></span></div><div><strong>BROMS</strong><span><kbd>S</kbd> eller <kbd>↓</kbd></span></div><div><strong>PAUS</strong><span><kbd>ESC</kbd></span></div></div>
+      <p class="duo-help"><b>Två spelare?</b> Spelare 1 kör med A/D, Space och vänster Shift. Spelare 2 styr med ←/→, hoppar med Enter och boostar med höger Shift. S/↓ bromsar. W/↑ ger extra fart.</p>
+      <div class="settings"><label for="quality-select">Grafik<select id="quality-select"><option value="high">Hög</option><option value="low">Prestanda</option></select></label><label for="music-toggle">Musik<input id="music-toggle" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span></label><label for="motion-toggle">Mindre kamerarörelse<input id="motion-toggle" type="checkbox"><span class="toggle-track" aria-hidden="true"></span></label></div>
+    </div>
+  </section>
+  <section id="challenge-panel" class="overlay-screen challenge-screen" role="dialog" aria-modal="true" aria-labelledby="challenge-title" hidden>
+    <div class="challenge-panel-inner">
+      <button id="challenge-close" class="icon-button panel-close" type="button" aria-label="Stäng utmaning">×</button>
+      <p class="eyebrow">KOMPISENS REKORD ÄR I FARA.</p>
+      <h2 id="challenge-title">Utmaning antagen?</h2>
+      <p class="challenge-intro">Samma bana. Slå kompisens poäng.</p>
+      <form id="challenge-form">
+        <label for="challenge-code">Klistra in utmaningskoden</label>
+        <input id="challenge-code" name="challenge-code" type="text" placeholder="YEET-…" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="64" aria-describedby="challenge-error" required>
+        <p id="challenge-error" class="challenge-error" role="alert" hidden></p>
+        <button class="button button-primary" type="submit">Anta utmaningen <span aria-hidden="true">↗</span></button>
+      </form>
+    </div>
+  </section>
+  <section id="loading" class="loading-screen" aria-label="Laddar spelet"><div class="loading-brand">YEET<span>CLUB</span><i>.</i></div><div class="loading-track"><span></span></div><p id="load-status">Skruvar fast hjulen…</p></section>
+  <section id="error-screen" class="overlay-screen error-screen" role="alert" hidden><div class="pause-panel"><p class="eyebrow">HJULEN FASTNADE.</p><h2>Spelet kunde inte starta.</h2><p id="error-detail">Din webbläsare behöver WebGL 2. Prova en uppdaterad version av Chrome, Edge, Firefox eller Safari och slå på grafikacceleration.</p><button class="button button-primary" type="button" onclick="location.reload()">Försök igen <span>↗</span></button></div></section>
+  <script type="module" src="./main.js"></script>
+  <noscript><div class="no-script">Slå på JavaScript för att spela YEET CLUB.</div></noscript>
+</body>
+</html>

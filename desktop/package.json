@@ -33,6 +33,8 @@
     "browser-test:shot": "node tests/e2e/shot.mjs",
     "browser-test:horde": "node tests/e2e/horde.mjs",
     "browser-test:together": "node tests/e2e/together.mjs",
-    "browser-test:federation": "node tests/e2e/federation.mjs"
+    "browser-test:federation": "node tests/e2e/federation.mjs",
+    "browser-test:imports": "node tests/e2e/sites-import.mjs",
+    "browser-test:daily": "node tests/e2e/sites-daily.mjs"
   }
 }

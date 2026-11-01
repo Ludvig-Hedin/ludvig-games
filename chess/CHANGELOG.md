@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-01: keep pieces visible on focused squares
+
+- The keyboard focus ring now sits in a transparent overlay. Focusing a destination square previously raised its opaque background above the piece, so the moved piece could stay hidden until focus left that square.
+- Browser verification passed for keyboard moves, clicks, captures, dragging and promotion. A screenshot comparison reproduces the hidden piece with the original focus rule and passes with the repair. Updated in the local Mac bundle; no release or deployment.
+
 ## 2026-10-24: ready for the Workers Free account (built and tested locally, not deployed)
 
 - The page is now a static export (`output: "export"`), served as a static asset together with Stockfish (`/engine/*`). Page views and the engine never run the Worker. The Worker (`worker/index.ts`) only answers `/api/*`: 112 KiB, 25.5 KiB gzip, with no Stockfish inside.

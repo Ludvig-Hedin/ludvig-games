@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add Chess, Table Tennis and Mind Games to the local catalogue, and import Pace, Breach, Yeet Club,
+  Last Call, Last Cart and Penthouse Panic into the hub. Refresh the local bundle without changing
+  its purchase configuration. Repair Chess's disappearing focused pieces and daily-date errors in
+  four imported games. Focused rule, entry, midnight and rendering checks passed; no installer released.
 - Use the Workers-compatible provider resolver, preserving redirect refusal. All eight final packaged
   purchase/restart journeys and all nine two-runtime purchase/wire-isolation checks passed.
 - Eight isolated source-app purchase and restart journeys passed for the shared shop and all three

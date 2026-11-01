@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<script src="/assets/game-storage.js" data-game="last-cart"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f1e8" />
+  <meta name="description" content="LAST CART. Ett snabbt 3D-partyspel med kundvagnar, stora smällar och exakt noll räcken. Spela själv eller två på samma dator." />
+  <title>LAST CART — Sista vagnen vinner.</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <script src="./game.js" defer></script>
+</head>
+<body>
+  <canvas id="game-canvas" aria-label="LAST CART, spelplan i 3D"></canvas>
+  <div class="screen-grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="wordmark" href="#" aria-label="LAST CART">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 6h4l3.5 15h14L28 10H8M13 14h11M14 10l1 11M21 10l-1 11"/><circle cx="13" cy="27" r="1.8"/><circle cx="23" cy="27" r="1.8"/></svg>
+      <span>LAST CART<span class="wordmark-dot">✳</span></span>
+    </a>
+    <nav class="header-actions" aria-label="Spelinställningar">
+      <button id="help-button" class="icon-button" aria-label="Så spelar du" title="Så spelar du"><span class="question-icon">?</span></button>
+      <button id="sound-button" class="icon-button" aria-label="Slå av ljud" title="Ljud av/på" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5 5 9H2v6h3l5 4V5ZM14 8a6 6 0 0 1 0 8M17 5a10 10 0 0 1 0 14"/></svg>
+      </button>
+      <button id="settings-button" class="icon-button" aria-label="Inställningar" title="Inställningar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="3"/><circle cx="16" cy="17" r="3"/></svg></button>
+    </nav>
+  </header>
+
+  <main id="menu" class="menu">
+    <div class="menu-content">
+      <div class="eyebrow"><span class="live-dot"></span> KUNDVAGN. TAK. KAOS.</div>
+      <h1 class="game-title"><span>LAST</span><span>CART<span class="title-star" aria-hidden="true">✳</span></span></h1>
+      <p class="tagline">Ingen broms. Inga vänner.</p>
+      <p class="premise">Knuffa ut alla. Bli den sista vagnen kvar.</p>
+
+      <div class="mode-switch" role="group" aria-label="Välj spelläge">
+        <button class="mode-button active" data-mode="solo" aria-pressed="true">Solo<span>mot botar</span></button>
+        <button class="mode-button" data-mode="local" aria-pressed="false">2 spelare<span>samma dator</span></button>
+        <button class="mode-button" data-mode="daily" aria-pressed="false">Dagens<span>nytt varje dag</span></button>
+      </div>
+
+      <div class="match-options">
+        <label class="select-field" for="arena-select"><span>Arena</span><select id="arena-select"><option value="0">Stormarknaden</option><option value="1">Lastkajen</option><option value="2">Nattöppet</option></select><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4 3 3 3-3"/></svg></label>
+        <label class="select-field" for="difficulty-select"><span>Motstånd</span><select id="difficulty-select"><option value="normal">Lagom stökigt</option><option value="spicy">Extra hetsigt</option></select><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4 3 3 3-3"/></svg></label>
+      </div>
+
+      <div class="paint-row"><span>Din vagn</span><div class="paint-swatches" role="group" aria-label="Välj färg på din vagn">
+        <button class="paint-swatch selected" data-color="0" style="--paint:#ff6948" aria-label="Korall" title="Korall" aria-pressed="true"></button>
+        <button class="paint-swatch" data-color="1" style="--paint:#5ab7d4" aria-label="Isblå" title="Isblå" aria-pressed="false"></button>
+        <button class="paint-swatch" data-color="2" style="--paint:#d7ef65" aria-label="Lime" title="Lime" aria-pressed="false"></button>
+        <button class="paint-swatch" data-color="3" style="--paint:#b69cdd" aria-label="Lavendel" title="Lavendel" aria-pressed="false"></button>
+        <button class="paint-swatch" data-color="4" style="--paint:#f0bd63" aria-label="Senap" title="Senap" aria-pressed="false"></button>
+        <button class="paint-swatch locked" data-color="5" style="--paint:#f19ac2" aria-label="Rosa, låses upp genom att spela" title="Rosa · låses upp genom att spela" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="5" width="6" height="5" rx="1"/><path d="M4.5 5V3a1.5 1.5 0 0 1 3 0v2"/></svg></button>
+        <button class="paint-swatch locked" data-color="6" style="--paint:#57b69b" aria-label="Mint, låses upp genom att spela" title="Mint · låses upp genom att spela" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="5" width="6" height="5" rx="1"/><path d="M4.5 5V3a1.5 1.5 0 0 1 3 0v2"/></svg></button>
+        <button class="paint-swatch locked" data-color="7" style="--paint:#e3d8c2" aria-label="Champagne, låses upp genom att spela" title="Champagne · låses upp genom att spela" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="5" width="6" height="5" rx="1"/><path d="M4.5 5V3a1.5 1.5 0 0 1 3 0v2"/></svg></button>
+      </div></div>
+
+      <button id="play-button" class="play-button"><span>SPELA</span><span class="play-arrow" aria-hidden="true">↗</span></button>
+      <div class="quick-controls"><span><kbd>W A S D</kbd> styr</span><span><kbd>SPACE</kbd> boost</span><span><kbd>SHIFT</kbd> drift</span></div>
+      <div class="local-controls"><div><b>P1</b><span><kbd>WASD</kbd> styr</span><span><kbd>SPACE</kbd> boost</span><span><kbd>Q</kbd> drift</span></div><div><b>P2</b><span><kbd>↑←↓→</kbd> styr</span><span><kbd>ENTER</kbd> boost</span><span><kbd>R SHIFT</kbd> drift</span></div><p>Tangentbord eller två handkontroller behövs.</p></div>
+      <p class="mobile-menu-hint">Styr med tummen. Boost med den andra.</p>
+    </div>
+    <footer class="menu-footer"><div class="career"><span class="level-mark">LVL <b id="menu-level">1</b></span><span><b id="menu-wins">0</b> vinster</span><span class="career-xp"><b id="menu-xp">0</b> XP</span></div><span class="build-mark">ALLA ERBJUDANDEN ÄR SLUT.</span></footer>
+  </main>
+
+  <div class="scene-caption" aria-hidden="true"><span>01 / AFTER HOURS</span><span>INGA RÄCKEN.<br>INGA ÅTERKÖP.</span></div>
+
+  <div id="hud" class="hud" hidden>
+    <div class="match-hud"><div class="match-round"><span id="round-label">MATCH 01</span><b>SISTA VAGNEN VINNER</b></div><div id="clock" class="match-clock">1:15</div><div class="alive-stat"><b id="alive-count">8</b><span>kvar</span></div><button id="pause-button" class="pause-button" aria-label="Pausa spelet"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M13 4v12"/></svg></button></div>
+    <div class="chaos-wrap"><span id="chaos-label"></span></div>
+    <div id="player-panels" class="player-panels">
+      <div class="player-panel p1-panel"><div class="player-panel-head"><span id="p1-name">DU</span><span class="wobble-label">SKAKIG <b id="p1-wobble">0%</b></span></div><div class="boost-track"><div id="p1-boost" class="boost-fill" style="width:100%"></div></div><div class="player-panel-foot"><span>BOOST</span><kbd>SPACE</kbd></div></div>
+      <div id="p2-panel" class="player-panel p2-panel" hidden><div class="player-panel-head"><span id="p2-name">SPELARE 2</span><span class="wobble-label">SKAKIG <b id="p2-wobble">0%</b></span></div><div class="boost-track"><div id="p2-boost" class="boost-fill" style="width:100%"></div></div><div class="player-panel-foot"><span>BOOST</span><kbd>ENTER</kbd></div></div>
+    </div>
+    <div id="killfeed" class="killfeed" aria-live="polite"></div>
+  </div>
+
+  <div id="countdown-overlay" class="countdown-overlay" hidden><span>HÅLL I VAGNEN.</span><b id="countdown-number">3</b><span>Sista vagnen vinner.</span></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="result-overlay" class="overlay result-overlay" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+    <section class="result-panel">
+      <div class="result-topline"><span id="result-eyebrow" class="eyebrow">STÄNGNINGSDAGS.</span><span class="receipt-mark" aria-hidden="true">LAST CART ✳</span></div>
+      <h2 id="result-title">SISTA<br>VAGNEN.</h2>
+      <p id="result-detail" class="result-detail">Taket är ditt. Kundvagnen också.</p>
+      <div class="result-stats"><div><b id="result-kills">0</b><span>UTKNUFFADE</span></div><div><b id="result-time">0:00</b><span>ÖVERLEVD TID</span></div><div><b id="result-xp">+0</b><span>XP INTJÄNAT</span></div></div>
+      <button id="next-button" class="play-button"><span>KÖR IGEN</span><span class="play-arrow" aria-hidden="true">↗</span></button>
+      <div class="result-actions"><button id="menu-button" class="text-button">Till menyn</button><button id="share-button" class="text-button">Kopiera resultat <span aria-hidden="true">↗</span></button></div>
+    </section>
+  </div>
+
+  <div id="pause-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden><section class="dialog-panel pause-panel"><div class="eyebrow">TA EN KVITTOPAUS.</div><h2 id="pause-title">Paus.</h2><p>Din vagn står kvar.</p><button id="resume-button" class="play-button"><span>FORTSÄTT</span><span aria-hidden="true">↗</span></button><button id="quit-button" class="text-button dialog-back">Till menyn</button></section></div>
+
+  <div id="settings-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+    <section class="dialog-panel settings-panel"><div class="dialog-header"><h2 id="settings-title">Inställningar</h2><button id="settings-close" class="icon-button" aria-label="Stäng inställningar"><span class="close-icon">×</span></button></div>
+      <label class="setting-row" for="music-volume"><span>Musik</span><input id="music-volume" type="range" min="0" max="1" step="0.01" value="0.30" /></label>
+      <label class="setting-row" for="sfx-volume"><span>Ljudeffekter</span><input id="sfx-volume" type="range" min="0" max="1" step="0.01" value="0.65" /></label>
+      <label class="setting-row" for="quality-select"><span>Grafik</span><select id="quality-select"><option value="high">Hög</option><option value="medium">Balanserad</option><option value="low">Snabb</option></select></label>
+      <label class="setting-row" for="shake-toggle"><span>Kameraskak</span><input id="shake-toggle" type="checkbox" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+      <p class="dialog-note">Välj Snabb om spelet hackar. Dina val sparas på den här enheten.</p>
+    </section>
+  </div>
+
+  <div id="help-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <section class="dialog-panel help-panel"><div class="dialog-header"><h2 id="help-title">Så spelar du</h2><button id="help-close" class="icon-button" aria-label="Stäng instruktioner"><span class="close-icon">×</span></button></div>
+      <p class="help-lead">Åtta vagnar. Ett tak.<br><strong>Bara en får stanna.</strong></p>
+      <div class="help-rules"><p><b>01</b><span>Knuffa rivalerna över kanten. Ju skakigare vagn, desto längre flyger den.</span></p><p><b>02</b><span>Drifta genom svängen, släpp för extra fart. Spara boost till den perfekta smällen.</span></p><p><b>03</b><span>Håll dig i ringen. Taket blir farligare ju längre matchen pågår.</span></p></div>
+      <div class="controls-table"><div><span></span><b>Spelare 1</b><b>Spelare 2</b></div><div><span>Styr</span><kbd>W A S D</kbd><kbd>↑ ← ↓ →</kbd></div><div><span>Boost</span><kbd>SPACE / E</kbd><kbd>ENTER</kbd></div><div><span>Drift</span><kbd>V. SHIFT / Q</kbd><kbd>HÖGER SHIFT</kbd></div><div><span>Paus</span><kbd>ESC</kbd><span></span></div></div>
+      <p class="controller-note"><b>Handkontroll</b> Vänster spak styr · <kbd>A</kbd> boost · <kbd>B</kbd> drift</p>
+      <p class="dialog-note">Två spelare delar tangentbord eller använder varsin handkontroll. Mobilens touchkontroller styr spelare 1.</p>
+    </section>
+  </div>
+
+  <div id="mobile-controls" class="mobile-controls" hidden><div id="joystick-area" class="joystick-area" aria-label="Styr vagn" role="application"><span class="joystick-guide" aria-hidden="true"></span><div id="joystick-knob" class="joystick-knob"></div></div><div class="mobile-actions"><button id="mobile-drift" class="mobile-drift">DRIFT</button><button id="mobile-boost" class="mobile-boost" aria-label="Boost"><span class="mobile-boost-icon" aria-hidden="true">↗</span><span class="mobile-boost-label">BOOST</span><span class="charge-ready" aria-hidden="true">KLAR</span><span class="charge-loading" aria-hidden="true">LADDAR</span></button></div></div>
+
+  <div id="loading-screen" class="loading-screen"><div class="loading-logo">LAST<br>CART<span>✳</span></div><div class="loading-line"><span></span></div><p id="loading-status">Plockar fram kundvagnarna…</p></div>
+  <div id="error-screen" class="error-screen" role="alert" hidden><h2>Vagnen fastnade.</h2><p>Spelet kunde inte starta. Prova en aktuell version av Chrome, Firefox eller Safari med grafikacceleration aktiverad.</p><button class="play-button" onclick="location.reload()">Försök igen <span aria-hidden="true">↗</span></button></div>
+</body>
+</html>
