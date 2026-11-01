@@ -1,7 +1,29 @@
 # Purchase release review
 
-Updated 31 October 2026, Stockholm. **The bundle's test purchase, receipt, licence and local game
+Updated 1 November 2026, Stockholm. **The bundle's test purchase, receipt, licence and local game
 unlocks work. Paid production is not live.** The free public site is unchanged.
+
+## Latest release preparation, 1 November
+
+- The live-configured Mac 0.4.3 candidate was staged and packaged through the existing guards.
+  Actual artifact configuration, exact live offer identities, public-only verifier, current commerce
+  modules, updater trust key, ZIP signature and deep/strict app signature checks passed. This is a
+  local unpublished candidate, not a live payment or fresh paid-app journey.
+- The web candidate was built with the fixed live commerce origin and existing same-origin hub API.
+  Its generated purchase-client origin, four exact offer controls and shared-shop navigation passed
+  their focused artifact check. No static assets or app release were uploaded.
+- The older tested Mac release is retained at `desktop/output/test-release-0.4.3-20261031/`;
+  `desktop/release/` now contains the live candidate. Root owns that archive's eventual cleanup.
+- No provider support response was present at the fresh check. A reply is not itself mandatory
+  acceptance: an actual customer withdrawal/submission/acknowledgement journey can establish the
+  behavior. The prior merchant refund is not the same journey, and a refunded order cannot prove
+  that an otherwise available withdrawal button is absent. See `withdrawal-release-check.md`.
+- A site-scoped Dia export failed to connect without changing personal tabs. The separate customer
+  session successfully requested and received a current Lemon Squeezy login email and followed it
+  to the provider's `/2fa-challenge`. The private 2FA request timed out without a code, so order-view,
+  final live pricing/VAT and customer withdrawal acceptance remain blocked on that authentication.
+  No fresh order, payment, refund, product change or account-setting change was made. The refunded
+  key remains disabled. The login-email request was the only authentication submission.
 
 ## Current hosted proof, 31 October
 
@@ -93,6 +115,8 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
 - [x] Test the actual source Mac app: eight shop/Pigeon/Karts/Ritkaos restore and fresh-process
   restart journeys passed. Paid styles persisted; isolated profiles were removed after process exit.
 - [x] Build a local 0.4.3 test-only DMG, zip and signed update file. None was published.
+- [x] Build and inspect the unpublished live-configured Mac candidate and generated web shop.
+  Both focused artifact checks passed. This does not open sales or prove a live purchase.
 - [x] Complete final packaged and federated checks after the shared resolver correction. All eight
   packaged-app restore/restart journeys and all nine two-runtime purchase/isolation checks passed,
   including bundle/update signature validation. Root inspected the corrected shop image proportions.

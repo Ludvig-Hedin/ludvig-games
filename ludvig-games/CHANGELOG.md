@@ -1,3 +1,11 @@
+# 2026-11-01: local live release candidates prepared, sales still closed
+
+- Build the live-configured Mac 0.4.3 candidate and web shop locally. Artifact checks verify the
+  exact live product map, public-only verifier, current commerce modules, app/ZIP signatures and
+  the web purchase-service origin and offer/navigation controls. Nothing uploaded or published.
+- Preserve the earlier tested Mac release in task output. The separate customer login reaches
+  provider 2FA; no code was supplied, so checkout/withdrawal acceptance remains blocked there.
+
 # 2026-10-31: test hosting verified, live sales closed
 
 - Restore test hosting on the approved Workers Free account, with real hosted bundle/grant and

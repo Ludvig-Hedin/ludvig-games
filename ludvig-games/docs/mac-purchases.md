@@ -1,7 +1,25 @@
 # Mac purchase integration
 
-Prepared locally, 31 October 2026. Source only, not staged into a new app, packaged, signed or released.
-Root owns serialized guarded checks and release acceptance. No command or server was started by the builder.
+Updated 1 November 2026. The live-configured 0.4.3 Mac candidate is built locally and checked,
+but not published. Root owns serialized guarded checks and release acceptance. Earlier dated
+implementation notes below are historical; current overall status is in `purchase-release-2026-10-30.md`.
+
+## Local live candidate, 1 November
+
+- Guarded staging and packaging completed with only the four approved public live settings,
+  exact live product/variant IDs and the distinct `games-live-v1` verifier. No private grant key
+  or merchant credential is packaged. The backend still has no enabled live products.
+- The actual packaged configuration matches the saved live plan and public candidate. Current
+  shared commerce modules and the existing updater public key match the package byte for byte.
+  Deep/strict code-signature verification and the exact ZIP's update signature passed in the
+  opt-in `desktop/tests/live-candidate.test.mjs` check.
+- Current ZIP SHA-256: `da44d759f6cd02cb0ec229b0aa70871667e51aba8cc12e5bbf643433b47ea05f`.
+  Distribution remains the existing ad-hoc signing workflow; no notarization is claimed.
+- The earlier test-only release was moved, not duplicated, to
+  `desktop/output/test-release-0.4.3-20261031/`. Its eight packaged restore/restart and nine federation
+  checks remain valid for that test artifact. No live paid restoration is claimed for the new candidate.
+- Keep both artifacts and the main checkout's dependencies while acceptance/publication is held.
+  Root owns removing the exact archived test release after final production acceptance.
 
 ## Included behavior
 

@@ -83,3 +83,25 @@ withdrawal/waiver/consent wording, only the provider Terms and Help links. This 
 the completed Swedish/EU journey or that no conditional provider feature exists**. Payment fields
 were not filled; no checkout submission, purchase or setting change occurred. The task tab was closed.
 The most recent mail-thread read still returned the sent support question, not a provider reply.
+
+## Remaining route, 1 November
+
+Support has not replied, but a reply is not itself a legal requirement or the only way to close
+this check. Verify the actual customer journey on a fresh, non-refunded order. A refunded order may
+have had its relevant controls removed. The documented My Orders entry point is appropriate for
+one-time purchases; the subscription Customer Portal is not evidence for these packs.
+
+The current isolated customer login reached the provider's 2FA page after a fresh login email.
+No 2FA code was supplied before the private prompt timed out, so no authenticated order view or
+withdrawal function has yet been inspected. No claim is made that the provider lacks such a function.
+
+If that journey does not supply the function, implementing a declaration form, stored receipt time
+and automatic acknowledgement needs a confirmed supplier/reseller receiving role and an approved
+email/data-processing route. A mailto link, ordinary page or downloadable PDF alone is not being
+accepted as evidence of the required active acknowledgement. Preserve the approved voluntary
+14-day refund promise; do not substitute a digital-content waiver as a workaround.
+
+Current primary sources rechecked: [DAL 2:10a](https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-200559-om-distansavtal-och-avtal-utanfor_sfs-2005-59/),
+[Konsumentverket](https://www.konsumentverket.se/marknadsratt-foretag/informationskrav-vid-distansavtal-regler-for-foretag/),
+[digital content](https://www.konsumentverket.se/marknadsratt-foretag/telekom-elektronik-och-digital-underhallning-regler-for-foretag/),
+and [EU Court C-375/15](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A62015CJ0375).

@@ -50,6 +50,7 @@ __pycache__/
 /desktop/release/
 /desktop/.stage/
 /desktop/output/purchase-selftest/
+/desktop/output/test-release-0.4.3-20261031/
 
 # Games hidden from the site (older editions, prototypes, parked games): not published here either.
 .unlock-secret
