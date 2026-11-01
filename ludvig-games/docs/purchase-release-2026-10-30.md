@@ -5,6 +5,20 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
 
 ## Latest release preparation, 1 November
 
+- Latest checkpoint: Games `8836a4d` prepares the local form links/policies and deployment checks;
+  `437f8fd` adds the short Swedish owner checklist. The web was rebuilt successfully with the
+  current committed catalogue (71 entries/58 full-screen games). Mac restaging was refused by
+  the shared scheduler, so the latest link changes are not yet in the Mac release candidate.
+- Resend's exact-team, Free-only setup capability was independently reviewed. Root fixed a duplicate
+  JSON-member ambiguity and a parser limit that rejected the actual domain-list response. All nine
+  focused guard checks pass against captured official Billing/domain-list responses. Ordinary domain
+  creation still returns Failed to fetch in the existing connector. A proposed fresh connector
+  helper was rejected before execution by the host's automatic browser-protection review; no alternate
+  bypass was attempted. Root asked the owner to add only `ludvighedin.com`/Europe (Ireland) in Dia.
+  No Games domain, key, DNS record, namespace, challenge widget, email or payment was created.
+- The owner also needs to switch Dia Cloudflare to the verified `.se@gmail.com` identity. Root owns
+  the remaining provider readback, DNS, actual mail/recovery/withdrawal acceptance, live VAT, Mac
+  refresh and conditional publication. Test checkout is prepared, not a real-card self-purchase.
 - The live-configured Mac 0.4.3 candidate was staged and packaged through the existing guards.
   Actual artifact configuration, exact live offer identities, public-only verifier, current commerce
   modules, updater trust key, ZIP signature and deep/strict app signature checks passed. This is a
