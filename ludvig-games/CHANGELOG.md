@@ -2,7 +2,7 @@
 
 - Use 16px text for hub fields on phones and touch devices to prevent iOS focus zoom, retaining pinch zoom.
 - Move production HTTP page links to HTTPS and add a one-week host-only HSTS header. Local Mac/LAN play is unchanged.
-- Prepare a restricted repair of the existing 52-game web release; new-game publication remains separately blocked.
+- Publish the restricted repair of the existing 52-game web release. Live HTTP→HTTPS and mobile field checks pass; new-game publication remains separately blocked.
 
 # 2026-11-01: missing Sites games imported locally
 

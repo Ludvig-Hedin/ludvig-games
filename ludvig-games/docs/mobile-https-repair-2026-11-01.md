@@ -31,5 +31,12 @@ are in `output/mobile-https-repair/`.
 
 Only the CSS field override, early HTTPS script tags/new script and HSTS header differ deliberately.
 The existing fixed static publisher accepted the candidate's 514-file structure. No guard scope,
-route allowlist, account, binding, API or Worker code was changed. Publication and live checks are
-pending until the focused transport checks and guarded upload complete.
+route allowlist, account, binding, API or Worker code was changed.
+
+Published through the existing guarded static operation as version
+`09d37178-a55d-49e8-814c-fbd53dac5689`. All three focused redirect checks passed, and the normal
+source build completed. Live browser checks at 390px confirmed the initial HTTP URL reached
+HTTPS with its query preserved, `isSecureContext=true`, the redirect script returned 200, input
+and all filter selects computed to 16px, focus retained viewport scale 1, and HSTS was
+`max-age=604800`. There are still 52 cards and no Chess card; `/api/scores` still returns 404.
+No Mac release was changed by this web-only repair.
