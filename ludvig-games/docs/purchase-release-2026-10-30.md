@@ -334,13 +334,53 @@ remains published only in test mode. See live-product-delivery-check-2026-11-01.
 readback. Linked shop/Mac delivery still depends on the pending release; it is not customer-ready yet.
 
 The actual receipt link reaches the refunded test order in customer My Orders, even though the
-general order list did not show that test purchase. No fresh non-refunded test order exists yet.
-The old refunded order cannot prove the available withdrawal controls before refund. Preview
-snapshot/type fail with timeouts and the alternate CUA browser is unavailable, blocking automated
-card-frame entry. No real card was used and no new order or refund was submitted.
+general order list did not show that test purchase. Preview snapshot/type fail with timeouts and
+the alternate CUA browser is unavailable, blocking automated card-frame entry. The owner subsequently
+completed the fresh dummy-card test purchase described below; no real card was used.
 
 Remaining acceptance: fresh test-order withdrawal/acknowledgement; live inclusive-tax checkout
 proof; then the already-authorized conditional web, product, live-service and Mac publication.
-The coordinator owns this work. The smallest external step is one dummy-card test purchase, with
-the provider's explicit Test mode banner, if browser input remains unavailable. Never request an
-owner real-card self-purchase. Preserve the refunded/disabled old licence as the negative fixture.
+The coordinator owns this work. Never request an owner real-card self-purchase. Preserve the
+refunded/disabled old licence as the negative fixture. No further owner test purchase is needed now.
+
+## Fresh paid test order and final independent preparation, 1 November
+
+The owner completed dummy-card order 5048422. Its actual receipt email arrived
+(`1a197da9b96acec0`), containing the prepared restoration instructions, approved refund promise,
+receipt button and a native key. The actual authenticated customer order view shows Paid, all three
+delivery links and a never-expiring unused licence. No raw key is included in this record. The line
+item is SEK99.00 but the receipt total remains SEK99.05, payment USD10.08. This is not proof of an
+exact final SEK99 live charge, Swedish VAT calculation or bank settlement.
+
+The paid customer view exposes no visible withdrawal/refund control. The receipt's provider support
+link leads to the general Help Center, not an established declaration/acknowledgement function.
+Do not infer universal provider absence from a test-mode view. The new test order stays paid and
+its key has not been disabled, leaving it available for the real withdrawal acceptance journey.
+No new refund, declaration, customer message or support follow-up was sent. The latest support-thread
+read contains no response to the already-authorized question. Provider confirmation or an appropriate
+implemented route remains a real release dependency; no further owner action is requested now.
+
+The refreshed Dia site-scoped login now works through the guarded read-only browser. Owner tabs were
+not controlled. The temporary old-licence read-auth capability was revoked and all task tabs closed.
+Six task-owned browser diagnostic files were restricted to owner-only permissions; other diagnostics,
+personal profiles and peer sessions were preserved. No dev server was started.
+
+Independent work found stale privacy wording saying all online services were paused, despite the
+verified Ritkaos restoration. Corrected only those facts: online room content and salted network
+identifier, stored room snapshots and cleanup limits, Mac licence storage and nearby access proofs.
+A fresh source reviewer found one overly broad idle-room retention sentence; corrected it to rooms
+with no connected players. No new provider, data sharing, policy promise or game flow was introduced.
+
+Guarded web build, Mac staging and packaging completed. Both actual candidate tests passed together
+(two passes), including public live configuration, exact four offers, current commerce modules,
+code/update signatures and web API origin. Direct artifact readback confirms all four corrected
+privacy paragraphs in the actual generated web and packaged Mac pages. Current local ZIP SHA-256:
+`f8c83c3c0cd0f77a406d4bfdf81080ddbf7c3ac841d0e9f97cf3d6638598be71`.
+Earlier paid restore/federation evidence still belongs to the preserved test artifact; no new live
+paid restoration is claimed. No product, website, live-service activation or Mac release was published.
+
+Exact holds remain: `desktop/output/test-release-0.4.3-20261031/`, the current `desktop/release/`
+candidate and shared main `desktop/node_modules` are retained for final acceptance/publication.
+Root owns retry and removing the archived test release after production acceptance. Provider
+withdrawal/acknowledgement proof, live checkout inclusive-tax/rounding proof and conditional
+publication remain open. Root owns the next implementation/release step after that dependency clears.

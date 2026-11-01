@@ -13,8 +13,11 @@ implementation notes below are historical; current overall status is in `purchas
   shared commerce modules and the existing updater public key match the package byte for byte.
   Deep/strict code-signature verification and the exact ZIP's update signature passed in the
   opt-in `desktop/tests/live-candidate.test.mjs` check.
-- Current ZIP SHA-256: `da44d759f6cd02cb0ec229b0aa70871667e51aba8cc12e5bbf643433b47ea05f`.
+- Current ZIP SHA-256: `f8c83c3c0cd0f77a406d4bfdf81080ddbf7c3ac841d0e9f97cf3d6638598be71`.
   Distribution remains the existing ad-hoc signing workflow; no notarization is claimed.
+- Rebuilt after the factual privacy correction for restored online rooms and Mac licence storage.
+  Both opt-in actual-artifact checks passed together. The four corrected privacy paragraphs match
+  the generated web page and the actual packaged Mac page. This does not add live-purchase proof.
 - The earlier test-only release was moved, not duplicated, to
   `desktop/output/test-release-0.4.3-20261031/`. Its eight packaged restore/restart and nine federation
   checks remain valid for that test artifact. No live paid restoration is claimed for the new candidate.

@@ -97,11 +97,22 @@ refunded order exposes Generate Invoice but no visible withdrawal command. This 
 about controls on a non-refunded order. The general My Orders list initially showed other live
 purchases rather than the Games test order; the receipt's specific order link reached the right order.
 
-A fresh non-refunded dummy-card test order is the remaining customer-journey input. The hosted test
-bundle checkout loads, but Preview snapshot and input actions time out. Its DOM reader works only
-in the outer document and cannot fill the cross-origin card frame. The alternate CUA browser reports
-Chrome unavailable and an empty browser inventory. No new order, withdrawal or payment was submitted.
-No claim is made that the provider lacks the required function. No further 2FA is currently required.
+The owner then completed a fresh dummy-card test purchase, order 5048422. The actual receipt arrived
+and the authenticated customer view shows Paid, the three delivery links and a never-expiring unused
+licence. The visible controls are the account menu and Generate Invoice; no withdrawal/refund control
+appears on this paid test-order view. The receipt's Lemon Squeezy Support link leads to the general
+Help Center, whose visible contact route is a general message/email route. No dedicated declaration
+form or automatic durable acknowledgement was established. This test-mode observation is not proof
+that the provider has no separate or live-only function.
+
+The fresh order remains paid and its licence has not been disabled. No withdrawal, refund or licence
+mutation was submitted for it. Preserve it for actual declaration/acknowledgement acceptance rather
+than refunding it through merchant controls and calling that the customer journey.
+
+Preview snapshot/input still time out and CUA has no browser, but the refreshed site-scoped Dia cookie
+export now works in the guarded read-only browser. No new 2FA or customer action is currently needed.
+The temporary exact-old-licence read-auth capability was revoked after inspection. Owner tabs were
+not changed. A fresh support-thread read still ends with the authorized question, with no reply.
 
 If that journey does not supply the function, implementing a declaration form, stored receipt time
 and automatic acknowledgement needs a confirmed supplier/reseller receiving role and an approved

@@ -7,9 +7,13 @@
 - Complete delivery links, receipt instructions, confirmation buttons and the approved refund
   information on all four hidden live drafts and the test bundle. Fresh provider readback confirms
   prices, perpetual keys and draft/hidden live status. No live product published.
-- Inspect the actual refunded test order in My Orders. A fresh non-refunded test order is still
-  needed for withdrawal acceptance. Preview snapshot/input time out; the alternate browser is
-  unavailable. No new checkout or refund was submitted.
+- Verify the owner's new paid test order and actual receipt, including the prepared delivery note
+  and perpetual licence. The customer order view has delivery links but no visible withdrawal
+  control; the receipt's support link leads to the general Help Center. Withdrawal acceptance
+  remains open. No refund or licence revocation was submitted for this new order.
+- Correct privacy information for the restored Ritkaos rooms, persisted room state and Mac licence
+  storage. Independent source review found one retention wording issue, corrected before rebuilding.
+  Rebuilt local web/Mac candidates; both actual-artifact checks and privacy-content readback passed.
 
 # 2026-10-31: test hosting verified, live sales closed
 
