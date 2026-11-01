@@ -312,3 +312,35 @@ Root repaired that validation without weakening live registration or auth isolat
 probes are scheduler-blocked, so actual whoami/auth remains unresolved. A new mail-thread read failed
 at the connector transport; no fresh support response was established. No deployment, product
 publication, app release or charge occurred. Coordinator owns remaining execution and acceptance.
+
+## Authenticated delivery preparation, 1 November
+
+The isolated customer and merchant login completed. The live store's official General Settings
+readback confirms store 504842, active activation, verified identity, live mode enabled,
+tax-inclusive pricing and support address ludvig@ludvighedin.com. No bank, identity or tax-form
+fields were changed. Those account checks are not settlement or live tax-calculation proof.
+
+Fresh official product readback found blank delivery links and receipt/confirmation instructions
+on all four live drafts. Completed those already-authorized delivery fields through the normal
+product forms: links to the shared shop, existing Mac download URL and refund policy; receipt-key
+restoration instructions; the approved 14-day full-refund promise and next-check access removal;
+receipt and confirmation buttons to the shop. Mirrored the same delivery fields on the existing
+published test bundle. No additional pack, price, product promise or publishing change was made.
+
+Fresh official readback confirms all four exact live product/variant identities, prices
+59/39/39/99 SEK, perpetual/unlimited native keys, three exact delivery links, receipt note/button
+and confirmation/button destinations. Each live product remains hidden and draft. The test bundle
+remains published only in test mode. See live-product-delivery-check-2026-11-01.json for sanitized
+readback. Linked shop/Mac delivery still depends on the pending release; it is not customer-ready yet.
+
+The actual receipt link reaches the refunded test order in customer My Orders, even though the
+general order list did not show that test purchase. No fresh non-refunded test order exists yet.
+The old refunded order cannot prove the available withdrawal controls before refund. Preview
+snapshot/type fail with timeouts and the alternate CUA browser is unavailable, blocking automated
+card-frame entry. No real card was used and no new order or refund was submitted.
+
+Remaining acceptance: fresh test-order withdrawal/acknowledgement; live inclusive-tax checkout
+proof; then the already-authorized conditional web, product, live-service and Mac publication.
+The coordinator owns this work. The smallest external step is one dummy-card test purchase, with
+the provider's explicit Test mode banner, if browser input remains unavailable. Never request an
+owner real-card self-purchase. Preserve the refunded/disabled old licence as the negative fixture.

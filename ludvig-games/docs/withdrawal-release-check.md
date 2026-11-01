@@ -91,9 +91,17 @@ this check. Verify the actual customer journey on a fresh, non-refunded order. A
 have had its relevant controls removed. The documented My Orders entry point is appropriate for
 one-time purchases; the subscription Customer Portal is not evidence for these packs.
 
-The current isolated customer login reached the provider's 2FA page after a fresh login email.
-No 2FA code was supplied before the private prompt timed out, so no authenticated order view or
-withdrawal function has yet been inspected. No claim is made that the provider lacks such a function.
+The isolated customer login subsequently completed. Following the actual test receipt's View Order
+link opened customer My Orders for order 5048421, showing Refunded and the disabled licence. That
+refunded order exposes Generate Invoice but no visible withdrawal command. This is not evidence
+about controls on a non-refunded order. The general My Orders list initially showed other live
+purchases rather than the Games test order; the receipt's specific order link reached the right order.
+
+A fresh non-refunded dummy-card test order is the remaining customer-journey input. The hosted test
+bundle checkout loads, but Preview snapshot and input actions time out. Its DOM reader works only
+in the outer document and cannot fill the cross-origin card frame. The alternate CUA browser reports
+Chrome unavailable and an empty browser inventory. No new order, withdrawal or payment was submitted.
+No claim is made that the provider lacks the required function. No further 2FA is currently required.
 
 If that journey does not supply the function, implementing a declaration form, stored receipt time
 and automatic acknowledgement needs a confirmed supplier/reseller receiving role and an approved

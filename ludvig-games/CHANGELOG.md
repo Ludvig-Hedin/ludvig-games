@@ -3,8 +3,13 @@
 - Build the live-configured Mac 0.4.3 candidate and web shop locally. Artifact checks verify the
   exact live product map, public-only verifier, current commerce modules, app/ZIP signatures and
   the web purchase-service origin and offer/navigation controls. Nothing uploaded or published.
-- Preserve the earlier tested Mac release in task output. The separate customer login reaches
-  provider 2FA; no code was supplied, so checkout/withdrawal acceptance remains blocked there.
+- Preserve the earlier tested Mac release in task output. Customer and merchant login now work.
+- Complete delivery links, receipt instructions, confirmation buttons and the approved refund
+  information on all four hidden live drafts and the test bundle. Fresh provider readback confirms
+  prices, perpetual keys and draft/hidden live status. No live product published.
+- Inspect the actual refunded test order in My Orders. A fresh non-refunded test order is still
+  needed for withdrawal acceptance. Preview snapshot/input time out; the alternate browser is
+  unavailable. No new checkout or refund was submitted.
 
 # 2026-10-31: test hosting verified, live sales closed
 

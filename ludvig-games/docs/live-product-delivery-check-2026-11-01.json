@@ -1,0 +1,85 @@
+{
+  "checkedAt": "2026-11-01",
+  "source": "Authenticated official product GET readback after normal form saves",
+  "live": [
+    {
+      "confirmationReady": true,
+      "errors": {},
+      "id": 1489965,
+      "identityReady": true,
+      "licence": true,
+      "linksReady": true,
+      "price": 5900,
+      "receiptReady": true,
+      "status": "draft",
+      "store": 504842,
+      "test": false,
+      "variant": 2321500,
+      "visible": false
+    },
+    {
+      "confirmationReady": true,
+      "errors": {},
+      "id": 1489970,
+      "identityReady": true,
+      "licence": true,
+      "linksReady": true,
+      "price": 3900,
+      "receiptReady": true,
+      "status": "draft",
+      "store": 504842,
+      "test": false,
+      "variant": 2321508,
+      "visible": false
+    },
+    {
+      "confirmationReady": true,
+      "errors": {},
+      "id": 1489971,
+      "identityReady": true,
+      "licence": true,
+      "linksReady": true,
+      "price": 3900,
+      "receiptReady": true,
+      "status": "draft",
+      "store": 504842,
+      "test": false,
+      "variant": 2321509,
+      "visible": false
+    },
+    {
+      "confirmationReady": true,
+      "errors": {},
+      "id": 1489972,
+      "identityReady": true,
+      "licence": true,
+      "linksReady": true,
+      "price": 9900,
+      "receiptReady": true,
+      "status": "draft",
+      "store": 504842,
+      "test": false,
+      "variant": 2321510,
+      "visible": false
+    }
+  ],
+  "testBundle": {
+    "confirmationReady": true,
+    "errors": {},
+    "id": 1488399,
+    "licence": true,
+    "linksReady": true,
+    "price": 9900,
+    "receiptReady": true,
+    "status": "published",
+    "store": 504842,
+    "test": true,
+    "variant": 2319096
+  },
+  "publication": "Live products remain draft and hidden; no new web or Mac release uploaded",
+  "limits": [
+    "No fresh test purchase or withdrawal acknowledgement",
+    "No actual new receipt email tested",
+    "No live checkout VAT calculation or settlement proof"
+  ]
+}
