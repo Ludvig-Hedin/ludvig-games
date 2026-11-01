@@ -1,5 +1,11 @@
 # 2026-11-01: local live release candidates prepared, sales still closed
 
+- Prepare a separate, default-off guest withdrawal form with Review/Confirm, server receipt time,
+  idempotent email acknowledgement and operator copy. Eighteen focused checks pass, including the
+  actual local Worker/SQLite/KV engine. Independent review found a missing recovery path; held
+  notices now export to private KV and remain recoverable after mail failure. No new service enabled.
+- Keep Terms and the approved refund policy reachable before purchase in the shared and Ritkaos
+  sheets. Final local web/Mac artifacts contain the current clients and pass both artifact checks.
 - Owner approved the existing SEK prices with clear USD-debit information. Add the notice to the
   shared shop, shared purchase sheet, Terms and Ritkaos in Swedish/English. The same notice is saved
   and read back on all four hidden live product descriptions. Prices and checkout targets unchanged.

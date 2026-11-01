@@ -61,6 +61,7 @@ const STR={
   unlockCode:'Har du en kod?',unlockButton:'Lås upp',unlockedToast:'Upplåst.',
   storeSoon:'Köp öppnar snart. Har du redan en kod? Skriv in den ovan.',storeAfterBuy:'Efter köpet får du en kod. Skriv in den ovan så låses det upp på den här enheten.',
   storeCurrency:'Priserna inkluderar tillämplig moms. Lemon Squeezy debiterar kortet i USD. Slutbeloppet i kronor kan variera med växelkursen.',
+  storeTerms:'Villkor',storeRefunds:'14 dagars återbetalning',
   modeBlind:'Blindritning',modeBlindText:'Ritaren ser inget',modeSpeed:'Snabbrunda',modeSpeedText:'30 s · bonus för snabba',modeTelephone:'Telefonleken',modeTelephoneText:'Skriv, rita, gissa · minst 3',
   blindTitle:'Blindritning.',blindText:'De andra ser allt.',correctFast:n=>`Blixtsnabbt! +${n} poäng.`,
   style:'Pensel och färger',styleTitle:'Din pensel',styleText:'Alla ser dina streck i stilen du väljer.',styleLocked:'Tusch, krita, neon och nya färger ingår i Ritkaos+.',brushesHeading:'PENSLAR',palettesHeading:'FÄRGER',
@@ -129,6 +130,7 @@ const STR={
   unlockCode:'Got a code?',unlockButton:'Unlock',unlockedToast:'Unlocked.',
   storeSoon:'Buying opens soon. Already have a code? Enter it above.',storeAfterBuy:'After buying you get a code. Enter it above to unlock it on this device.',
   storeCurrency:'Prices include applicable tax. Lemon Squeezy charges your card in USD; the final amount in kronor may vary with the exchange rate.',
+  storeTerms:'Terms',storeRefunds:'14-day refunds',
   modeBlind:'Blind draw',modeBlindText:'The artist sees nothing',modeSpeed:'Speed round',modeSpeedText:'30 s · bonus for speed',modeTelephone:'Telephone',modeTelephoneText:'Write, draw, guess · 3+ players',
   blindTitle:'Blind draw.',blindText:'Everyone else sees it.',correctFast:n=>`Lightning fast! +${n} points.`,
   style:'Brush and colours',styleTitle:'Your brush',styleText:'Everyone sees your strokes in the style you pick.',styleLocked:'Marker, crayon, neon and new colours are part of Ritkaos+.',brushesHeading:'BRUSHES',palettesHeading:'COLOURS',
@@ -398,7 +400,7 @@ function storeRow(p){
 }
 function renderStore(){
  const groups=[['bundle',''],['pack','storePacks'],['mode','storeModes'],['cosmetic','storeCosmetics']];
- modal(`<div class="modal-icon">${icon('sparkle')}</div><h2 class="modal-title">Ritkaos+</h2><p class="modal-text">${T('storeText')}</p>${canBuy()?`<p class="modal-content-small">${T('storeCurrency')}</p>`:''}${groups.map(([kind,head])=>{const items=shop.products.filter(p=>p.kind===kind);return items.length?`<div class="store-group">${head?`<span class="card-kicker">${T(head)}</span>`:''}${items.map(storeRow).join('')}</div>`:'';}).join('')}<form id="unlock-form" class="join-row store-code"><label class="sr-only" for="unlock-code">${T('unlockCode')}</label><input id="unlock-code" class="large-input code-input" maxlength="80" placeholder="${T('unlockCode')}" autocomplete="off" spellcheck="false" aria-label="${T('unlockCode')}"><button class="button dark" type="submit">${T('unlockButton')}</button></form><p id="unlock-error" class="inline-error" role="alert"></p><p class="modal-content-small">${canBuy()?T('storeAfterBuy'):T('storeSoon')} <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener">${lang==='sv'?'Hämta din köpkod':'Recover your purchase code'}</a></p>`);
+ modal(`<div class="modal-icon">${icon('sparkle')}</div><h2 class="modal-title">Ritkaos+</h2><p class="modal-text">${T('storeText')}</p>${canBuy()?`<p class="modal-content-small">${T('storeCurrency')} <a href="https://games.ludvighedin.com/terms/" target="_blank" rel="noopener noreferrer">${T('storeTerms')}</a> · <a href="https://games.ludvighedin.com/refunds/" target="_blank" rel="noopener noreferrer">${T('storeRefunds')}</a></p>`:''}${groups.map(([kind,head])=>{const items=shop.products.filter(p=>p.kind===kind);return items.length?`<div class="store-group">${head?`<span class="card-kicker">${T(head)}</span>`:''}${items.map(storeRow).join('')}</div>`:'';}).join('')}<form id="unlock-form" class="join-row store-code"><label class="sr-only" for="unlock-code">${T('unlockCode')}</label><input id="unlock-code" class="large-input code-input" maxlength="80" placeholder="${T('unlockCode')}" autocomplete="off" spellcheck="false" aria-label="${T('unlockCode')}"><button class="button dark" type="submit">${T('unlockButton')}</button></form><p id="unlock-error" class="inline-error" role="alert"></p><p class="modal-content-small">${canBuy()?T('storeAfterBuy'):T('storeSoon')} <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener">${lang==='sv'?'Hämta din köpkod':'Recover your purchase code'}</a></p>`);
  storeOpen=true;
  for(const b of $$('[data-buy]'))b.onclick=()=>{const url=buyUrl(b.dataset.buy);if(url)window.open(url,'_blank','noopener');};
  $('#unlock-form').onsubmit=async e=>{e.preventDefault();const input=$('#unlock-code'),code=input.value.trim().toUpperCase();if(!code)return;$('#unlock-error').textContent='';

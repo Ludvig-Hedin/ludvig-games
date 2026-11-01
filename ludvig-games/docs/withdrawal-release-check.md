@@ -124,3 +124,32 @@ Current primary sources rechecked: [DAL 2:10a](https://www.riksdagen.se/sv/dokum
 [Konsumentverket](https://www.konsumentverket.se/marknadsratt-foretag/informationskrav-vid-distansavtal-regler-for-foretag/),
 [digital content](https://www.konsumentverket.se/marknadsratt-foretag/telekom-elektronik-och-digital-underhallning-regler-for-foretag/),
 and [EU Court C-375/15](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A62015CJ0375).
+
+## Own route prepared, still closed
+
+Further primary-source inspection confirmed that ordinary merchant refund handling is documented:
+the [buyer charge-help page](https://www.lemonsqueezy.com/why-did-lemon-squeeezy-charge-me) directs
+buyers to the original merchant, and the [refund operation](https://docs.lemonsqueezy.com/help/orders/refund-order)
+lets that merchant issue refunds. A separate support permission is not needed merely to prepare
+Ludvig's approved voluntary refund route. No source established a universal requirement for separate
+written provider permission. The [Buyer Terms](https://www.lemonsqueezy.com/buyer-terms) still identify
+Lemon Squeezy as purchase-contract party without explicitly appointing the supplier to receive its
+statutory declarations. That narrower legal effect remains unresolved; ordinary refund routing alone
+is not being called statutory agency approval. Hyperlinks to a function are contemplated by
+[Directive 2023/2673, Article 11a and recital 37](https://eur-lex.europa.eu/eli/dir/2023/2673/oj/eng).
+
+The closed local implementation at `withdrawal/` collects name, purchase information and an email
+destination, provides Review/Confirm, records the original notice and server receipt time, and
+prepares the full acknowledgement/operator copy. No reason, licence key or login is required.
+It does not refund or revoke access. Eighteen guarded focused checks pass, including the actual
+local Worker/SQLite/KV engine with all external network calls mocked. Independent source review
+identified a missing private recovery route; root repaired it with private KV export and actual
+engine discovery/read checks. No live service, email or legal-acceptance pass is claimed.
+
+The proposed sender is Resend Free. Owner approval for the new processor's receipt of customer
+name, acknowledgement email and purchase details is still required by the owner's data-sharing rule.
+No account, token, DNS, namespace, paid plan or actual send was created. Cloudflare Free cannot send
+to arbitrary recipients under its current [Email Service pricing](https://developers.cloudflare.com/email-service/platform/pricing/).
+After approval, root owns actual sender/Turnstile/private-recovery setup, browser and durable-email
+acceptance, public function links/privacy changes and the unresolved statutory receiving role.
+The new paid test order is preserved for this journey; no additional owner purchase is needed.

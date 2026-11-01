@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Withdraw from contract · Ludvig Games</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a href="https://games.ludvighedin.com/shop/">Ludvig Games</a></header>
+  <main>
+    <h1>Withdraw from contract</h1>
+    <p>Tell Ludvig Games that you withdraw from a purchase. You do not need a reason, licence key or account.</p>
+    <p>You can also email <a href="mailto:ludvig@ludvighedin.com">ludvig@ludvighedin.com</a>. Read our <a href="https://games.ludvighedin.com/refunds/">refund policy</a>.</p>
+    <p id="status" role="status" aria-live="polite">Checking availability…</p>
+    <noscript><p>JavaScript is needed for this form. You can send your declaration by email instead.</p></noscript>
+    <form id="details-form">
+      <fieldset id="details-fields" disabled>
+        <label for="name">Your name</label>
+        <input id="name" name="name" autocomplete="name" maxlength="120" required>
+        <label for="order-details">Information identifying your purchase</label>
+        <p id="order-hint" class="hint">For example, your order number, or the game and purchase details. An order number is not required.</p>
+        <textarea id="order-details" name="orderDetails" rows="4" maxlength="500" aria-describedby="order-hint" required></textarea>
+        <label for="email">Email for your acknowledgement</label>
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
+        <p class="hint">We use these details to record your declaration, send its acknowledgement and handle your request. See our <a href="https://games.ludvighedin.com/privacy/">privacy policy</a>.</p>
+        <button type="submit">Review withdrawal</button>
+      </fieldset>
+    </form>
+    <section id="review" aria-labelledby="review-title" hidden>
+      <h2 id="review-title" tabindex="-1">Review your declaration</h2>
+      <pre id="statement"></pre>
+      <p>Confirming sends this declaration to Ludvig Games. The acknowledgement email will include its contents and the date and time it was received.</p>
+      <div id="security-check"></div>
+      <div class="actions">
+        <button id="confirm" type="button" disabled>Confirm withdrawal</button>
+        <button id="edit" type="button" class="secondary">Edit details</button>
+      </div>
+      <p id="receipt" hidden></p>
+    </section>
+  </main>
+</body>
+</html>

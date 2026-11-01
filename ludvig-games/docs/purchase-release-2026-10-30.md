@@ -33,6 +33,15 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
 - Corrected stale privacy facts for the restored Ritkaos rooms and Mac purchase storage, with fresh
   independent source review. Rebuilt web and Mac candidates and passed both actual artifact checks
   plus direct privacy-content readback. Nothing was uploaded or published; all task tabs are closed.
+- Prepared a separate default-off withdrawal service with guest Review/Confirm, durable receipt
+  time and automatic customer/operator acknowledgement. Eighteen focused checks pass, including
+  real local Worker/SQLite/KV behavior. Failed mail notices have a concrete private KV recovery route.
+  No new mail provider, credential, DNS, namespace or hosted service was configured.
+- The immediate owner decision is approval before Resend receives name, acknowledgement email and
+  purchase information. Cloudflare arbitrary-recipient sending requires Workers Paid; no upgrade
+  is authorized. The proposed route uses only Resend Free with overage off. Root owns setup, real
+  browser/mail/remote-recovery tests, statutory receiving-role resolution and final live VAT acceptance
+  after that approval. The prepared form is not yet linked or presented as an active customer service.
 
 ## Current hosted proof, 31 October
 
@@ -167,8 +176,10 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   The corrections are built into local web/Mac candidates, not published.
 - [ ] Establish the customer withdrawal function and durable acknowledgement in
   [legal readiness](legal-readiness-2026-10-28.md). The fresh Paid test-order view and general Help
-  Center do not establish that function. Support has not replied to the already-authorized question;
-  root owns the appropriate implementation/acceptance when that dependency is resolved.
+  Center do not establish that function. Its own closed local implementation now passes 18 checks.
+  Owner approval for the new mail processor is pending. Root owns sender/Turnstile/private recovery
+  provisioning, real delivery/browser acceptance, public links/privacy and statutory receiving-role
+  resolution. Support has not replied; no separate written-permission requirement is invented.
 - [x] Set the public support address to ludvig@ludvighedin.com and enable tax-inclusive pricing.
   Fresh official settings readback confirmed both. No new live receipt has been issued to verify Reply-To.
 - [ ] After the release gates and applicable authorization, deploy and verify the customer journey on
@@ -439,4 +450,38 @@ Remaining preparation is the declaration/acknowledgement function and live check
 Public provider docs authorize receiving ordinary refund requests, so support silence does not
 prevent building that route. The specific statutory receiving role is still unresolved; do not claim
 that separate written provider permission is universally required. A closed local form is being
-prepared, without enabling any new email provider or customer-data transmission.
+  prepared, without enabling any new email provider or customer-data transmission.
+
+## Closed withdrawal implementation and final local package
+
+Real app source is at `withdrawal/`, separate from the existing commerce Worker. It remains disabled
+and unpublished. It uses no Lemon Squeezy merchant key and performs no refund or licence mutation.
+Guest fields identify the name, purchase and acknowledgement destination; neither a reason nor licence
+key is required. Review sends nothing. Explicit confirmation stores the notice and server receipt time
+before attempting a fixed acknowledgement and operator copy. The fixed Resend adapter, exact origin,
+Turnstile, native IP limit, serial/idempotent inbox, bounded recipient budget and retry window are
+covered by focused checks. Missing settings, including private recovery storage, fail closed.
+
+Fresh independent source review found that held notices lacked a verified operational read route.
+Root added private KV export, preserving failed exports in the inbox for bounded recovery retries.
+Held notices can be listed/read through authenticated KV tooling rather than a public admin API.
+The actual local SQLite/KV fixture verifies four failed sends, private discovery/read, original
+receipt preservation and replay after metadata expiry. Hosted namespace/credential retrieval still
+needs a synthetic deployment acceptance test. The client also preserves a known receipt when a later
+acknowledgement retry fails. All 18 focused checks passed with both external providers mocked and
+network disabled. This is not proof of real browser/CAPTCHA, live email delivery or statutory clearance.
+
+Cloudflare's current [Email Service pricing](https://developers.cloudflare.com/email-service/platform/pricing/)
+requires Workers Paid for arbitrary recipients. No paid plan or overage was enabled. Proposed
+[Resend Free](https://resend.com/pricing) requires explicit owner approval for customer name, email and
+purchase-information processing, a verified sender, sending-only scoped key, quota and disabled
+tracking/overage. No Resend account, token or domain was created. See `withdrawal/README.md` for the
+exact activation/recovery requirements and current limits. The existing paid test order stays intact;
+no further owner purchase or general login is needed now.
+
+Added fixed Terms/refund-policy links before Buy in shared and Ritkaos purchase sheets. The final
+web/Mac candidates were rebuilt and both actual artifact checks passed. Current clients match
+packaged bytes, including USD disclosure and legal-policy links. Final local ZIP SHA-256:
+`006757c1c41717e5b31535768cbd0ff3bb0b8e5bacd789eb3594aacee32f567e`.
+The two exact helper/launcher repins match current bytes; independent review confirmed no account,
+auth, visibility, budget or guard scope changed. No public product, site, service or app release opened.

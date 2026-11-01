@@ -13,7 +13,7 @@ implementation notes below are historical; current overall status is in `purchas
   shared commerce modules and the existing updater public key match the package byte for byte.
   Deep/strict code-signature verification and the exact ZIP's update signature passed in the
   opt-in `desktop/tests/live-candidate.test.mjs` check.
-- Current ZIP SHA-256: `ba56befe7d18030f6dddaf15f42ec95c06ba8763a64b91ab7ccfcb7f57f7235d`.
+- Current ZIP SHA-256: `006757c1c41717e5b31535768cbd0ff3bb0b8e5bacd789eb3594aacee32f567e`.
   Distribution remains the existing ad-hoc signing workflow; no notarization is claimed.
 - Rebuilt after the factual privacy correction for restored online rooms and Mac licence storage.
   Both opt-in actual-artifact checks passed together. The four corrected privacy paragraphs match
@@ -21,6 +21,8 @@ implementation notes below are historical; current overall status is in `purchas
 - Rebuilt again after the approved USD-debit notice. Both actual-artifact checks passed; the packaged
   shared purchase client and Ritkaos client match current source, and the notice is present in the
   actual shop, Terms, shared purchases and Swedish/English Ritkaos assets. No release uploaded.
+- Final rebuild includes fixed Terms/refund links before checkout in both purchase sheets. Actual
+  bundled clients match current source, and both actual-artifact checks passed after this change.
 - The earlier test-only release was moved, not duplicated, to
   `desktop/output/test-release-0.4.3-20261031/`. Its eight packaged restore/restart and nine federation
   checks remain valid for that test artifact. No live paid restoration is claimed for the new candidate.

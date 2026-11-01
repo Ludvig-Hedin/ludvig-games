@@ -84,6 +84,11 @@
     const select = node('select'); select.id = 'lg-store-product'; select.onchange = () => { selected = select.value; render(); };
     const details = node('p'); details.dataset.details = '';
     const currency = node('p', 'Prices include applicable tax. Lemon Squeezy charges your card in USD; the final amount in kronor may vary with the exchange rate.', 'lg-muted');
+    const purchaseTerms = node('p', '', 'lg-muted');
+    const terms = node('a', 'Terms'), refunds = node('a', '14-day refunds');
+    terms.href = 'https://games.ludvighedin.com/terms/'; refunds.href = 'https://games.ludvighedin.com/refunds/';
+    for (const link of [terms, refunds]) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
+    purchaseTerms.append(terms, node('span', ' · '), refunds);
     const buy = node('a', ''); buy.className = 'lg-buy'; buy.target = '_blank'; buy.rel = 'noopener noreferrer'; buy.referrerPolicy = 'no-referrer';
     const availability = node('p', '', 'lg-muted'); availability.dataset.availability = '';
     const form = node('form'), keyLabel = node('label', 'Code from your receipt'); keyLabel.htmlFor = 'lg-store-key';
@@ -108,7 +113,7 @@
       } catch (e) { message(errorText(e)); }
       finally { busy = false; apply.disabled = false; }
     };
-    dialog.append(close, title, mode, label, select, details, currency, buy, availability, form, status, recovery);
+    dialog.append(close, title, mode, label, select, details, currency, purchaseTerms, buy, availability, form, status, recovery);
     dialog.addEventListener('close', () => focusBefore?.focus?.());
     document.body.append(dialog);
   }

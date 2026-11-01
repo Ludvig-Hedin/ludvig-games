@@ -1,0 +1,17 @@
+{
+  "name": "ludvig-games-withdrawals",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-30",
+  "account_id": "cffb5d1b12c3302ecc0745862fbf1f14",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": { "WITHDRAWAL_ENABLED": "false" },
+  // Add RECOVERY with the verified private Free-account KV namespace before activation.
+  // Missing recovery storage keeps the service unavailable, even with other settings present.
+  "kv_namespaces": [],
+  "assets": { "directory": "./client", "binding": "ASSETS", "run_worker_first": true },
+  "durable_objects": { "bindings": [{ "name": "INBOX", "class_name": "WithdrawalInbox" }] },
+  "migrations": [{ "tag": "withdrawals-v1", "new_sqlite_classes": ["WithdrawalInbox"] }],
+  "ratelimits": [{ "name": "WITHDRAWAL_IP_LIMIT", "namespace_id": "4203", "simple": { "limit": 2, "period": 60 } }]
+}
