@@ -12,6 +12,9 @@
 
 # 2026-11-01: local live release candidates prepared, sales still closed
 
+- Prepare dedicated Free-account withdrawal provisioning, bounded synthetic private recovery proof
+  and an explicit activation prerequisite receipt. Six focused helper checks pass locally; no
+  namespace, challenge widget, sender key or hosted withdrawal service has been created.
 - Owner approved Resend Free for withdrawal acknowledgements and the limited sending key.
   Prepare the form links and matching privacy/retention information locally. Actual browser
   Review/Confirm passes with mocked CAPTCHA and mail; no real delivery or hosted acceptance claimed.

@@ -174,7 +174,7 @@ def shop_page(games, groups):
       <div class="shop-bundle-action"><p class="shop-price">{bundle['priceOre'] // 100} kr</p><button class="button shop-buy" type="button" data-store-offer="bundle" disabled>Buy bundle</button></div>
     </section>
     <p class="shop-status" role="status" aria-live="polite" data-shop-status>Buying is not available yet. Free play is unchanged.</p>
-    <p class="shop-help">An internet connection is needed to check purchases. <a href="/refunds/">14-day refunds</a> · <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener noreferrer">Find your receipt and code</a></p>
+    <p class="shop-help">An internet connection is needed to check purchases. <a href="/refunds/">14-day refunds</a> · <a href="https://ludvig-games-withdrawals.ludvighedin.workers.dev/" target="_blank" rel="noopener noreferrer">Withdraw from contract</a> · <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener noreferrer">Find your receipt and code</a></p>
     <noscript><p>Enable JavaScript to buy or restore a pack. You can still browse the packs and open the games.</p></noscript>
   </main>
   {footer(groups)}

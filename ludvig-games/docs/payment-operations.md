@@ -1,8 +1,9 @@
 # Payment support, refunds and recovery
 
-Prepared 31 October 2026. Internal operating runbook, not published customer wording.
-No refund, licence change, email or account setting was executed for this document.
-The coordinator owns implementation and final acceptance.
+Updated 1 November 2026. Internal operating runbook, not published customer wording.
+This documentation change executed no refund, licence change, email or account setting.
+The coordinator owns implementation and final acceptance. The online withdrawal service and
+its policy links are a local activation candidate, not a deployed or accepted customer journey.
 
 ## Existing owner decision and proof
 
@@ -24,7 +25,9 @@ This verifies the manual test procedure; it does not establish automatic disabli
 instant revocation in an already open app. Keep that refunded key disabled. The private fixture is
 now suitable for rejection checks, not expected-valid restoration checks.
 
-1. Read the request received at the approved support address, `ludvig@ludvighedin.com`.
+1. Read the request received at the approved support address, `ludvig@ludvighedin.com`, including
+   an operator copy from the withdrawal form once activated. Use the original server receipt time
+   and reference when handling a form declaration; the email's delivery time does not replace them.
    Use the order reference or purchase email if available. Do not request card details or the full
    licence key. A missing order number is a lookup problem, not a reason to deny the refund.
 2. Open Ludvig Games, store **504842**, in the **same mode as the order**. Find the purchase under
@@ -95,19 +98,43 @@ See [Resend Receipt](https://docs.lemonsqueezy.com/help/orders/resend-receipt).
 Fresh-device login/recovery and an actual receipt resend remain **unchecked**. Email sending needs
 applicable authorization and is not performed by this investigation.
 
+## Online withdrawal operation
+
+The prepared guest form is at
+`https://ludvig-games-withdrawals.ludvighedin.workers.dev/`. It collects name, purchase-identifying
+information and an acknowledgement email; it requires no reason, licence key or login. Review sends
+nothing. Confirm submits the declaration. The service records its original contents, UTC receipt
+time and reference before attempting an email acknowledgement with an operator copy. It does not
+execute refunds or disable licences. Continue with the manual refund steps above for the matching
+order, then disable only that order's key after a full refund.
+
+Resend Free and the necessary limited sending key are now owner-approved, including processing the
+customer's name, email and purchase information. Actual account, sender verification, quota and
+disabled tracking must still be checked by the coordinator. No paid plan or overage is authorized.
+See [withdrawal preparation](../withdrawal/README.md) for the implementation and activation gates.
+
+API acceptance means accepted for sending, not delivered. A pending acknowledgement retains the
+declaration and retries at most four times within 23 hours. Exhausted notices are exported to the
+dedicated private Cloudflare KV namespace under `held:<reference>`. If export fails, the original
+notice remains in the private inbox queue for export retries; it is not discarded or emailed again.
+Recover held notices through the authenticated dashboard or the README's fixed private-file CLI
+procedure, preserving the original declaration and receipt time. Check Resend's original request
+before a manual resend outside its idempotency window. Delete a held payload after recovery and
+handling; do not paste customer data into repository records. Private remote recovery still needs
+an actual synthetic-fixture check before activation.
+
 ## Remaining public policy and checkout work
 
-1. Terms and Refunds still state paid checkout is unavailable. Terms/Privacy also describe online
-   services as paused. Update only the factual statements affected by the actual paid deployment,
-   after its scope is settled. Do not publish future server availability as a present fact.
-2. Privacy lacks the actual paid flow: locally remembered bearer licence keys, validation requests
-   through the game service to Lemon Squeezy, purpose/basis, retention and provider information.
-   Document the real implementation rather than adding new collection. No purchase email is needed
-   by the current game's resolver response.
+1. The prepared Terms, Refunds and Privacy source describes the approved purchase flow, USD debit
+   disclosure and local withdrawal activation candidate. Its new form links must not be published
+   while the service is unavailable. Publish only after its actual acceptance checks pass.
+2. Privacy covers locally remembered bearer licence keys, validation, Cloudflare/Resend processing
+   and withdrawal retention. Confirm the actual deployed configuration matches this wording before
+   release. The game's resolver does not need or return the purchase email.
 3. Inspect the actual checkout and durable receipt for the seller identity, exact pack/delivery
    requirements, final VAT/currency total, withdrawal/refund terms and the appropriate withdrawal
    information/form. Receipt arrival alone does not prove all contract information was delivered.
-   The support Reply-To is still the personal Gmail in recorded test evidence; use the public email.
+   Confirm the public support email `ludvig@ludvighedin.com` in the actual receipt.
 4. Establish the accessible online withdrawal function and its durable acknowledgement, or verify
    that the merchant-of-record checkout already supplies the applicable function. A policy mailto
    and generic blank-form link do not prove this journey. Sweden's current rules require the function
@@ -115,7 +142,9 @@ applicable authorization and is not performed by this investigation.
    durable receipt with submission time. See
    [Konsumentverket's current business guidance](https://www.konsumentverket.se/marknadsratt-foretag/informationskrav-vid-distansavtal-regler-for-foretag/)
    and [Distansavtalslagen, 2 kap. 10–10 a §§](https://rkrattsbaser.gov.se/sfst?bet=2005%3A59).
-   Provider coverage and the exact applicable seller flow are not yet established.
+   The local form's real browser, CAPTCHA, durable email, private recovery and applicable seller
+   receiving role are not yet established. Ordinary merchant refund handling is documented, but
+   must not be described as a verified appointment to receive statutory declarations for Lemon Squeezy.
 5. Do not add a statutory digital-content waiver to remove the owner's voluntary 14-day promise.
    Any waiver or different customer interaction needs an explicit product decision. The legal
    exception has specific conditions; see [Konsumentverket on digital content](https://www.konsumentverket.se/varor-och-tjanster/digitala-tjanster-och-digitalt-innehall/).
@@ -126,7 +155,8 @@ See [Confirmation modal](https://docs.lemonsqueezy.com/help/checkout/customizing
 and [Receipt emails](https://docs.lemonsqueezy.com/help/checkout/customizing-receipt-emails).
 Never put the licence into a return URL, analytics event or public screenshot.
 
-Next: coordinator investigates the actual provider withdrawal/receipt flow and prepares scoped
-policy/checkout changes including the approved full-refund access consequence. Live-store preparation
-is authorized separately in chat; publishing and opening sales remain held. No server, dependency
-folder or browser was created here.
+Next: coordinator provisions and checks the approved Free email/form route, verifies the actual
+declaration and acknowledgement on preserved paid test order 5048422, resolves the receiving-role
+question and checks live checkout VAT before the conditionally authorized opening of sales. Preserve
+that paid test order until this journey is exercised. No server, dependency folder or browser was
+created by this documentation change.

@@ -146,10 +146,19 @@ local Worker/SQLite/KV engine with all external network calls mocked. Independen
 identified a missing private recovery route; root repaired it with private KV export and actual
 engine discovery/read checks. No live service, email or legal-acceptance pass is claimed.
 
-The proposed sender is Resend Free. Owner approval for the new processor's receipt of customer
-name, acknowledgement email and purchase details is still required by the owner's data-sharing rule.
-No account, token, DNS, namespace, paid plan or actual send was created. Cloudflare Free cannot send
+The proposed sender is Resend Free. The owner has now approved the new processor's receipt of
+customer name, acknowledgement email and purchase details, plus a limited sending-only/domain-scoped
+key. No account, token, DNS, namespace, paid plan or actual send was created. The scoped Dia export
+recovered after owner login. Actual Resend Billing shows Free, zero cost and no payment method;
+pay-as-you-go switches are off/disabled. Actual domain/key and quota headroom remain unchecked.
+Cloudflare Free cannot send
 to arbitrary recipients under its current [Email Service pricing](https://developers.cloudflare.com/email-service/platform/pricing/).
-After approval, root owns actual sender/Turnstile/private-recovery setup, browser and durable-email
+Root owns actual sender/Turnstile/private-recovery setup, browser and durable-email
 acceptance, public function links/privacy changes and the unresolved statutory receiving role.
 The new paid test order is preserved for this journey; no additional owner purchase is needed.
+
+The actual browser Review/Confirm flow now passes with local public assets and mocked CAPTCHA/mail:
+Review submits nothing; Confirm sends once and shows the matching server receipt time/reference.
+No real email or hosted acceptance is inferred. Policy and purchase links are prepared locally and
+must remain unpublished until the function is available. A fresh support-thread read still ends
+with the already authorized question, without a provider reply.

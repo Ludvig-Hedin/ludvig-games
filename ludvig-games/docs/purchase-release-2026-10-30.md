@@ -37,11 +37,34 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   time and automatic customer/operator acknowledgement. Eighteen focused checks pass, including
   real local Worker/SQLite/KV behavior. Failed mail notices have a concrete private KV recovery route.
   No new mail provider, credential, DNS, namespace or hosted service was configured.
-- The immediate owner decision is approval before Resend receives name, acknowledgement email and
-  purchase information. Cloudflare arbitrary-recipient sending requires Workers Paid; no upgrade
-  is authorized. The proposed route uses only Resend Free with overage off. Root owns setup, real
-  browser/mail/remote-recovery tests, statutory receiving-role resolution and final live VAT acceptance
-  after that approval. The prepared form is not yet linked or presented as an active customer service.
+- The owner approved Resend Free processing of name, acknowledgement email and purchase information,
+  plus a sending-only/domain-scoped key. No paid plan or overage is authorized. After the owner
+  logged in, the scoped export recovered and the isolated Resend session works. Actual Billing
+  shows the Free transactional plan (3,000 emails), zero cost and no payment method; Usage shows
+  pay-as-you-go switches off/disabled. Existing unrelated domains are preserved. No Games domain,
+  key or email has been created yet; the normal guard still blocks unscoped sending-site writes.
+- Actual browser Review/Confirm passed against the current local form assets with mocked CAPTCHA
+  and email. Review submitted nothing; Confirm submitted once and showed the original receipt time.
+  This is not a hosted, real-CAPTCHA or delivered-email pass. Local purchase/policy sources now link
+  to the prepared function and describe its data handling. Those changed links remain unpublished;
+  the packaged web/Mac candidates described above predate this latest local link preparation.
+- The existing Pigeon test checkout opens with the correct pack, explicit Test mode and SEK39.00
+  total. No payment fields were entered and no new purchase was submitted. Preserve paid test order
+  5048422 for the withdrawal acceptance journey. Any further owner checkout must use test mode and
+  dummy card details, never a real self-purchase.
+- Root owns real sender/mail/remote-recovery setup, statutory receiving-role resolution and final
+  live VAT acceptance. The guarded Cloudflare whoami route refreshed the existing isolated OAuth
+  successfully on the correct Free account without a new token. The refreshed Dia dashboard login,
+  however, currently identifies `ludvighedin15@gmail.com`, confirmed by its official user JSON.
+  Root requested a switch to `ludvighedin.se@gmail.com`, not another token/email verification. The
+  profile HTML is stuck on security verification; the already-used official user GET returns JSON.
+  A prepared reader repair starts with that same official GET, preserving all identity/account/
+  complete-Free-subscription checks. No Cloudflare resource or plan was changed.
+- Seven shared client/shop checks and six focused deployment/recovery-helper checks pass locally.
+  Independent helper review found a missing closed-redeploy version recheck; root repaired it and
+  added a rejection check. Root also added a bounded synthetic private-KV discovery/read/delete
+  probe. Those local mocked tests are not actual hosted recovery proof. Subsequent proof/build
+  checks are waiting on the shared scheduler; no admission guard was changed.
 
 ## Current hosted proof, 31 October
 

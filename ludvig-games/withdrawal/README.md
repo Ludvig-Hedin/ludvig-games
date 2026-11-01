@@ -88,6 +88,14 @@ failed sends, private key discovery/read, metadata expiry and preservation of th
 time. Verify remote retrieval with a synthetic held fixture during deployment before launch.
 No public read or admin endpoint is provided.
 
+The prepared fixed launcher operation `agent-heavy-run games-withdrawal-free probe-recovery`
+performs a bounded hosted acceptance probe only in this service's receipted namespace. It writes
+one fixed, non-customer `held:synthetic-recovery-probe-v1` fixture with a five-minute expiry,
+verifies authenticated discovery and exact retrieval, then deletes that fixture. It refuses to
+overwrite an existing probe key. A successful run saves a private, version-bound recovery proof.
+The local helper checks cover cleanup after ambiguous write/read failures, but no hosted probe
+has yet run. Use the actual hosted proof, not these local checks, for activation acceptance.
+
 Before manually retrying beyond the
 provider's idempotency window, inspect the original Resend request/message to avoid duplicate sends.
 Preserve the original declaration and receipt time in any manually issued acknowledgement. Resolve
@@ -99,8 +107,11 @@ succeeded, then disable **only that purchase's licence**. This code does neither
 
 ## Activation prerequisites owned by the release coordinator
 
-1. Obtain explicit owner approval before Resend receives customer name, acknowledgement email and
-   purchase information. No account, token or sending domain has been created by this source task.
+1. Owner approval has been given for Resend Free to receive customer name, acknowledgement email
+   and purchase information, plus a sending-only/domain-scoped key. No account, token or sending
+   domain has been created by this source task. The isolated Resend login now works; actual Billing
+   shows the zero-cost Free transactional plan and no payment method. Its pay-as-you-go switches
+   are off/disabled. Actual quota headroom and domain/key setup still need verification.
 2. Verify the actual existing/new account is on its Free plan, paid overage is off, and enough shared
    daily/monthly allowance is available. Do not enable a subscription or paid overage. The hard local
    limit does not establish headroom in an account also used by other projects.
