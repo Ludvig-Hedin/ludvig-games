@@ -27,9 +27,9 @@ unlocks work. Paid production is not live.** The free public site is unchanged.
   control; the receipt's support link leads to general help. No declaration/acknowledgement journey
   is established. Preserve this paid test order for acceptance; no further purchase is requested.
 - Its receipt shows SEK99.05 against the SEK99.00 line item and USD10.08 payment. Fresh official
-  order data now reconstructs that exact conversion/rounding (see below). The owner's exact-final-SEK
-  expectation needs a concrete decision about the provider's USD debit and customer information.
-  Live VAT behavior still needs acceptance. Root owns implementation after those dependencies clear.
+  order data reconstructs that exact conversion/rounding (see below). The owner approved retaining
+  the SEK prices with clear USD-debit information. That notice is now built into web/Mac and saved
+  in the four hidden live product descriptions. Live VAT behavior still needs acceptance.
 - Corrected stale privacy facts for the restored Ritkaos rooms and Mac purchase storage, with fresh
   independent source review. Rebuilt web and Mac candidates and passed both actual artifact checks
   plus direct privacy-content readback. Nothing was uploaded or published; all task tabs are closed.
@@ -142,14 +142,15 @@ Ludvig to choose one or pause the peer's work. Queue guarded operations internal
   those delivery instructions and links. Live receipt and public destination acceptance remain pending.
 - [x] Prepare the live service and distinct live signing material without enabling any products.
   The public candidate config remains private/local and unused by the published site or app.
-- [ ] Resolve final customer currency and VAT. The 99 SEK test offer produced a receipt of 99.05 SEK
+- [x] Resolve the test receipt's currency rounding and the owner decision. The 99 SEK test offer produced a receipt of 99.05 SEK
   with a 10.08 USD payment. Current official [currency documentation](https://docs.lemonsqueezy.com/help/payments/currencies)
   confirms that all payments are processed in USD after conversion from the displayed store currency.
   Fresh official order data reconstructs the exact rounding: rate 0.10176874 USD/SEK converts 99 SEK
-  to 1008 USD cents; converting those back produces 9905 öre. The owner must decide whether to retain
-  the approved displayed SEK prices with clear USD-debit information, because an exact SEK card debit
-  cannot be promised through this provider. No price/currency/copy change made pending that decision.
-  The test order is Swedish but non_taxable with zero tax; that is not proof of correct live VAT.
+  to 1008 USD cents; converting those back produces 9905 öre. The owner approved retaining the
+  displayed SEK prices with clear USD-debit information. The notice is prepared on all purchase paths;
+  no product price or store currency changed.
+- [ ] Verify actual live inclusive-tax checkout behavior. The Swedish test order is non_taxable with
+  zero tax; that is not proof of correct live VAT. Root owns this acceptance before opening Buy links.
 - [x] Prepare only the required test hosting on the verified Games Free account. Fresh authorized browser
   GETs now confirm the .se user has `email_verified: true`, the exact account is standard, and its
   subscription list is empty with `next_page: false`. CLI OAuth was refreshed successfully too.
@@ -418,7 +419,24 @@ applicable tax inside the set product price, but does not change that USD proces
 [Test mode](https://docs.lemonsqueezy.com/help/getting-started/test-mode) page does not establish
 production Swedish VAT from the zero-tax test record. No live price or tax setting was changed.
 
-Owner decision requested: retain 59/39/39/99 SEK inclusive of applicable VAT with clear information
-that the card is charged in USD, or require an exact SEK debit (which needs a different payment
-approach). Do not silently change product currency, prices or existing customer copy. The withdrawal
-function remains a separate provider dependency. No further owner login or purchase is requested.
+Owner approved retaining 59/39/39/99 SEK inclusive of applicable VAT with clear information that the
+card is charged in USD. The web shop, shared purchase sheet, Terms and Swedish/English Ritkaos sheet
+now disclose this before purchase. The four live draft descriptions also contain the notice; fresh
+official readback confirms exact product/variant/price identities, perpetual keys, three delivery
+links, draft status and visible false. No product price, currency, checkout destination or availability
+behavior changed. The temporary live-preparation capability was revoked after saving and owned tabs
+were closed. No product was published.
+
+Seven focused client/shop checks passed. Web build and Mac staging/package completed under existing
+guards (one packaging admission refusal was retried after independent work). Both actual candidate
+checks passed again. Direct artifact readback confirms the current shared/Ritkaos client bytes and
+the USD notice in generated web and actual packaged app. Current ZIP SHA-256:
+`ba56befe7d18030f6dddaf15f42ec95c06ba8763a64b91ab7ccfcb7f57f7235d`.
+Fresh independent source review accepted the copy and the two exact digest repins in the Ritkaos
+restoration helper/launcher; no account, visibility, auth, budget or resource rule changed.
+
+Remaining preparation is the declaration/acknowledgement function and live checkout acceptance.
+Public provider docs authorize receiving ordinary refund requests, so support silence does not
+prevent building that route. The specific statutory receiving role is still unresolved; do not claim
+that separate written provider permission is universally required. A closed local form is being
+prepared, without enabling any new email provider or customer-data transmission.

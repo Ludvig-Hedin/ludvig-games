@@ -167,7 +167,7 @@ def shop_page(games, groups):
   {masthead()}
   <main id="content" class="shop">
     <div class="shop-intro"><div><h1 class="shop-title">Game extras</h1><p>Optional packs for your games. Everything already free stays free.</p></div><button class="link-button shop-restore" type="button" data-store-restore disabled>Restore a purchase</button></div>
-    <p class="shop-pricing">One payment. Prices include applicable tax. Use your receipt's licence key in the matching games.</p>
+    <p class="shop-pricing">One payment. Prices include applicable tax. Lemon Squeezy charges your card in USD; the final amount in kronor may vary with the exchange rate. Use your receipt's licence key in the matching games.</p>
     <div class="shop-products">{''.join(products)}</div>
     <section class="shop-bundle" aria-labelledby="shop-bundle">
       <div><h2 id="shop-bundle">All three packs</h2><p>{escape(bundle['description'])}</p></div>

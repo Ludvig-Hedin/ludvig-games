@@ -1,5 +1,11 @@
 # 2026-11-01: local live release candidates prepared, sales still closed
 
+- Owner approved the existing SEK prices with clear USD-debit information. Add the notice to the
+  shared shop, shared purchase sheet, Terms and Ritkaos in Swedish/English. The same notice is saved
+  and read back on all four hidden live product descriptions. Prices and checkout targets unchanged.
+- Rebuild web and Mac candidates; seven client/shop checks, two actual-artifact checks and direct
+  disclosure readback pass. Updated the Ritkaos helper's asset pin with fresh independent review;
+  account, checkout visibility and resource guards are unchanged. No sales opened.
 - Build the live-configured Mac 0.4.3 candidate and web shop locally. Artifact checks verify the
   exact live product map, public-only verifier, current commerce modules, app/ZIP signatures and
   the web purchase-service origin and offer/navigation controls. Nothing uploaded or published.
