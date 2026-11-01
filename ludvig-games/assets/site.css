@@ -205,6 +205,10 @@ button.nav-button { background: transparent; cursor: pointer; font: inherit; fon
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
   .about-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 }
+@media (max-width: 520px), (pointer: coarse) {
+  /* iOS zooms focused fields when their text is smaller than 16px. */
+  input, select, textarea, .filter-search, .filter-select select { font-size: 16px; }
+}
 @media (max-width: 520px) {
   .shell { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
   .filter-search-wrap { flex: 1 1 100%; }
